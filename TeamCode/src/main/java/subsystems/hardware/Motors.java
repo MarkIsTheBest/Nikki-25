@@ -11,12 +11,10 @@ public class Motors
     public static DcMotor rightFront;
     public static DcMotor rightRear;
 
-    public static DcMotor armLeft;
-    public static DcMotor armRight;
-    public static DcMotor intakeExtend;
-    public static DcMotor intakeRotate;
+    public static DcMotor verticalLeft;
+    public static DcMotor verticalRight;
 
-    public static DcMotor[] allMotors = new DcMotor[8];
+    public static DcMotor[] allMotors = new DcMotor[6];
 
     public static void init(HardwareMap hardwareMap) {
         try
@@ -32,14 +30,12 @@ public class Motors
     private static void getMotors(HardwareMap hardwareMap)
     {
         leftFront = hardwareMap.tryGet(DcMotor.class, "leftFront");
-        leftRear = hardwareMap.tryGet(DcMotor.class, "leftBack");
+        leftRear = hardwareMap.tryGet(DcMotor.class, "leftRear");
         rightFront = hardwareMap.tryGet(DcMotor.class, "rightFront");
-        rightRear = hardwareMap.tryGet(DcMotor.class, "rightBack");
+        rightRear = hardwareMap.tryGet(DcMotor.class, "rightRear");
 
-        armLeft = hardwareMap.tryGet(DcMotor.class, "armLeft");
-        armRight = hardwareMap.tryGet(DcMotor.class, "armRight");
-        intakeExtend = hardwareMap.tryGet(DcMotor.class, "intakeExtend");
-        intakeRotate = hardwareMap.tryGet(DcMotor.class, "intakeRotate");
+        verticalLeft= hardwareMap.tryGet(DcMotor.class, "verticalLeft");
+        verticalRight = hardwareMap.tryGet(DcMotor.class, "verticalRight");
     }
 
     private static void setZeroPowerBehaviour()
@@ -48,23 +44,16 @@ public class Motors
         leftRear.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         rightFront.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         rightRear.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
-
-        armLeft.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
-        armRight.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
-        intakeExtend.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
-        intakeRotate.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
     }
 
     private static void setDirection()
     {
-        rightFront.setDirection(DcMotorSimple.Direction.REVERSE);
-        rightRear.setDirection(DcMotorSimple.Direction.REVERSE);
-        armRight.setDirection(DcMotorSimple.Direction.REVERSE);
-        intakeRotate.setDirection(DcMotorSimple.Direction.REVERSE);
+        verticalLeft.setDirection(DcMotorSimple.Direction.REVERSE);
     }
 
+
     private static void setAllMotors() {
-        DcMotor[] motors = {leftFront, rightFront, leftRear, rightRear, armLeft, armRight, intakeExtend, intakeRotate};
+        DcMotor[] motors = {leftFront, rightFront, leftRear, rightRear, verticalRight, verticalLeft};
 
         for (int i = 0; i < motors.length; i++) {
             if (motors[i] != null) {

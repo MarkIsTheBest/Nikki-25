@@ -3,24 +3,36 @@ package subsystems.hardware;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.hardware.Servo;
 
-import org.firstinspires.ftc.teamcode.subsystems.Constants;
-
 public class Servos
 {
-    public static Servo verticalRotate;
-    public static Servo horizontalRotate;
-    public static Servo clawRotate;
+    //Expansion Hub
+    public static Servo linkageLeft;
+    public static Servo linkageRight;
+    public static Servo rotateBody;
+    public static Servo rotateHead;
+    public static Servo rotateClaw;
+    public static Servo claw;
+
+    //Control Hub
+    public static Servo rotateAxis;
+    public static Servo rotateBackBody;
+    public static Servo rotateBackClaw;
+    public static Servo backClaw;
 
     public static void init(HardwareMap hardwareMap) {
         try
         {
-            horizontalRotate = hardwareMap.get(Servo.class, "horizontal");
-            verticalRotate = hardwareMap.get(Servo.class, "vertical");
-            clawRotate = hardwareMap.get(Servo.class, "claw");
+            linkageLeft = hardwareMap.get(Servo.class, "linkageLeft");
+            linkageRight = hardwareMap.get(Servo.class, "linkageRight");
+            rotateBody = hardwareMap.get(Servo.class, "rotateBody");
+            rotateHead = hardwareMap.get(Servo.class, "rotateHead");
+            rotateClaw = hardwareMap.get(Servo.class, "rotateClaw");
+            claw = hardwareMap.get(Servo.class, "claw");
 
-//            horizontalRotate.scaleRange(Constants.INTAKE_CLAW.HORIZONTAL_MIN, Constants.INTAKE_CLAW.HORIZONTAL_MAX);
-//            verticalRotate.scaleRange(Constants.INTAKE_CLAW.VERTICAL_MIN, Constants.INTAKE_CLAW.VERTICAL_MAX);
-//            clawRotate.scaleRange(Constants.INTAKE_CLAW.CLOSED, Constants.INTAKE_CLAW.OPEN);
+            rotateAxis = hardwareMap.get(Servo.class, "rotateAxis");
+            rotateBackBody = hardwareMap.get(Servo.class, "rotateBackBody");
+            rotateBackClaw = hardwareMap.get(Servo.class, "rotateBackClaw");
+            backClaw = hardwareMap.get(Servo.class, "backClaw");
         }
         catch (Exception ignore) {}
     }

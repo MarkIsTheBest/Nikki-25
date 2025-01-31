@@ -1,6 +1,6 @@
 package tests;
 
-import static org.firstinspires.ftc.teamcode.subsystems.Func.SetMotorPosition;
+import static subsystems.Func.SetMotorPosition;
 
 import com.acmerobotics.dashboard.FtcDashboard;
 import com.acmerobotics.dashboard.config.Config;
@@ -11,9 +11,8 @@ import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.Servo;
 
-import org.firstinspires.ftc.teamcode.subsystems.Debug;
-import org.firstinspires.ftc.teamcode.subsystems.hardware.Motors;
-import org.firstinspires.ftc.teamcode.subsystems.hardware.Servos;
+import subsystems.hardware.Motors;
+import subsystems.hardware.Servos;
 
 @TeleOp(name = "ServoMotorConfigTest", group = "Tests")
 @Config
@@ -34,8 +33,6 @@ public final class ServoMotorConfigTest extends LinearOpMode {
     public static class M_Sliders {
         public static int _4_ArmLeftPosition = 0;
         public static int _5_ArmRightPosition = 0;
-        public static int _6_IntakeExtendPosition = 0;
-        public static int _7_IntakeRotatePosition = 0;
     }
 
     // Servo configuration
@@ -43,8 +40,6 @@ public final class ServoMotorConfigTest extends LinearOpMode {
     private Servo servosEH[] = new Servo[SERVO_PIN_COUNT]; // Servos on Expansion Hub
 
     public static double servoPosition = 0;
-    private int multiplier = 1;
-
     public static int motorID;
     public static int servoIndex = 0;
     public static boolean isCH = true;
@@ -65,9 +60,6 @@ public final class ServoMotorConfigTest extends LinearOpMode {
         Servos.init(hardwareMap);
         Motors.init(hardwareMap);
 
-        // Set motor directions
-        Motors.intakeRotate.setDirection(DcMotorSimple.Direction.REVERSE);
-
         // Initialize all motors
         for (int i = 0; i < Motors.allMotors.length; i++) {
             if (Motors.allMotors[i] != null) {
@@ -75,52 +67,49 @@ public final class ServoMotorConfigTest extends LinearOpMode {
                 Motors.allMotors[i].setMode(DcMotor.RunMode.RUN_USING_ENCODER);
             }
         }
-        servosCH[0]= Servos.verticalRotate;
-        servosCH[1] = Servos.horizontalRotate;
-        servosCH[2] = Servos.clawRotate;
 
-       for (int i = 0; i<3; i++)
-        {
-            servosCH[i].scaleRange(0,1);
-        }
+        servosEH[0] = Servos.linkageLeft;
+        servosEH[1] = Servos.linkageRight;
+        servosEH[2] = Servos.rotateBody;
+        servosEH[3] = Servos.rotateHead;
+        servosEH[4] = Servos.rotateClaw;
+        servosEH[5] = Servos.claw;
 
-        Debug.init(telemetry, FtcDashboard.getInstance());
+        servosCH[0] = Servos.rotateAxis;
+        servosCH[1] = Servos.rotateBackClaw;
+        servosCH[2] = Servos.rotateBackClaw;
+        servosCH[3] = Servos.backClaw;
     }
 
     private void update() {
         // Motor control
         if (apply)
         {
-            servosCH[servoIndex].setPosition(servoPosition);
+            if(isCH)
+                servosCH[servoIndex].setPosition(servoPosition);
+            else servosEH[servoIndex].setPosition(servoPosition);
+
             switch (motorID) {
                 // Drive motors
-                case 0: SetMotorPosition((DcMotorEx) Motors.leftFront, M_Drive._0_LeftFrontPosition); break;
-                case 1: SetMotorPosition((DcMotorEx) Motors.rightFront, M_Drive._1_RightFrontPosition); break;
-                case 2: SetMotorPosition((DcMotorEx) Motors.leftRear, M_Drive._2_LeftBackPosition); break;
-                case 3: SetMotorPosition((DcMotorEx) Motors.rightRear, M_Drive._3_RightBackPosition); break;
+                case 0: SetMotorPosition(Motors.leftFront, M_Drive._0_LeftFrontPosition); break;
+                case 1: SetMotorPosition(Motors.rightFront, M_Drive._1_RightFrontPosition); break;
+                case 2: SetMotorPosition(Motors.leftRear, M_Drive._2_LeftBackPosition); break;
+                case 3: SetMotorPosition(Motors.rightRear, M_Drive._3_RightBackPosition); break;
                 // Slider motors
-                case 4: SetMotorPosition((DcMotorEx) Motors.armLeft, M_Sliders._4_ArmLeftPosition); break;
-                case 5: SetMotorPosition((DcMotorEx) Motors.armRight, M_Sliders._5_ArmRightPosition); break;
-                case 6: SetMotorPosition((DcMotorEx) Motors.intakeExtend, M_Sliders._6_IntakeExtendPosition); break;
-                case 7: SetMotorPosition((DcMotorEx) Motors.intakeRotate, M_Sliders._7_IntakeRotatePosition); break;
+                case 4: SetMotorPosition(Motors.verticalLeft, M_Sliders._4_ArmLeftPosition); break;
+                case 5: SetMotorPosition(Motors.verticalRight, M_Sliders._5_ArmRightPosition); break;
             }
             if(allVipers)
             {
-                SetMotorPosition((DcMotorEx) Motors.armLeft, M_Sliders._4_ArmLeftPosition);
-                SetMotorPosition((DcMotorEx) Motors.armRight, M_Sliders._5_ArmRightPosition);
-                SetMotorPosition((DcMotorEx) Motors.intakeExtend, M_Sliders._6_IntakeExtendPosition);
-                SetMotorPosition((DcMotorEx) Motors.intakeRotate, M_Sliders._7_IntakeRotatePosition);
-
+                SetMotorPosition(Motors.verticalLeft, M_Sliders._4_ArmLeftPosition);
+                SetMotorPosition(Motors.verticalRight, M_Sliders._5_ArmRightPosition);
             }
+
 
             apply = false;
         }
 
         // Debugging
-        Debug.log("motorIndex", servoIndex);
-        Debug.log("motorPosition", servoPosition);
-        Debug.log("isCH", isCH);
-        Debug.log("currentServoPosition", (isCH ? servosCH : servosEH)[servoIndex].getPosition());
-    }
+        }
 
 }
