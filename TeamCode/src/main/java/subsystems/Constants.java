@@ -20,7 +20,7 @@ public final class Constants
 
     public static class ROTATE_BACK_BODY
     {
-        public static double INIT = 0.3;
+        public static double INIT = 0.25;
         public static double TRANSFER = 0;
     }
 

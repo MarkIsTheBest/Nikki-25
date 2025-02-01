@@ -56,7 +56,10 @@ public class TeleOpTest extends LinearOpMode
         PREPARE_SPECIMEN,
         PICKUP_SPECIMEN,
         PREPARE_LEAVE_SPECIMEN,
-        LEAVE_SPECIMEN
+        LEAVE_SPECIMEN,
+        DO_TRANSFER,
+        TRANSFER2,
+        RAISE_VERTICAL
     }
 
     State intakeState = State.INIT;
@@ -128,12 +131,24 @@ public class TeleOpTest extends LinearOpMode
         if (isParallel) keepParallel();
 
         onDebug();
+
+        if(Input.onKeyDown("scorer_x", gamepad2.x))
+        {
+            verticalPos = 3250;
+        }
+        if(Input.onKeyDown("scorer_y", gamepad2.y))
+        {
+            verticalPos = 0;
+            linkagePos = Constants.LINKAGE.CLOSED;
+            rotateBodyPos = Constants.ROTATE_BODY.MAX;
+        }
     }
 
     private void onDebug()
     {
         debug.addData("CurrentState", intakeState);
         debug.addData("Timer", timer.seconds());
+        debug.addData("Motor Encoder Ticks", Motors.verticalLeft.getCurrentPosition());
         debug.update();
     }
 
@@ -163,7 +178,7 @@ public class TeleOpTest extends LinearOpMode
     private void checkStates()
     {
         if(isSpecimen && !attachSpecimen) specimenPickupStates();
-        else if (isSpecimen) specimenAttachStates();
+        else if (isSpecimen && attachSpecimen) specimenAttachStates();
         else sampleStates();
     }
 
@@ -220,33 +235,76 @@ public class TeleOpTest extends LinearOpMode
                     timer.reset();
                 lastState = intakeState;
 
-                if(timer.seconds() > 0.25) intakeState = State.HOLD_SAMPLE;
+                if(timer.seconds() > 0.25) intakeState = State.PICKUP_SPECIMEN;
                 break;
 
-            case HOLD_SAMPLE:
-                robotStates.holdSample();
-                lastState = intakeState;
+            case PICKUP_SPECIMEN:
+                robotStates.pickupSpecimen();
 
-                if(Input.onKeyDown("scorer_a", gamepad2.a)) intakeState = State.LEAVE_SAMPLE_OBSERVATION;
-                break;
-
-            case LEAVE_SAMPLE_OBSERVATION:
-                robotStates.leaveHuman();
-                if(lastState != State.LEAVE_SAMPLE_OBSERVATION)
+                if(lastState != State.PICKUP_SPECIMEN)
                     timer.reset();
                 lastState = intakeState;
 
-                if(timer.seconds() > 0.7) intakeState = State.CLOSE_CLAW;
+                if(Input.onKeyDown("scorer_a", gamepad2.a)) intakeState = State.RAISE_VERTICAL;
+                break;
+
+            case RAISE_VERTICAL:
+                robotStates.raiseVertical();
+
+                if(lastState != State.RAISE_VERTICAL)
+                    timer.reset();
+                lastState = intakeState;
+
+                if(Input.onKeyDown("scorer_a", gamepad2.a)) intakeState = State.TRANSFER;
+                break;
+
+            case TRANSFER:
+                robotStates.transfer();
+
+                if(lastState != State.TRANSFER)
+                    timer.reset();
+                lastState = intakeState;
+
+                if(Input.onKeyDown("scorer_a", gamepad2.a)) intakeState = State.TRANSFER2;
+                break;
+
+            case TRANSFER2:
+                robotStates.transfer2();
+
+                if(lastState != State.TRANSFER2)
+                    timer.reset();
+                lastState = intakeState;
+
+                if(Input.onKeyDown("scorer_a", gamepad2.a)) intakeState = State.DO_TRANSFER;
+                break;
+
+            case DO_TRANSFER:
+                robotStates.doTransfer();
+
+                if(lastState != State.DO_TRANSFER)
+                    timer.reset();
+                lastState = intakeState;
+
+                if(Input.onKeyDown("scorer_a", gamepad2.a)) intakeState = State.LEAVE_SAMPLE_BASKET;
+                break;
+
+            case LEAVE_SAMPLE_BASKET:
+                robotStates.leaveSampleBasket();
+                if(lastState != State.LEAVE_SAMPLE_BASKET)
+                    timer.reset();
+                lastState = intakeState;
+
+                if(Input.onKeyDown("scorer_a", gamepad2.a)) intakeState = State.CLOSE_CLAW;
                 break;
 
             case CLOSE_CLAW:
-                openFrontClaw(false);
+                backClawPos = 0.55;
                 lastState = intakeState;
                 if(lastState != State.CLOSE_CLAW)
                     timer.reset();
                 lastState = intakeState;
 
-                if(timer.seconds() > 0.2) intakeState = State.PREPARE_SAMPLE;
+                if(Input.onKeyDown("scorer_a", gamepad2.a)) intakeState = State.PREPARE_SAMPLE;
                 break;
         }
     }
@@ -256,15 +314,100 @@ public class TeleOpTest extends LinearOpMode
         switch (intakeState)
         {
             case PREPARE_SPECIMEN:
+                robotStates.prepareSpecimen();
+
+                lastState = intakeState;
+                if(Input.onKeyDown("scorer_a", gamepad2.a)) intakeState = State.CLOSE_CLAW;
                 break;
+
+            case CLOSE_CLAW:
+                openFrontClaw(false);
+
+                if(lastState != State.CLOSE_CLAW)
+                    timer.reset();
+                lastState = intakeState;
+
+                if(Input.onKeyDown("scorer_a", gamepad2.a)) intakeState = State.PICKUP_SPECIMEN;
+                break;
+
             case PICKUP_SPECIMEN:
+                robotStates.pickupSpecimen();
+
+                if(lastState != State.PICKUP_SPECIMEN)
+                    timer.reset();
+                lastState = intakeState;
+
+                if(Input.onKeyDown("scorer_a", gamepad2.a)) intakeState = State.RAISE_VERTICAL;
                 break;
+
+            case RAISE_VERTICAL:
+                robotStates.raiseVertical();
+
+                if(lastState != State.RAISE_VERTICAL)
+                    timer.reset();
+                lastState = intakeState;
+
+                if(Input.onKeyDown("scorer_a", gamepad2.a)) intakeState = State.TRANSFER;
+                break;
+
             case TRANSFER:
+                robotStates.transfer();
+
+                if(lastState != State.TRANSFER)
+                    timer.reset();
+                lastState = intakeState;
+
+                if(Input.onKeyDown("scorer_a", gamepad2.a)) intakeState = State.TRANSFER2;
                 break;
+
+            case TRANSFER2:
+                robotStates.transfer2();
+
+                if(lastState != State.TRANSFER2)
+                    timer.reset();
+                lastState = intakeState;
+
+                if(Input.onKeyDown("scorer_a", gamepad2.a)) intakeState = State.DO_TRANSFER;
+                break;
+
+            case DO_TRANSFER:
+                robotStates.doTransfer();
+
+                if(lastState != State.DO_TRANSFER)
+                    timer.reset();
+                lastState = intakeState;
+
+                if(Input.onKeyDown("scorer_a", gamepad2.a)) intakeState = State.PREPARE_LEAVE_SPECIMEN;
+                break;
+
             case PREPARE_LEAVE_SPECIMEN:
+                robotStates.prepareLeaveSpecimen();
+
+                lastState = intakeState;
+
+                if(Input.onKeyDown("scorer_a", gamepad2.a)) intakeState = State.LEAVE_SPECIMEN;
                 break;
+
             case LEAVE_SPECIMEN:
+                robotStates.leaveSpecimen();
+
+                lastState = intakeState;
+                if(lastState != State.DO_TRANSFER)
+                    timer.reset();
+                lastState = intakeState;
+
+                if(Input.onKeyDown("scorer_a", gamepad2.a)) intakeState = State.OPEN_CLAW;
                 break;
+
+            case OPEN_CLAW:
+                openBackClaw(false);
+
+                if(lastState != State.OPEN_CLAW)
+                    timer.reset();
+                lastState = intakeState;
+
+                if(Input.onKeyDown("scorer_a", gamepad2.a)) intakeState = State.PREPARE_SPECIMEN;
+
         }
     }
 
@@ -281,13 +424,13 @@ public class TeleOpTest extends LinearOpMode
         Servos.rotateBackClaw.setPosition(rotateBackClawPos);
         Servos.backClaw.setPosition(backClawPos);
 
-        //Func.SetMotorPosition(Motors.verticalLeft, verticalPos);
-        //Func.SetMotorPosition(Motors.verticalRight, verticalPos);
+        Func.SetMotorPosition(Motors.verticalLeft, verticalPos);
+        Func.SetMotorPosition(Motors.verticalRight, verticalPos);
     }
 
     private double getParallel(double x)
     {
-        return 1.1 * x + 0.19;
+        return 1.1 * x + 0.15;
     }
 
     private void openFrontClaw(boolean value)
@@ -298,8 +441,8 @@ public class TeleOpTest extends LinearOpMode
 
     private void openBackClaw(boolean value)
     {
-        if (value) backClawPos = 0.4;
-        else backClawPos = 0.26;
+        if (value) backClawPos = 0.26;
+        else backClawPos = 0.4;
     }
 
     private class STATES
@@ -326,15 +469,17 @@ public class TeleOpTest extends LinearOpMode
             {
                 rotateClawPos = Constants.ROTATE_CLAW.INIT;
                 linkagePos = Constants.LINKAGE.CLOSED;
+                verticalPos = Constants.VERTICAL.MIN;
+                rotateBodyPos = 0.38;
             }
             rotateAxisPos = Constants.ROTATE_AXIS.MID;
             rotateHeadPos = Constants.ROTATE_HEAD.INIT;
-            verticalPos = Constants.VERTICAL.MIN;
+
             openFrontClaw(false);
-            openBackClaw(false);
+            openBackClaw(true);
             rotateBackBodyPos = Constants.ROTATE_BACK_BODY.INIT;
             rotateBackClawPos = Constants.ROTATE_BACK_CLAW.INIT;
-            rotateBodyPos = 0.38;
+
         }
 
         private void pickupSample()
@@ -368,30 +513,79 @@ public class TeleOpTest extends LinearOpMode
             rotateBodyPos = 0.45;
         }
 
-
         private void prepareSpecimen()
         {
-
+            isParallel = false;
+            openFrontClaw(true);
+            backClawPos = 0.55;
+            rotateBodyPos = 0.4;
+            rotateHeadPos = 0.3;
+            rotateClawPos = 0.34;
+            rotateAxisPos = Constants.ROTATE_AXIS.MID;
+            rotateBackClawPos = 0.17;
         }
 
         private void pickupSpecimen()
         {
+            rotateBodyPos = 0.5;
+            rotateClawPos = 0.34;
+        }
 
+        private void raiseVertical()
+        {
+            verticalPos = 1100;
+            backClawPos = 0.55;
         }
 
         private void transfer()
         {
+            isParallel = false;
+            rotateAxisPos = Constants.ROTATE_AXIS.MID;
+            rotateHeadPos = 0.25;
+            rotateBodyPos = 0.6;
+            rotateClawPos = 0;
+            linkagePos = 0.61;
+            backClawPos = 0.55;
+        }
 
+        private void transfer2()
+        {
+            rotateBackBodyPos = 0.45;
+        }
+
+        private void doTransfer()
+        {
+            backClawPos = 0.4;
+            openFrontClaw(false);
         }
 
         private void prepareLeaveSpecimen()
         {
+            rotateBackBodyPos = 0.17;
+            rotateBackClawPos = 0.15;
+            verticalPos = 1000;
 
+            isParallel = true;
+            if(State.PREPARE_SAMPLE != lastState)
+            {
+                rotateClawPos = Constants.ROTATE_CLAW.INIT;
+                linkagePos = Constants.LINKAGE.CLOSED;
+            }
+            rotateAxisPos = Constants.ROTATE_AXIS.MID;
+            rotateHeadPos = Constants.ROTATE_HEAD.INIT;
+            rotateBodyPos = 0.38;
         }
 
         private void leaveSpecimen()
         {
+            verticalPos = 0;
+        }
 
+        private void leaveSampleBasket()
+        {
+            rotateBackBodyPos = 0.17;
+            rotateBackClawPos = 0.17;
+            verticalPos = 3250;
         }
     }
 }
