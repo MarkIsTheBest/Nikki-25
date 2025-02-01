@@ -68,17 +68,18 @@ public final class ServoMotorConfigTest extends LinearOpMode {
             }
         }
 
-        servosEH[0] = Servos.linkageLeft;
-        servosEH[1] = Servos.linkageRight;
-        servosEH[2] = Servos.rotateBody;
-        servosEH[3] = Servos.rotateHead;
-        servosEH[4] = Servos.rotateClaw;
-        servosEH[5] = Servos.claw;
+        servosEH[0] = Servos.rotateBody;
+        servosEH[1] = Servos.rotateBackBody;
+        servosEH[2] = Servos.rotateAxis;
+        servosEH[3] = Servos.claw;
+        servosEH[4] = Servos.linkageRight;
+        servosEH[5] = Servos.linkageLeft;
 
-        servosCH[0] = Servos.rotateAxis;
-        servosCH[1] = Servos.rotateBackClaw;
-        servosCH[2] = Servos.rotateBackClaw;
-        servosCH[3] = Servos.backClaw;
+        servosCH[0] = Servos.rotateHead;
+        servosCH[2] = Servos.rotateClaw;
+        servosCH[4] = Servos.backClaw;
+        servosCH[5] = Servos.rotateBackClaw;
+
     }
 
     private void update() {

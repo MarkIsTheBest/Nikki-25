@@ -5,15 +5,12 @@ import com.qualcomm.robotcore.hardware.Servo;
 
 public class Servos
 {
-    //Expansion Hub
     public static Servo linkageLeft;
     public static Servo linkageRight;
     public static Servo rotateBody;
     public static Servo rotateHead;
     public static Servo rotateClaw;
     public static Servo claw;
-
-    //Control Hub
     public static Servo rotateAxis;
     public static Servo rotateBackBody;
     public static Servo rotateBackClaw;
@@ -28,12 +25,13 @@ public class Servos
             rotateHead = hardwareMap.get(Servo.class, "rotateHead");
             rotateClaw = hardwareMap.get(Servo.class, "rotateClaw");
             claw = hardwareMap.get(Servo.class, "claw");
-
             rotateAxis = hardwareMap.get(Servo.class, "rotateAxis");
             rotateBackBody = hardwareMap.get(Servo.class, "rotateBackBody");
             rotateBackClaw = hardwareMap.get(Servo.class, "rotateBackClaw");
             backClaw = hardwareMap.get(Servo.class, "backClaw");
         }
         catch (Exception ignore) {}
+
+        linkageRight.setDirection(Servo.Direction.REVERSE);
     }
 }
