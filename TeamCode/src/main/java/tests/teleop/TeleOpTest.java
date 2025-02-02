@@ -430,7 +430,7 @@ public class TeleOpTest extends LinearOpMode
 
     private double getParallel(double x)
     {
-        return 1.1 * x + 0.15;
+        return 1.1 * x + 0.29;
     }
 
     private void openFrontClaw(boolean value)
@@ -452,7 +452,7 @@ public class TeleOpTest extends LinearOpMode
             isParallel = false;
             rotateAxisPos = Constants.ROTATE_AXIS.MID;
             rotateClawPos = Constants.ROTATE_CLAW.INIT;
-            rotateBodyPos = Constants.ROTATE_BODY.MAX;
+            rotateBodyPos = 0.73; //Constants.ROTATE_BODY.MAX;
             rotateHeadPos = Constants.ROTATE_HEAD.INIT;
             verticalPos = Constants.VERTICAL.MIN;
             linkagePos = Constants.LINKAGE.CLOSED;
@@ -470,10 +470,10 @@ public class TeleOpTest extends LinearOpMode
                 rotateClawPos = Constants.ROTATE_CLAW.INIT;
                 linkagePos = Constants.LINKAGE.CLOSED;
                 verticalPos = Constants.VERTICAL.MIN;
-                rotateBodyPos = 0.38;
+                rotateBodyPos = 0.23;
             }
             rotateAxisPos = Constants.ROTATE_AXIS.MID;
-            rotateHeadPos = Constants.ROTATE_HEAD.INIT;
+            rotateHeadPos = 0.5;//Constants.ROTATE_HEAD.INIT;
 
             openFrontClaw(false);
             openBackClaw(true);
@@ -485,7 +485,7 @@ public class TeleOpTest extends LinearOpMode
         private void pickupSample()
         {
             isParallel = true;
-            rotateBodyPos = 0.29;
+            rotateBodyPos = 0.15;
         }
 
         private void holdSample()
@@ -541,8 +541,8 @@ public class TeleOpTest extends LinearOpMode
         {
             isParallel = false;
             rotateAxisPos = Constants.ROTATE_AXIS.MID;
-            rotateHeadPos = 0.25;
-            rotateBodyPos = 0.6;
+            rotateHeadPos = 0.25;//
+            rotateBodyPos = 0.48;//
             rotateClawPos = 0;
             linkagePos = 0.61;
             backClawPos = 0.55;
