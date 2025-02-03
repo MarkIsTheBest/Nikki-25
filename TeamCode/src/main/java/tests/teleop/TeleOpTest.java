@@ -124,6 +124,7 @@ public class TeleOpTest extends LinearOpMode
 
         if(Input.onKeyDown("scorer_b",gamepad2.b)) intakeState = State.PREPARE_SAMPLE;
 
+        if(Input.onKeyDown("scorer_d_pad_up",gamepad2.dpad_up)) isSpecimen = false;
         manualManipulation();
 
         updatePositions();
@@ -493,7 +494,7 @@ public class TeleOpTest extends LinearOpMode
             isParallel = false;
             if(State.HOLD_SAMPLE != lastState)
             {
-                rotateClawPos = 0.35;
+                rotateClawPos = 0.21;
                 linkagePos = Constants.LINKAGE.CLOSED;
             }
             rotateAxisPos = Constants.ROTATE_AXIS.MID;
@@ -506,7 +507,7 @@ public class TeleOpTest extends LinearOpMode
             isParallel = true;
             if(State.LEAVE_SAMPLE_OBSERVATION != lastState)
             {
-                rotateClawPos = 0.34;
+                rotateClawPos = 0.21;
                 linkagePos = Constants.LINKAGE.OPENED;
             }
             rotateAxisPos = Constants.ROTATE_AXIS.MID;
@@ -520,7 +521,7 @@ public class TeleOpTest extends LinearOpMode
             backClawPos = 0.55;
             rotateBodyPos = 0.4;
             rotateHeadPos = 0.3;
-            rotateClawPos = 0.34;
+            rotateClawPos = 0.21;
             rotateAxisPos = Constants.ROTATE_AXIS.MID;
             rotateBackClawPos = 0.17;
         }
@@ -528,7 +529,7 @@ public class TeleOpTest extends LinearOpMode
         private void pickupSpecimen()
         {
             rotateBodyPos = 0.5;
-            rotateClawPos = 0.34;
+            rotateClawPos = 0.21;
         }
 
         private void raiseVertical()
@@ -543,7 +544,7 @@ public class TeleOpTest extends LinearOpMode
             rotateAxisPos = Constants.ROTATE_AXIS.MID;
             rotateHeadPos = 0.25;//
             rotateBodyPos = 0.48;//
-            rotateClawPos = 0;
+            rotateClawPos = 0.55;
             linkagePos = 0.61;
             backClawPos = 0.55;
         }

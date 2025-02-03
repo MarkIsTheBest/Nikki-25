@@ -40,7 +40,7 @@ public final class Constants
     {
         public static double MIN = 0;
         public static double MAX = 1;
-        public static double INIT = 0.34;
+        public static double INIT = 0.21;
         public static double TRANSFER = 0;
     }
 
