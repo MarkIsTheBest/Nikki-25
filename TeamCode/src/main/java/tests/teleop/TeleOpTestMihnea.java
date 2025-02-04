@@ -17,7 +17,7 @@ import subsystems.hardware.Servos;
 
 @Config
 @TeleOp
-public class TeleOpTest extends LinearOpMode
+public class TeleOpTestMihnea extends LinearOpMode
 {
     private double linkagePos;
     private double rotateAxisPos;
@@ -69,12 +69,10 @@ public class TeleOpTest extends LinearOpMode
 
     private void handleMovement()
     {
-        double dpadYInput = gamepad1.dpad_up ? 0.35 : (gamepad1.dpad_down ? -0.35 : 0);
-        double dpadXInput = gamepad1.dpad_right ? 0.35 : (gamepad1.dpad_left ? -0.35 : 0);
 
         int invertInput = Input.isDown("chassis_right_bumper", gamepad1.right_bumper) ? 1 : -1;
-        double forwardInput = (-gamepad1.left_stick_y + dpadYInput) * invertInput;
-        double lateralInput = (gamepad1.left_stick_x * 1.1 + dpadXInput) * invertInput;
+        double forwardInput = (-gamepad1.left_stick_y) * invertInput;
+        double lateralInput = (gamepad1.left_stick_x * 1.1) * invertInput;
         double angularInput = -gamepad1.right_stick_x;
 
         double denominator = Math.max(Math.abs(forwardInput) + Math.abs(lateralInput) + Math.abs(angularInput), 1);
@@ -126,8 +124,8 @@ public class TeleOpTest extends LinearOpMode
 
         manualManipulation();
 
-        if(Input.onKeyDown("scorer_b",gamepad2.b)) intakeState = isSpecimen ? State.PREPARE_SPECIMEN : State.PREPARE_SAMPLE;
-        if(Input.onKeyDown("scorer_b",gamepad2.dpad_up)) {
+        if(Input.onKeyDown("scorer_b",gamepad1.b)) intakeState = isSpecimen ? State.PREPARE_SPECIMEN : State.PREPARE_SAMPLE;
+        if(Input.onKeyDown("scorer_b",gamepad1.dpad_up)) {
             isSpecimen=!isSpecimen;
             intakeState = isSpecimen ? State.PREPARE_SPECIMEN : State.PREPARE_SAMPLE;
         }
@@ -139,11 +137,11 @@ public class TeleOpTest extends LinearOpMode
 
         onDebug();
 
-        if(Input.onKeyDown("scorer_x", gamepad2.x))
+        if(Input.onKeyDown("scorer_x", gamepad1.x))
         {
             verticalPos = 1500;
         }
-        if(Input.onKeyDown("scorer_y", gamepad2.y))
+        if(Input.onKeyDown("scorer_y", gamepad1.y))
         {
             verticalPos = 800;
             linkagePos = Constants.LINKAGE.CLOSED;
@@ -167,16 +165,16 @@ public class TeleOpTest extends LinearOpMode
 
     private void manualManipulation()
     {
-        //double angleJoystick = Math.toDegrees(Math.atan2(gamepad2.right_stick_y, gamepad2.right_stick_x));
+        //double angleJoystick = Math.toDegrees(Math.atan2(gamepad1.right_stick_y, gamepad1.right_stick_x));
 
         double timeStep = deltaTime.milliseconds() / 1000.0; // Convert to seconds
         deltaTime.reset();
 
-        double linkageInput = gamepad2.left_stick_y;
-        double clawRotateInput = gamepad2.right_trigger - gamepad2.left_trigger;
+        double linkageInput = gamepad1.right_stick_y;
+        double clawRotateInput = gamepad1.right_trigger - gamepad1.left_trigger;
 
         linkagePos += timeStep * 0.25 * linkageInput;
-       // rotateClawPos = (angleJoystick/180) * 0.7;
+        // rotateClawPos = (angleJoystick/180) * 0.7;
         rotateClawPos += timeStep * 2 * clawRotateInput;
 
         linkagePos = Math.max(Constants.LINKAGE.OPENED,Math.min(Constants.LINKAGE.CLOSED,linkagePos));
@@ -199,7 +197,7 @@ public class TeleOpTest extends LinearOpMode
                 robotStates.prepareSample();
                 lastState = intakeState;
 
-                if(Input.onKeyDown("scorer_a", gamepad2.a)) intakeState = State.PICKUP_SAMPLE;
+                if(Input.onKeyDown("scorer_a", gamepad1.a)) intakeState = State.PICKUP_SAMPLE;
                 break;
 
             case PICKUP_SAMPLE:
@@ -227,7 +225,7 @@ public class TeleOpTest extends LinearOpMode
                     timer.reset();
                 lastState = intakeState;
 
-                if(Input.onKeyDown("scorer_a", gamepad2.a)) intakeState = State.RAISE_VERTICAL;
+                if(Input.onKeyDown("scorer_a", gamepad1.a)) intakeState = State.RAISE_VERTICAL;
                 break;
 
             case RAISE_VERTICAL:
@@ -237,7 +235,7 @@ public class TeleOpTest extends LinearOpMode
                     timer.reset();
                 lastState = intakeState;
 
-                if(Input.onKeyDown("scorer_a", gamepad2.a)) intakeState = State.TRANSFER;
+                if(Input.onKeyDown("scorer_a", gamepad1.a)) intakeState = State.TRANSFER;
                 break;
 
             case TRANSFER:
@@ -247,7 +245,7 @@ public class TeleOpTest extends LinearOpMode
                     timer.reset();
                 lastState = intakeState;
 
-                if(Input.onKeyDown("scorer_a", gamepad2.a)) intakeState = State.TRANSFER2;
+                if(Input.onKeyDown("scorer_a", gamepad1.a)) intakeState = State.TRANSFER2;
                 break;
 
             case TRANSFER2:
@@ -257,7 +255,7 @@ public class TeleOpTest extends LinearOpMode
                     timer.reset();
                 lastState = intakeState;
 
-                if(Input.onKeyDown("scorer_a", gamepad2.a)) intakeState = State.DO_TRANSFER;
+                if(Input.onKeyDown("scorer_a", gamepad1.a)) intakeState = State.DO_TRANSFER;
                 break;
 
             case DO_TRANSFER:
@@ -267,7 +265,7 @@ public class TeleOpTest extends LinearOpMode
                     timer.reset();
                 lastState = intakeState;
 
-                if(Input.onKeyDown("scorer_a", gamepad2.a)) intakeState = State.LEAVE_SAMPLE_BASKET;
+                if(Input.onKeyDown("scorer_a", gamepad1.a)) intakeState = State.LEAVE_SAMPLE_BASKET;
                 break;
 
             case LEAVE_SAMPLE_BASKET:
@@ -276,7 +274,7 @@ public class TeleOpTest extends LinearOpMode
                     timer.reset();
                 lastState = intakeState;
 
-                if(Input.onKeyDown("scorer_a", gamepad2.a)) intakeState = State.CLOSE_CLAW;
+                if(Input.onKeyDown("scorer_a", gamepad1.a)) intakeState = State.CLOSE_CLAW;
                 break;
 
             case CLOSE_CLAW:
@@ -286,7 +284,7 @@ public class TeleOpTest extends LinearOpMode
                     timer.reset();
                 lastState = intakeState;
 
-                if(Input.onKeyDown("scorer_a", gamepad2.a)) intakeState = State.PREPARE_SAMPLE;
+                if(Input.onKeyDown("scorer_a", gamepad1.a)) intakeState = State.PREPARE_SAMPLE;
                 break;
         }
     }
@@ -299,7 +297,7 @@ public class TeleOpTest extends LinearOpMode
                 robotStates.prepareSpecimen();
                 lastState = intakeState;
 
-                if(Input.onKeyDown("scorer_a", gamepad2.a)) intakeState = State.PICKUP_SAMPLE;
+                if(Input.onKeyDown("scorer_a", gamepad1.a)) intakeState = State.PICKUP_SAMPLE;
                 break;
 
             case PICKUP_SAMPLE:
@@ -327,7 +325,7 @@ public class TeleOpTest extends LinearOpMode
                     timer.reset();
                 lastState = intakeState;
 
-                if(Input.onKeyDown("scorer_a", gamepad2.a)) intakeState = State.RAISE_VERTICAL;
+                if(Input.onKeyDown("scorer_a", gamepad1.a)) intakeState = State.RAISE_VERTICAL;
                 break;
 
             case RAISE_VERTICAL:
@@ -337,7 +335,7 @@ public class TeleOpTest extends LinearOpMode
                     timer.reset();
                 lastState = intakeState;
 
-                if(Input.onKeyDown("scorer_a", gamepad2.a)) intakeState = State.TRANSFER;
+                if(Input.onKeyDown("scorer_a", gamepad1.a)) intakeState = State.TRANSFER;
                 break;
 
             case TRANSFER:
@@ -347,7 +345,7 @@ public class TeleOpTest extends LinearOpMode
                     timer.reset();
                 lastState = intakeState;
 
-                if(Input.onKeyDown("scorer_a", gamepad2.a)) intakeState = State.TRANSFER2;
+                if(Input.onKeyDown("scorer_a", gamepad1.a)) intakeState = State.TRANSFER2;
                 break;
 
             case TRANSFER2:
@@ -357,7 +355,7 @@ public class TeleOpTest extends LinearOpMode
                     timer.reset();
                 lastState = intakeState;
 
-                if(Input.onKeyDown("scorer_a", gamepad2.a)) intakeState = State.DO_TRANSFER;
+                if(Input.onKeyDown("scorer_a", gamepad1.a)) intakeState = State.DO_TRANSFER;
                 break;
 
             case DO_TRANSFER:
@@ -367,7 +365,7 @@ public class TeleOpTest extends LinearOpMode
                     timer.reset();
                 lastState = intakeState;
 
-                if(Input.onKeyDown("scorer_a", gamepad2.a)) intakeState = State.LEAVE_SPECIMEN_RANK;
+                if(Input.onKeyDown("scorer_a", gamepad1.a)) intakeState = State.LEAVE_SPECIMEN_RANK;
                 break;
 
             case LEAVE_SPECIMEN_RANK:
@@ -376,7 +374,7 @@ public class TeleOpTest extends LinearOpMode
                     timer.reset();
                 lastState = intakeState;
 
-                if(Input.onKeyDown("scorer_a", gamepad2.a)) intakeState = State.LOWER_VERTICAL;
+                if(Input.onKeyDown("scorer_a", gamepad1.a)) intakeState = State.LOWER_VERTICAL;
                 break;
 
             case LOWER_VERTICAL:
@@ -394,7 +392,7 @@ public class TeleOpTest extends LinearOpMode
                     timer.reset();
                 lastState = intakeState;
 
-                if(Input.onKeyDown("scorer_a", gamepad2.a)) intakeState = State.PREPARE_SPECIMEN;
+                if(Input.onKeyDown("scorer_a", gamepad1.a)) intakeState = State.PREPARE_SPECIMEN;
                 break;
         }
     }

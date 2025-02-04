@@ -49,6 +49,8 @@ public class Motors
     private static void setDirection()
     {
         verticalLeft.setDirection(DcMotorSimple.Direction.REVERSE);
+        verticalLeft.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        verticalRight.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
     }
 
 
