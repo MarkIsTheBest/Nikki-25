@@ -476,31 +476,6 @@ public class TeleOpTestMihnea extends LinearOpMode
             rotateBodyPos = 0.15;
         }
 
-        private void holdSample()
-        {
-            isParallel = false;
-            if(State.HOLD_SAMPLE != lastState)
-            {
-                rotateClawPos = 0.21;
-                linkagePos = Constants.LINKAGE.CLOSED;
-            }
-            rotateAxisPos = Constants.ROTATE_AXIS.MID;
-            rotateBodyPos = 0.8;
-            rotateHeadPos = 0.8;
-        }
-
-        private void leaveHuman()
-        {
-            isParallel = true;
-            if(State.LEAVE_SAMPLE_OBSERVATION != lastState)
-            {
-                rotateClawPos = 0.21;
-                linkagePos = Constants.LINKAGE.OPENED;
-            }
-            rotateAxisPos = Constants.ROTATE_AXIS.MID;
-            rotateBodyPos = 0.45;
-        }
-
         private void prepareSpecimen()
         {
             isParallel = true;

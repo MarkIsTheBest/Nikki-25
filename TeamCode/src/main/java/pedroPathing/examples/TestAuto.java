@@ -33,13 +33,20 @@ public class TestAuto extends OpMode
     PathChain path;
     int pathState;
     Timer pathTimer;
-    private final Pose startPose = new Pose(8.267223382045929, 47.94989561586639, Math.toRadians(180));  // Starting position
-    private final Pose scorePose = new Pose(39.53235908141963, 67.49060542797496, Math.toRadians(180)); // Scoring position
-    private final Pose pickup1PoseControl= new Pose(20,35,Math.toRadians(180));
+    private final Pose startPose = new Pose(8.842105263157894, 52.10526315789473, Math.toRadians(180));  // Starting position
+    private final Pose scorePose = new Pose(32, 66, Math.toRadians(180)); // Scoring position
+    private final Pose pickup1PoseControl= new Pose(40,20,Math.toRadians(270));
 
-    private final Pose pickup1Pose = new Pose(58.321503131524004, 33.219206680584556, Math.toRadians(180));// Push Sample 1
+    private final Pose pickup1Pose = new Pose(65.21052631578948, 46, Math.toRadians(270));// Push Sample 1
+    private final Pose scorePush1Pose = new Pose(22, 30, Math.toRadians(270));
+    private final Pose scorePush1Control = new Pose(60, 30, Math.toRadians(270));
+    private final Pose scoreAlign2Pose = new Pose(57.5, 29, Math.toRadians(270));
+    private final Pose scorePush2Pose = new Pose(22, 20, Math.toRadians(270));
+    private final Pose scoreAlign3Pose = new Pose(57.5, 22, Math.toRadians(270));
+    private final Pose scorePush3Pose = new Pose(22, 10, Math.toRadians(270));
+
     public Path scorePreload, park;
-    public PathChain grabPickup1,scorePickup1;
+    public PathChain grabPickup1,scorePush1,scoreAlign2,scorePush2,scoreAlign3,scorePush3;
 
     @Override
     public void init()
@@ -53,17 +60,13 @@ public class TestAuto extends OpMode
     }
 
     @Override
-    public void start() {
-        follower.followPath(path, true);
-    }
-
-    @Override
     public void loop()
     {
         follower.update();
         autonomousPathUpdate();
         telemetry.addData("Path State", pathState);
         telemetry.addData("Position", follower.getPose().toString());
+        telemetry.addData("Timer",pathTimer.getElapsedTimeSeconds());
         telemetry.update();
     }
     public void buildPaths(){
@@ -72,6 +75,28 @@ public class TestAuto extends OpMode
         grabPickup1 = follower.pathBuilder()
                 .addPath(new BezierCurve(new Point(scorePose),new Point(pickup1PoseControl), new Point(pickup1Pose)))
                 .setLinearHeadingInterpolation(scorePose.getHeading(), pickup1Pose.getHeading())
+                .setPathEndTimeoutConstraint(10.0)
+                .build();
+        scorePush1 = follower.pathBuilder()
+                .addPath(new BezierCurve(new Point(pickup1Pose),new Point(scorePush1Control), new Point(scorePush1Pose)))
+                .setLinearHeadingInterpolation(pickup1Pose.getHeading(), scorePush1Pose.getHeading())
+                .setPathEndTimeoutConstraint(10.0)
+                .build();
+        scoreAlign2=follower.pathBuilder()
+                .addPath(new BezierLine(new Point(scorePush1Pose), new Point(scoreAlign2Pose)))
+                .setLinearHeadingInterpolation(scorePush1Pose.getHeading(),scoreAlign2Pose.getHeading())
+                .build();
+        scorePush2=follower.pathBuilder()
+                .addPath(new BezierLine(new Point(scoreAlign2Pose), new Point(scorePush2Pose)))
+                .setLinearHeadingInterpolation(scoreAlign2Pose.getHeading(),scorePush2Pose.getHeading())
+                .build();
+        scoreAlign3=follower.pathBuilder()
+                .addPath(new BezierLine(new Point(scorePush2Pose), new Point(scoreAlign3Pose)))
+                .setLinearHeadingInterpolation(scorePush2Pose.getHeading(),scoreAlign3Pose.getHeading())
+                .build();
+        scorePush3=follower.pathBuilder()
+                .addPath(new BezierLine(new Point(scoreAlign3Pose), new Point(scorePush3Pose)))
+                .setLinearHeadingInterpolation(scoreAlign3Pose.getHeading(),scorePush3Pose.getHeading())
                 .build();
 
     }
@@ -82,23 +107,55 @@ public class TestAuto extends OpMode
     public void autonomousPathUpdate() {
         switch (pathState) {
             case 0: // Move from start to scoring position
-                follower.followPath(scorePreload);
+                follower.followPath(scorePreload,true);
                 setPathState(1);
                 break;
 
             case 1: // Wait until the robot is near the scoring position
                 if (!follower.isBusy()) {
-                    follower.followPath(grabPickup1, true);
+                    follower.followPath(grabPickup1,true);
                     setPathState(2);
                 }
                 break;
 
             case 2: // Wait until the robot is near the first sample pickup position
                 if (!follower.isBusy()) {
-                    follower.followPath(scorePickup1, true);
-                    setPathState(-1);
+                    follower.followPath(scorePush1,true);
+                    setPathState(3);
                 }
                 break;
+            case 3: // Wait until the robot is near the first sample pickup position
+                if (!follower.isBusy()) {
+                    follower.followPath(scoreAlign2,true);
+                    setPathState(4);
+                }
+                break;
+            case 4: // Wait until the robot is near the first sample pickup position
+                if (!follower.isBusy()) {
+                    follower.followPath(scorePush2,true);
+                    setPathState(5);
+                }
+                break;
+            case 5: // Wait until the robot is near the first sample pickup position
+                if (!follower.isBusy()) {
+                    follower.followPath(scoreAlign3,true);
+                    setPathState(6);
+                }
+                break;
+            case 6: // Wait until the robot is near the first sample pickup position
+                if (!follower.isBusy()) {
+                    follower.followPath(scorePush3,true);
+                    setPathState(8);
+                }
+                break;
+            case 8:
+                if(!follower.isBusy()){
+                    if(pathTimer.getElapsedTimeSeconds()>3.0){
+                        requestOpModeStop();
+                        setPathState(-1);
+                    }
+                }
         }
     }
 }
+

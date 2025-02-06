@@ -352,7 +352,7 @@ public class TeleOpTest extends LinearOpMode
                 break;
 
             case TRANSFER2:
-                robotStates.transfer2();
+                robotStates.transfer2Sample();
 
                 if(lastState != State.TRANSFER2)
                     timer.reset();
@@ -397,7 +397,6 @@ public class TeleOpTest extends LinearOpMode
                 break;
             case CLOSE_CLAW:
                 backClawPos = 0.55;
-                lastState = intakeState;
                 if(lastState != State.CLOSE_CLAW)
                     timer.reset();
                 lastState = intakeState;
@@ -491,30 +490,6 @@ public class TeleOpTest extends LinearOpMode
             rotateBodyPos = 0.15;
         }
 
-        private void holdSample()
-        {
-            isParallel = false;
-            if(State.HOLD_SAMPLE != lastState)
-            {
-                rotateClawPos = 0.21;
-                linkagePos = Constants.LINKAGE.CLOSED;
-            }
-            rotateAxisPos = Constants.ROTATE_AXIS.MID;
-            rotateBodyPos = 0.8;
-            rotateHeadPos = 0.8;
-        }
-
-        private void leaveHuman()
-        {
-            isParallel = true;
-            if(State.LEAVE_SAMPLE_OBSERVATION != lastState)
-            {
-                rotateClawPos = 0.21;
-                linkagePos = Constants.LINKAGE.OPENED;
-            }
-            rotateAxisPos = Constants.ROTATE_AXIS.MID;
-            rotateBodyPos = 0.45;
-        }
 
         private void prepareSpecimen()
         {
@@ -560,7 +535,8 @@ public class TeleOpTest extends LinearOpMode
             rotateHeadPos = 0.25;//
             rotateBodyPos = 0.48;//
             rotateClawPos = 0.6;
-            linkagePos = 0.60;
+            linkagePos = 0.62;
+            backClawPos = 0.55;
             rotateBackClawPos=0.72;
         }
         private void transferSpecimen()
@@ -572,8 +548,10 @@ public class TeleOpTest extends LinearOpMode
             rotateClawPos = Constants.ROTATE_CLAW.INIT;
             linkagePos = 0.53;
         }
-
-        private void transfer2()
+        private void transfer2() {
+            rotateBackBodyPos = 0.44;
+        }
+        private void transfer2Sample()
         {
             rotateBackBodyPos = 0.545;
             rotateBodyPos=0.35;
@@ -584,13 +562,10 @@ public class TeleOpTest extends LinearOpMode
 
         private void doTransfer()
         {
+            backClawPos = 0.4;
             openFrontClaw(false);
         }
-        private void doTransferSpecimen()
-        {
-            backClawPos = 0.4;
-            openFrontClaw(true);
-        }
+
 
         private void leaveSpecimenRank()
         {
