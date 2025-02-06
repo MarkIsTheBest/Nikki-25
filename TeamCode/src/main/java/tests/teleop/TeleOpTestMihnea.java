@@ -171,7 +171,7 @@ public class TeleOpTestMihnea extends LinearOpMode
         deltaTime.reset();
 
         double linkageInput = gamepad1.right_stick_y;
-        double clawRotateInput = gamepad1.right_trigger - gamepad1.left_trigger;
+        double clawRotateInput = -gamepad1.right_trigger + gamepad1.left_trigger;
 
         linkagePos += timeStep * 0.25 * linkageInput;
         // rotateClawPos = (angleJoystick/180) * 0.7;
@@ -359,10 +359,13 @@ public class TeleOpTestMihnea extends LinearOpMode
                 break;
 
             case DO_TRANSFER:
+                openBackClaw(false);
                 robotStates.doTransferSpecimen();
-
                 if(lastState != State.DO_TRANSFER)
                     timer.reset();
+                if(timer.seconds() > 0.5) {
+                    openFrontClaw(true);
+                }
                 lastState = intakeState;
 
                 if(Input.onKeyDown("scorer_a", gamepad1.a)) intakeState = State.LEAVE_SPECIMEN_RANK;
@@ -382,8 +385,7 @@ public class TeleOpTestMihnea extends LinearOpMode
                 if(lastState != State.LOWER_VERTICAL)
                     timer.reset();
                 lastState = intakeState;
-                if(timer.seconds() > 1)
-                    intakeState = State.CLOSE_CLAW;
+                if(Input.onKeyDown("scorer_a", gamepad1.a)) intakeState = State.CLOSE_CLAW;
                 break;
             case CLOSE_CLAW:
                 backClawPos = 0.55;
@@ -554,8 +556,7 @@ public class TeleOpTestMihnea extends LinearOpMode
             rotateBackClawPos=0.72;
         }
 
-        private void transfer2()
-        {
+        private void transfer2() {
             rotateBackBodyPos = 0.44;
         }
 
@@ -567,15 +568,13 @@ public class TeleOpTestMihnea extends LinearOpMode
         private void doTransferSpecimen()
         {
             backClawPos = 0.4;
-            openFrontClaw(true);
         }
 
         private void leaveSpecimenRank()
         {
             rotateBackBodyPos = 0.07;
             rotateBackClawPos = 0.07;
-            verticalPos = 1200;
-            linkagePos=Constants.LINKAGE.CLOSED;
+            verticalPos = 1400;
         }
 
         private void leaveSampleBasket()

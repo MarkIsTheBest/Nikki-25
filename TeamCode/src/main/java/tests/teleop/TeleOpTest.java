@@ -61,7 +61,8 @@ public class TeleOpTest extends LinearOpMode
         TRANSFER2,
         RAISE_VERTICAL,
         LEAVE_SPECIMEN_RANK,
-        LOWER_VERTICAL
+        LOWER_VERTICAL,
+        PREPARE_PICKUP
     }
 
     State intakeState = State.INIT;
@@ -299,7 +300,7 @@ public class TeleOpTest extends LinearOpMode
                 robotStates.prepareSpecimen();
                 lastState = intakeState;
 
-                if(Input.onKeyDown("scorer_a", gamepad2.a)) intakeState = State.PICKUP_SAMPLE;
+                if(Input.onKeyDown("scorer_a", gamepad2.a)) intakeState = State.OPEN_CLAW;
                 break;
 
             case PICKUP_SAMPLE:
@@ -317,7 +318,7 @@ public class TeleOpTest extends LinearOpMode
                     timer.reset();
                 lastState = intakeState;
 
-                if(timer.seconds() > 0.25) intakeState = State.PICKUP_SPECIMEN;
+                if(timer.seconds() > 0.25) intakeState = State.RAISE_VERTICAL;
                 break;
 
             case PICKUP_SPECIMEN:
@@ -331,16 +332,16 @@ public class TeleOpTest extends LinearOpMode
                 break;
 
             case RAISE_VERTICAL:
-                robotStates.raiseVertical();
-
+                robotStates.raiseVerticalSpecimen();
                 if(lastState != State.RAISE_VERTICAL)
                     timer.reset();
                 lastState = intakeState;
-
                 if(Input.onKeyDown("scorer_a", gamepad2.a)) intakeState = State.TRANSFER;
                 break;
 
             case TRANSFER:
+                backClawPos = 0.55;
+                rotateBackClawPos=0.67;
                 robotStates.transferSpecimen();
 
                 if(lastState != State.TRANSFER)
@@ -361,19 +362,27 @@ public class TeleOpTest extends LinearOpMode
                 break;
 
             case DO_TRANSFER:
-                robotStates.doTransferSpecimen();
+                openBackClaw(false);
 
                 if(lastState != State.DO_TRANSFER)
                     timer.reset();
+                if(timer.seconds() > 0.5) {
+                    openFrontClaw(true);
+                    linkagePos=0.52;
+                }
+
                 lastState = intakeState;
 
                 if(Input.onKeyDown("scorer_a", gamepad2.a)) intakeState = State.LEAVE_SPECIMEN_RANK;
                 break;
 
             case LEAVE_SPECIMEN_RANK:
+
                 robotStates.leaveSpecimenRank();
                 if(lastState != State.LEAVE_SPECIMEN_RANK)
                     timer.reset();
+                if(timer.seconds() > 0.5)
+                    robotStates.transferSpecimen();
                 lastState = intakeState;
 
                 if(Input.onKeyDown("scorer_a", gamepad2.a)) intakeState = State.LOWER_VERTICAL;
@@ -384,8 +393,7 @@ public class TeleOpTest extends LinearOpMode
                 if(lastState != State.LOWER_VERTICAL)
                     timer.reset();
                 lastState = intakeState;
-                if(timer.seconds() > 1)
-                    intakeState = State.CLOSE_CLAW;
+                if(Input.onKeyDown("scorer_a", gamepad2.a)) intakeState = State.CLOSE_CLAW;
                 break;
             case CLOSE_CLAW:
                 backClawPos = 0.55;
@@ -394,6 +402,13 @@ public class TeleOpTest extends LinearOpMode
                     timer.reset();
                 lastState = intakeState;
 
+                if(Input.onKeyDown("scorer_a", gamepad2.a)) intakeState = State.PREPARE_PICKUP;
+                break;
+            case PREPARE_PICKUP:
+                robotStates.transfer();
+                if(lastState != State.PREPARE_PICKUP)
+                    timer.reset();
+                lastState = intakeState;
                 if(Input.onKeyDown("scorer_a", gamepad2.a)) intakeState = State.PREPARE_SPECIMEN;
                 break;
         }
@@ -503,16 +518,16 @@ public class TeleOpTest extends LinearOpMode
 
         private void prepareSpecimen()
         {
-            isParallel = true;
+            isParallel = false;
             if(State.PREPARE_SPECIMEN != lastState)
             {
                 rotateClawPos = Constants.ROTATE_CLAW.INIT;
                 linkagePos = Constants.LINKAGE.CLOSED;
                 verticalPos = Constants.VERTICAL.MIN;
-                rotateBodyPos = 0.23;
+                rotateBodyPos = 0.2;
             }
             rotateAxisPos = Constants.ROTATE_AXIS.MID;
-            rotateHeadPos = 0.5;//Constants.ROTATE_HEAD.INIT;
+            rotateHeadPos = 0.17;//Constants.ROTATE_HEAD.INIT;
 
             openFrontClaw(true);
             openBackClaw(true);
@@ -532,6 +547,11 @@ public class TeleOpTest extends LinearOpMode
             verticalPos = 1100;
             backClawPos = 0.55;
         }
+        private void raiseVerticalSpecimen()
+        {
+            verticalPos = 600;
+            backClawPos = 0.55;
+        }
 
         private void transfer()
         {
@@ -540,30 +560,30 @@ public class TeleOpTest extends LinearOpMode
             rotateHeadPos = 0.25;//
             rotateBodyPos = 0.48;//
             rotateClawPos = 0.6;
-            linkagePos = 0.62;
-            backClawPos = 0.55;
+            linkagePos = 0.60;
             rotateBackClawPos=0.72;
         }
         private void transferSpecimen()
         {
             isParallel = false;
-            rotateAxisPos = 0.42;
-            rotateHeadPos = 0.25;//
-            rotateBodyPos = 0.48;//
+            rotateBodyPos = 0.55;
+            rotateAxisPos = 0.75;
+            rotateHeadPos = 0.62;//
             rotateClawPos = Constants.ROTATE_CLAW.INIT;
-            linkagePos = 0.62;
-            backClawPos = 0.55;
-            rotateBackClawPos=0.72;
+            linkagePos = 0.53;
         }
 
         private void transfer2()
         {
-            rotateBackBodyPos = 0.44;
+            rotateBackBodyPos = 0.545;
+            rotateBodyPos=0.35;
+            rotateAxisPos = 1;
+            linkagePos=0.55;
+
         }
 
         private void doTransfer()
         {
-            backClawPos = 0.4;
             openFrontClaw(false);
         }
         private void doTransferSpecimen()
@@ -574,10 +594,9 @@ public class TeleOpTest extends LinearOpMode
 
         private void leaveSpecimenRank()
         {
-            rotateBackBodyPos = 0.07;
-            rotateBackClawPos = 0.07;
-            verticalPos = 1200;
-            linkagePos=Constants.LINKAGE.CLOSED;
+            rotateBackBodyPos = 0.1;
+            rotateBackClawPos = 0;
+            verticalPos = 1550;
         }
 
         private void leaveSampleBasket()
