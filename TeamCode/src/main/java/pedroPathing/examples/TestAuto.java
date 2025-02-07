@@ -23,6 +23,9 @@ import org.firstinspires.ftc.robotcore.external.Telemetry;
 
 import pedroPathing.constants.FConstants;
 import pedroPathing.constants.LConstants;
+import subsystems.Func;
+import subsystems.hardware.Motors;
+import subsystems.hardware.Servos;
 
 
 @Autonomous
@@ -33,21 +36,35 @@ public class TestAuto extends OpMode
     PathChain path;
     int pathState;
     Timer pathTimer;
-    private final Pose startPose = new Pose(8.842105263157894, 52.10526315789473, Math.toRadians(180));  // Starting position
-    private final Pose scorePose = new Pose(32, 66, Math.toRadians(180)); // Scoring position
-    private final Pose pickup1PoseControl= new Pose(40,20,Math.toRadians(270));
+    private double linkagePos;
+    private double rotateAxisPos;
+    private double rotateBodyPos;
+    private double rotateHeadPos;
+    private double rotateClawPos;
+    private double clawPos;
+    private double rotateBackBodyPos;
+    private double rotateBackClawPos;
+    private double backClawPos;
+    private int verticalPos;
+    private final Pose startPose = new Pose(8.26, 56, Math.toRadians(180));  // Starting position
+    private final Pose scorePose = new Pose(25, 70, Math.toRadians(180)); // Scoring position
+    private final Pose pickup1PoseControl= new Pose(30,44,Math.toRadians(270));
 
-    private final Pose pickup1Pose = new Pose(65.21052631578948, 46, Math.toRadians(270));// Push Sample 1
-    private final Pose scorePush1Pose = new Pose(22, 30, Math.toRadians(270));
-    private final Pose scorePush1Control = new Pose(60, 30, Math.toRadians(270));
-    private final Pose scoreAlign2Pose = new Pose(57.5, 29, Math.toRadians(270));
-    private final Pose scorePush2Pose = new Pose(22, 20, Math.toRadians(270));
-    private final Pose scoreAlign3Pose = new Pose(57.5, 22, Math.toRadians(270));
-    private final Pose scorePush3Pose = new Pose(22, 10, Math.toRadians(270));
+    private final Pose pickup1Pose = new Pose(57, 40, Math.toRadians(270));// Push Sample 1
+    private final Pose scorePush1Pose = new Pose(22, 33, Math.toRadians(270));
+    private final Pose scorePush1Control = new Pose(57, 28, Math.toRadians(270));
+    private final Pose scoreAlign2Pose = new Pose(57, 30, Math.toRadians(270));
+    private final Pose scorePush2Pose = new Pose(22, 23, Math.toRadians(270));
+    private final Pose scoreAlign3Pose = new Pose(57.5, 21, Math.toRadians(270));
+    private final Pose scorePush3Pose = new Pose(15, 17, Math.toRadians(270));
 
     public Path scorePreload, park;
     public PathChain grabPickup1,scorePush1,scoreAlign2,scorePush2,scoreAlign3,scorePush3;
-
+    private void initHardware()
+    {
+        Motors.init(hardwareMap);
+        Servos.init(hardwareMap);
+    }
     @Override
     public void init()
     {
@@ -55,7 +72,19 @@ public class TestAuto extends OpMode
         Constants.setConstants(FConstants.class, LConstants.class);
         follower = new Follower(hardwareMap);
         follower.setStartingPose(startPose);
+        initHardware();
         buildPaths();
+        rotateAxisPos = subsystems.Constants.ROTATE_AXIS.MID;
+        rotateClawPos = subsystems.Constants.ROTATE_CLAW.INIT;
+        rotateBodyPos = 0.73; //Constants.ROTATE_BODY.MAX;
+        rotateHeadPos = subsystems.Constants.ROTATE_HEAD.INIT;
+        verticalPos = subsystems.Constants.VERTICAL.MIN;
+        linkagePos = subsystems.Constants.LINKAGE.CLOSED;
+        rotateBackBodyPos = 0.07;
+        rotateBackClawPos = 0.07;
+        backClawPos=0.4;
+        updatePositions();
+
 
     }
 
@@ -104,21 +133,46 @@ public class TestAuto extends OpMode
         pathState = pState;
         pathTimer.resetTimer();
     }
+    private void updatePositions()
+    {
+        Servos.linkageLeft.setPosition(linkagePos);
+        Servos.linkageRight.setPosition(linkagePos);
+        Servos.rotateAxis.setPosition(rotateAxisPos);
+        Servos.rotateBody.setPosition(rotateBodyPos);
+        Servos.rotateHead.setPosition(rotateHeadPos);
+        Servos.rotateClaw.setPosition(rotateClawPos);
+        Servos.claw.setPosition(clawPos);
+        Servos.rotateBackBody.setPosition(rotateBackBodyPos);
+        Servos.rotateBackClaw.setPosition(rotateBackClawPos);
+        Servos.backClaw.setPosition(backClawPos);
+
+        Func.SetMotorPosition(Motors.verticalLeft, verticalPos);
+        Func.SetMotorPosition(Motors.verticalRight, verticalPos);
+    }
     public void autonomousPathUpdate() {
         switch (pathState) {
             case 0: // Move from start to scoring position
+                verticalPos=1500;
+                updatePositions();
                 follower.followPath(scorePreload,true);
                 setPathState(1);
                 break;
 
             case 1: // Wait until the robot is near the scoring position
-                if (!follower.isBusy()) {
+                if(pathTimer.getElapsedTimeSeconds()>3.0){
                     follower.followPath(grabPickup1,true);
                     setPathState(2);
+                }
+                if(!follower.isBusy()){
+                    verticalPos=600;
+                    backClawPos=0.55;
+                    updatePositions();
                 }
                 break;
 
             case 2: // Wait until the robot is near the first sample pickup position
+                verticalPos=0;
+                updatePositions();
                 if (!follower.isBusy()) {
                     follower.followPath(scorePush1,true);
                     setPathState(3);
