@@ -47,7 +47,7 @@ public class TestAuto extends OpMode
     private double backClawPos;
     private int verticalPos;
     private final Pose startPose = new Pose(8.26, 56, Math.toRadians(180));  // Starting position
-    private final Pose scorePose = new Pose(25, 70, Math.toRadians(180)); // Scoring position
+    private final Pose scorePose = new Pose(26, 70, Math.toRadians(180)); // Scoring position
     private final Pose pickup1PoseControl= new Pose(30,44,Math.toRadians(270));
 
     private final Pose pickup1Pose = new Pose(57, 40, Math.toRadians(270));// Push Sample 1

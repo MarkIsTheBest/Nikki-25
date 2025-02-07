@@ -281,7 +281,7 @@ public class TeleOpTest extends LinearOpMode
                 break;
 
             case CLOSE_CLAW:
-                backClawPos = 0.55;
+                backClawPos = 0.4;
                 lastState = intakeState;
                 if(lastState != State.CLOSE_CLAW)
                     timer.reset();
@@ -340,7 +340,7 @@ public class TeleOpTest extends LinearOpMode
                 break;
 
             case TRANSFER:
-                backClawPos = 0.55;
+                backClawPos = 0.4;
                 rotateBackClawPos=0.67;
                 robotStates.transferSpecimen();
 
@@ -396,7 +396,7 @@ public class TeleOpTest extends LinearOpMode
                 if(Input.onKeyDown("scorer_a", gamepad2.a)) intakeState = State.CLOSE_CLAW;
                 break;
             case CLOSE_CLAW:
-                backClawPos = 0.55;
+                backClawPos = 0.4;
                 if(lastState != State.CLOSE_CLAW)
                     timer.reset();
                 lastState = intakeState;
@@ -520,12 +520,12 @@ public class TeleOpTest extends LinearOpMode
         private void raiseVertical()
         {
             verticalPos = 1100;
-            backClawPos = 0.55;
+            backClawPos = 0.4;
         }
         private void raiseVerticalSpecimen()
         {
             verticalPos = 600;
-            backClawPos = 0.55;
+            backClawPos = 0.4;
         }
 
         private void transfer()
@@ -536,13 +536,13 @@ public class TeleOpTest extends LinearOpMode
             rotateBodyPos = 0.48;//
             rotateClawPos = 0.6;
             linkagePos = 0.62;
-            backClawPos = 0.55;
+            backClawPos = 0.4;
             rotateBackClawPos=0.72;
         }
         private void transferSpecimen()
         {
             isParallel = false;
-            rotateBodyPos = 0.55;
+            rotateBodyPos = 0.4;
             rotateAxisPos = 0.75;
             rotateHeadPos = 0.62;//
             rotateClawPos = Constants.ROTATE_CLAW.INIT;
@@ -556,7 +556,7 @@ public class TeleOpTest extends LinearOpMode
             rotateBackBodyPos = 0.545;
             rotateBodyPos=0.35;
             rotateAxisPos = 1;
-            linkagePos=0.55;
+            linkagePos=0.4;
 
         }
 
