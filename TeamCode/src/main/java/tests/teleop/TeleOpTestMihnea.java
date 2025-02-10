@@ -33,9 +33,9 @@ public class TeleOpTestMihnea extends LinearOpMode
     private boolean isSpecimen = true;
     private boolean attachSpecimen = false;
     private boolean isParallel = false;
-    private ElapsedTime timer = new ElapsedTime();
-    private ElapsedTime deltaTime = new ElapsedTime();
-    private STATES robotStates = new STATES();
+    private final ElapsedTime timer = new ElapsedTime();
+    private final ElapsedTime deltaTime = new ElapsedTime();
+    private final STATES robotStates = new STATES();
     private Telemetry debug;
 
     public enum State
@@ -280,9 +280,6 @@ public class TeleOpTestMihnea extends LinearOpMode
             case CLOSE_CLAW:
                 backClawPos = 0.55;
                 lastState = intakeState;
-                if(lastState != State.CLOSE_CLAW)
-                    timer.reset();
-                lastState = intakeState;
 
                 if(Input.onKeyDown("scorer_a", gamepad1.a)) intakeState = State.PREPARE_SAMPLE;
                 break;
@@ -390,9 +387,6 @@ public class TeleOpTestMihnea extends LinearOpMode
             case CLOSE_CLAW:
                 backClawPos = 0.55;
                 lastState = intakeState;
-                if(lastState != State.CLOSE_CLAW)
-                    timer.reset();
-                lastState = intakeState;
 
                 if(Input.onKeyDown("scorer_a", gamepad1.a)) intakeState = State.PREPARE_SPECIMEN;
                 break;
@@ -487,7 +481,7 @@ public class TeleOpTestMihnea extends LinearOpMode
                 rotateBodyPos = 0.23;
             }
             rotateAxisPos = Constants.ROTATE_AXIS.MID;
-            rotateHeadPos = 0.5;//Constants.ROTATE_HEAD.INIT;
+            rotateHeadPos = 0.5;
 
             openFrontClaw(true);
             openBackClaw(true);
