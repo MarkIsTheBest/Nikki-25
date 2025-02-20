@@ -3,8 +3,7 @@ package subsystems.hardware;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.hardware.Servo;
 
-public class Servos
-{
+public class Servos {
     public static Servo linkageLeft;
     public static Servo linkageRight;
     public static Servo rotateBody;
@@ -17,8 +16,7 @@ public class Servos
     public static Servo backClaw;
 
     public static void init(HardwareMap hardwareMap) {
-        try
-        {
+        try {
             linkageLeft = hardwareMap.get(Servo.class, "linkageLeft");
             linkageRight = hardwareMap.get(Servo.class, "linkageRight");
             rotateBody = hardwareMap.get(Servo.class, "rotateBody");
@@ -29,8 +27,8 @@ public class Servos
             rotateBackBody = hardwareMap.get(Servo.class, "rotateBackBody");
             rotateBackClaw = hardwareMap.get(Servo.class, "rotateBackClaw");
             backClaw = hardwareMap.get(Servo.class, "backClaw");
+        } catch (Exception ignore) {
         }
-        catch (Exception ignore) {}
 
         linkageRight.setDirection(Servo.Direction.REVERSE);
     }

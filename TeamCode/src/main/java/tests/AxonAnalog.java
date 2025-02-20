@@ -17,24 +17,23 @@ public class AxonAnalog extends LinearOpMode {
 
     ElapsedTime timer = new ElapsedTime();
     double position = 0;
+
     @Override
-    public void runOpMode() throws InterruptedException
-    {
+    public void runOpMode() throws InterruptedException {
         axon1 = hardwareMap.get(AnalogInput.class, "axon1");
         axon2 = hardwareMap.get(AnalogInput.class, "axon2");
         axonServo = hardwareMap.get(Servo.class, "axon");
         waitForStart();
 
-        while (opModeIsActive())
-        {
-            if(gamepad1.a)
-                position+=10*timer.seconds();
-            if(gamepad1.b)
-                position-=10*timer.seconds();
+        while (opModeIsActive()) {
+            if (gamepad1.a)
+                position += 10 * timer.seconds();
+            if (gamepad1.b)
+                position -= 10 * timer.seconds();
 
             axonServo.setPosition(position);
-            telemetry.addData("Axon 0 Angle",axon1.getVoltage() / 3.3 * 360);
-            telemetry.addData("Axon 1 Angle",axon2.getVoltage() / 3.3 * 360);
+            telemetry.addData("Axon 0 Angle", axon1.getVoltage() / 3.3 * 360);
+            telemetry.addData("Axon 1 Angle", axon2.getVoltage() / 3.3 * 360);
             telemetry.update();
             timer.reset();
         }

@@ -1,88 +1,102 @@
 package tests.teleop;
 
+import static subsystems.Positions.lastState;
+
 import com.acmerobotics.dashboard.FtcDashboard;
 import com.acmerobotics.dashboard.config.Config;
 import com.acmerobotics.dashboard.telemetry.MultipleTelemetry;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
+import com.qualcomm.robotcore.hardware.Gamepad;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
 import org.firstinspires.ftc.robotcore.external.Telemetry;
 
+import subsystems.Actions;
 import subsystems.Constants;
-import subsystems.Func;
+import subsystems.Helper;
 import subsystems.Input;
+import subsystems.Positions;
+import subsystems.State;
 import subsystems.hardware.Motors;
 import subsystems.hardware.Servos;
 
 @Config
-@TeleOp
-public class TeleOpTest extends LinearOpMode
-{
-    private double linkagePos;
-    private double rotateAxisPos;
-    private double rotateBodyPos;
-    private double rotateHeadPos;
-    private double rotateClawPos;
-    private double clawPos;
-    private double rotateBackBodyPos;
-    private double rotateBackClawPos;
-    private double backClawPos;
-    private int verticalPos;
+@TeleOp(name = "TeleOp", group = "TeleOp")
+public class TeleOpTest extends LinearOpMode {
+    public static boolean onePlayer = false;
+    private final Gamepad chassisGamepad = new Gamepad();
+    private final Gamepad scorerGamepad = new Gamepad();
 
-    private boolean isSpecimen = true;
-    private boolean attachSpecimen = false;
-    private boolean isParallel = false;
+    private final Telemetry debug = new MultipleTelemetry(telemetry, FtcDashboard.getInstance().getTelemetry());
+
     private final ElapsedTime timer = new ElapsedTime();
-    private final ElapsedTime deltaTime = new ElapsedTime();
-    private final STATES robotStates = new STATES();
-    private Telemetry debug;
 
-    public enum State
-    {
-        INIT,
+    private State intakeState = State.INIT;
+    private boolean isSpecimen = true;
+    private boolean attachSpecimen = true;
 
-        PREPARE_SAMPLE,
-        PICKUP_SAMPLE,
-        LEAVE_SAMPLE_BASKET,
-        LEAVE_SAMPLE_OBSERVATION,
+    private int invertInput = -1;
+    private boolean slow = false;
 
-        TRANSFER,
-
-        OPEN_CLAW,
-        CLOSE_CLAW,
-        HOLD_SAMPLE,
-
-        PREPARE_SPECIMEN,
-        PICKUP_SPECIMEN,
-        PREPARE_LEAVE_SPECIMEN,
-        LEAVE_SPECIMEN,
-        DO_TRANSFER,
-        TRANSFER2,
-        RAISE_VERTICAL,
-        LEAVE_SPECIMEN_RANK,
-        LOWER_VERTICAL,
-        PREPARE_PICKUP
+    @Override
+    public void runOpMode() throws InterruptedException {
+        onInit();
+        waitForStart();
+        while (opModeIsActive()) {
+            onUpdate();
+        }
     }
 
-    State intakeState = State.INIT;
-    State lastState = intakeState;
+    private void onInit() {
+        initHardware();
+        Actions.init();
+        initCheckStates();
+        lastState = intakeState;
+        Positions.update();
+    }
 
-    private void handleMovement()
-    {
+    private void initHardware() {
+        Motors.init(hardwareMap);
+        Servos.init(hardwareMap);
+
+        chassisGamepad.setGamepadId(gamepad1.getGamepadId());
+        scorerGamepad.setGamepadId(onePlayer ? gamepad1.getGamepadId() : gamepad2.getGamepadId());
+    }
+
+    private void onUpdate() {
+        Helper.resetDeltaTime();
+        try {
+            handleChassis(); // Player 1
+            handleScoring(); // Player 2
+        } catch (Exception e) {
+            debug.addData("Error", e.getMessage());
+        }
+
+        onDebug();
+    }
+
+    private void handleChassis() {
+        //handle chassis movement
+        handleMovement();
+    }
+
+    private void handleMovement() {
+        if (Input.isDown("chassis_right_bumper", gamepad1.right_bumper)) invertInput *= -1;
+        if (Input.isDown("chassis_left_bumper", gamepad1.left_bumper)) slow = !slow;
+
         double dpadYInput = gamepad1.dpad_up ? 0.35 : (gamepad1.dpad_down ? -0.35 : 0);
         double dpadXInput = gamepad1.dpad_right ? 0.35 : (gamepad1.dpad_left ? -0.35 : 0);
 
-        int invertInput = Input.isDown("chassis_right_bumper", gamepad1.right_bumper) ? 1 : -1;
         double forwardInput = (-gamepad1.left_stick_y + dpadYInput) * invertInput;
         double lateralInput = (gamepad1.left_stick_x * 1.1 + dpadXInput) * invertInput;
         double angularInput = -gamepad1.right_stick_x;
 
         double denominator = Math.max(Math.abs(forwardInput) + Math.abs(lateralInput) + Math.abs(angularInput), 1);
-        double frontLeftPower = ((forwardInput + lateralInput + angularInput) / denominator);
-        double backLeftPower = ((forwardInput - lateralInput + angularInput) / denominator);
-        double frontRightPower = ((forwardInput - lateralInput - angularInput) / denominator);
-        double backRightPower = ((forwardInput + lateralInput - angularInput) / denominator);
+        double frontLeftPower = ((forwardInput + lateralInput + angularInput) / denominator) * (slow ? 0.66 : 1);
+        double backLeftPower = ((forwardInput - lateralInput + angularInput) / denominator) * (slow ? 0.66 : 1);
+        double frontRightPower = ((forwardInput - lateralInput - angularInput) / denominator) * (slow ? 0.66 : 1);
+        double backRightPower = ((forwardInput + lateralInput - angularInput) / denominator) * (slow ? 0.66 : 1);
 
         Motors.leftFront.setPower(frontLeftPower);
         Motors.leftRear.setPower(backLeftPower);
@@ -90,493 +104,422 @@ public class TeleOpTest extends LinearOpMode
         Motors.rightRear.setPower(-backRightPower);
     }
 
-    @Override
-    public void runOpMode() throws InterruptedException
-    {
-        onInit();
-        waitForStart();
-        onStart();
-        while (opModeIsActive())
-        {
-            onUpdate();
-        }
-    }
-
-    private void onStart()
-    {
-        intakeState = State.PREPARE_SPECIMEN;
-    }
-
-    private void onInit()
-    {
-        debug = new MultipleTelemetry(telemetry, FtcDashboard.getInstance().getTelemetry());
-        initHardware();
-        robotStates.init();
-        updatePositions();
-    }
-
-    private void initHardware()
-    {
-        Motors.init(hardwareMap);
-        Servos.init(hardwareMap);
-    }
-
-    private void onUpdate()
-    {
-        handleMovement();
-
+    private void handleScoring() {
         manualManipulation();
-
-        if(Input.onKeyDown("scorer_b",gamepad2.b)) intakeState = isSpecimen ? State.PREPARE_SPECIMEN : State.PREPARE_SAMPLE;
-        if(Input.onKeyDown("scorer_b",gamepad2.dpad_up)) {
-            isSpecimen=!isSpecimen;
-            intakeState = isSpecimen ? State.PREPARE_SPECIMEN : State.PREPARE_SAMPLE;
-        }
-
-
-        updatePositions();
+        Positions.update();
         checkStates();
-        if (isParallel) keepParallel();
+        keepParallel();
+    }
 
-        onDebug();
+    private void keepParallel() {
+        if (Positions.isParallel)
+            Positions.rotateHead = Helper.getParallel(Positions.rotateBody);
+    }
 
-        if(Input.onKeyDown("scorer_x", gamepad2.x))
-        {
-            verticalPos = 1500;
+    private void manualManipulation() {
+        handleIntake();
+        changeMode();
+        handleHang();
+    }
+
+    private void handleIntake() {
+        //TODO integrate limelight to obsolete manual rotation
+        //TODO double angleFromCam = 90;
+        //TODO Positions.rotateClaw = Helper.map(angleFromCam, 0, 180, Constants.ROTATE_CLAW.MIN,  Constants.ROTATE_CLAW.MIN);
+
+        double linkageInput = gamepad2.right_stick_y;
+        double clawRotateInput = -gamepad2.right_trigger + gamepad2.left_trigger;
+
+        Positions.linkage = Helper.adjustPositionServo(Positions.linkage,
+                linkageInput,
+                Constants.LINKAGE.OPENED,
+                Constants.LINKAGE.CLOSED,
+                0.25);
+
+        Positions.rotateClaw = Helper.adjustPositionServo(Positions.rotateClaw,
+                clawRotateInput,
+                Constants.ROTATE_CLAW.MIN,
+                Constants.ROTATE_CLAW.MAX,
+                2);
+    }
+
+    private void changeMode() {
+        boolean sampleInput = Input.onKeyDown("scorer_dpad_up", gamepad2.dpad_up);
+        boolean specimenInput = Input.onKeyDown("scorer_dpad_left", gamepad2.dpad_left);
+        boolean attachInput = Input.onKeyDown("scorer_dpad_right", gamepad2.dpad_right);
+
+        int currentMode = sampleInput ? 0 : (specimenInput ? 1 : (attachInput) ? 2 : -1);
+
+        switch (currentMode) {
+            case 0: // -- Sample -- //
+                isSpecimen = false;
+                attachSpecimen = false;
+                gamepad2.rumbleBlips(1);
+                break;
+            case 1: // -- Specimen -- //
+                isSpecimen = true;
+                attachSpecimen = false;
+                gamepad2.rumbleBlips(2);
+                break;
+            case 2: // -- Attach -- //
+                isSpecimen = true;
+                attachSpecimen = true;
+                gamepad2.rumbleBlips(3);
+                break;
         }
-        if(Input.onKeyDown("scorer_y", gamepad2.y))
-        {
-            verticalPos = 800;
-            linkagePos = Constants.LINKAGE.CLOSED;
-            rotateBodyPos = Constants.ROTATE_BODY.MAX;
+
+    }
+
+    private void handleHang() {
+        if (Input.onKeyDown("scorer_x", gamepad2.x)) {
+            Positions.vertical = 1500;
+        }
+        if (Input.onKeyDown("scorer_y", gamepad2.y)) {
+            Positions.vertical = 800;
+            Positions.linkage = Constants.LINKAGE.CLOSED;
+            Positions.rotateBody = Constants.ROTATE_BODY.MAX;
         }
     }
 
-    private void onDebug()
-    {
-        debug.addData("CurrentState", intakeState);
-        debug.addData("CurrentState2", isSpecimen);
-        debug.addData("Timer", timer.seconds());
-        debug.addData("Motor Encoder Ticks", Motors.verticalLeft.getCurrentPosition());
-        debug.update();
+    private void initCheckStates() {
+        if (isSpecimen && !attachSpecimen) {
+            gamepad2.setLedColor(202, 3, 252, -1);
+            intakeState = State.PREPARE_SAMPLE;
+            //specimenPickupStates();
+        } else if (isSpecimen) {
+            gamepad2.setLedColor(32, 252, 3, -1);
+            intakeState = State.PREPARE_SPECIMEN;
+        } else {
+            gamepad2.setLedColor(252, 211, 3, -1);
+            intakeState = State.PREPARE_SAMPLE;
+            //samplePickupStates();
+        }
     }
 
-    private void keepParallel()
-    {
-        rotateHeadPos = getParallel(rotateBodyPos);
+    private void checkStates() {
+        if (isSpecimen && !attachSpecimen) {
+            gamepad2.setLedColor(202, 3, 252, -1);
+            //specimenPickupStates();
+        } else if (isSpecimen) {
+            gamepad2.setLedColor(32, 252, 3, -1);
+            specimenAttachStates();
+        } else {
+            gamepad2.setLedColor(252, 211, 3, -1);
+            //samplePickupStates();
+        }
     }
 
-    private void manualManipulation()
-    {
-        //double angleJoystick = Math.toDegrees(Math.atan2(gamepad2.right_stick_y, gamepad2.right_stick_x));
-
-        double timeStep = deltaTime.milliseconds() / 1000.0; // Convert to seconds
-        deltaTime.reset();
-
-        double linkageInput = gamepad2.left_stick_y;
-        double clawRotateInput = gamepad2.right_trigger - gamepad2.left_trigger;
-
-        linkagePos += timeStep * 0.25 * linkageInput;
-       // rotateClawPos = (angleJoystick/180) * 0.7;
-        rotateClawPos += timeStep * 2 * clawRotateInput;
-
-        linkagePos = Math.max(Constants.LINKAGE.OPENED,Math.min(Constants.LINKAGE.CLOSED,linkagePos));
-        rotateClawPos = Math.max(Constants.ROTATE_CLAW.MIN, Math.min(Constants.ROTATE_CLAW.MAX, rotateClawPos));
-    }
-
-    private void checkStates()
-    {
-        if(isSpecimen)
-            specimenPickupStates();
-        else
-            samplePickupStates();
-    }
-
-    private void samplePickupStates()
-    {
-        switch (intakeState)
-        {
+/*    private void samplePickupStates() {
+        switch (intakeState) {
             case PREPARE_SAMPLE:
-                robotStates.prepareSample();
+                Actions.prepareSample();
                 lastState = intakeState;
 
-                if(Input.onKeyDown("scorer_a", gamepad2.a)) intakeState = State.PICKUP_SAMPLE;
+                if (Input.onKeyDown("scorer_a", gamepad2.a)) intakeState = State.PICKUP_SAMPLE;
                 break;
 
             case PICKUP_SAMPLE:
-                robotStates.pickupSample();
-                if(lastState != State.PICKUP_SAMPLE)
+                Actions.pickupSample();
+                if (lastState != State.PICKUP_SAMPLE)
                     timer.reset();
                 lastState = intakeState;
 
-                if(timer.seconds() > 0.5) intakeState = State.OPEN_CLAW;
+                if (timer.seconds() > 0.5) intakeState = State.OPEN_CLAW;
                 break;
 
             case OPEN_CLAW:
-                openFrontClaw(true);
-                if(lastState != State.OPEN_CLAW)
+                Actions.openFrontClaw(true);
+                if (lastState != State.OPEN_CLAW)
                     timer.reset();
                 lastState = intakeState;
 
-                if(timer.seconds() > 0.25) intakeState = State.PICKUP_SPECIMEN;
+                if (timer.seconds() > 0.25) intakeState = State.PICKUP_SPECIMEN;
                 break;
 
             case PICKUP_SPECIMEN:
-                robotStates.pickupSpecimen();
+                Actions.pickupSpecimen();
 
-                if(lastState != State.PICKUP_SPECIMEN)
+                if (lastState != State.PICKUP_SPECIMEN)
                     timer.reset();
                 lastState = intakeState;
 
-                if(Input.onKeyDown("scorer_a", gamepad2.a)) intakeState = State.RAISE_VERTICAL;
+                if (Input.onKeyDown("scorer_a", gamepad2.a))
+                    intakeState = State.RAISE_VERTICAL;
                 break;
 
             case RAISE_VERTICAL:
-                robotStates.raiseVertical();
+                Actions.raiseVertical();
 
-                if(lastState != State.RAISE_VERTICAL)
+                if (lastState != State.RAISE_VERTICAL)
                     timer.reset();
                 lastState = intakeState;
 
-                if(Input.onKeyDown("scorer_a", gamepad2.a)) intakeState = State.TRANSFER;
+                if (Input.onKeyDown("scorer_a", gamepad2.a)) intakeState = State.TRANSFER;
                 break;
 
             case TRANSFER:
-                robotStates.transfer();
+                Actions.transfer();
 
-                if(lastState != State.TRANSFER)
+                if (lastState != State.TRANSFER)
                     timer.reset();
                 lastState = intakeState;
 
-                if(Input.onKeyDown("scorer_a", gamepad2.a)) intakeState = State.TRANSFER2;
+                if (Input.onKeyDown("scorer_a", gamepad2.a)) intakeState = State.TRANSFER2;
                 break;
 
             case TRANSFER2:
-                robotStates.transfer2();
+                Actions.transfer2();
 
-                if(lastState != State.TRANSFER2)
+                if (lastState != State.TRANSFER2)
                     timer.reset();
                 lastState = intakeState;
 
-                if(Input.onKeyDown("scorer_a", gamepad2.a)) intakeState = State.DO_TRANSFER;
+                if (Input.onKeyDown("scorer_a", gamepad2.a)) intakeState = State.DO_TRANSFER;
                 break;
 
             case DO_TRANSFER:
-                robotStates.doTransfer();
+                Actions.doTransfer();
 
-                if(lastState != State.DO_TRANSFER)
+                if (lastState != State.DO_TRANSFER)
                     timer.reset();
                 lastState = intakeState;
 
-                if(Input.onKeyDown("scorer_a", gamepad2.a)) intakeState = State.LEAVE_SAMPLE_BASKET;
+                if (Input.onKeyDown("scorer_a", gamepad2.a))
+                    intakeState = State.LEAVE_SAMPLE_BASKET;
                 break;
 
             case LEAVE_SAMPLE_BASKET:
-                robotStates.leaveSampleBasket();
-                if(lastState != State.LEAVE_SAMPLE_BASKET)
+                Actions.leaveSampleBasket();
+                if (lastState != State.LEAVE_SAMPLE_BASKET)
                     timer.reset();
                 lastState = intakeState;
 
-                if(Input.onKeyDown("scorer_a", gamepad2.a)) intakeState = State.CLOSE_CLAW;
+                if (Input.onKeyDown("scorer_a", gamepad2.a)) intakeState = State.CLOSE_CLAW;
                 break;
 
             case CLOSE_CLAW:
-                backClawPos = 0.4;
+                Positions.backClaw = 0.55;
                 lastState = intakeState;
 
-                if(Input.onKeyDown("scorer_a", gamepad2.a)) intakeState = State.PREPARE_SAMPLE;
+                if (Input.onKeyDown("scorer_a", gamepad2.a))
+                    intakeState = State.PREPARE_SAMPLE;
                 break;
         }
     }
 
-    private void specimenPickupStates()
-    {
-        switch (intakeState)
-        {
+    private void specimenPickupStates() {
+        switch (intakeState) {
             case PREPARE_SPECIMEN:
-                robotStates.prepareSpecimen();
+                Actions.prepareSpecimen();
                 lastState = intakeState;
 
-                if(Input.onKeyDown("scorer_a", gamepad2.a)) intakeState = State.OPEN_CLAW;
+                if (Input.onKeyDown("scorer_a", gamepad2.a)) intakeState = State.PICKUP_SAMPLE;
                 break;
 
             case PICKUP_SAMPLE:
-                robotStates.pickupSample();
-                if(lastState != State.PICKUP_SAMPLE)
+                Actions.pickupSample();
+                if (lastState != State.PICKUP_SAMPLE)
                     timer.reset();
                 lastState = intakeState;
 
-                if(timer.seconds() > 0.5) intakeState = State.OPEN_CLAW;
+                if (timer.seconds() > 0.5) intakeState = State.OPEN_CLAW;
                 break;
 
             case OPEN_CLAW:
-                openFrontClaw(false);
-                if(lastState != State.OPEN_CLAW)
+                Actions.openFrontClaw(false);
+                if (lastState != State.OPEN_CLAW)
                     timer.reset();
                 lastState = intakeState;
 
-                if(timer.seconds() > 0.25) intakeState = State.RAISE_VERTICAL;
+                if (timer.seconds() > 0.25) intakeState = State.PICKUP_SPECIMEN;
                 break;
 
             case PICKUP_SPECIMEN:
-                robotStates.pickupSpecimen();
+                Actions.pickupSpecimen();
 
-                if(lastState != State.PICKUP_SPECIMEN)
+                if (lastState != State.PICKUP_SPECIMEN)
                     timer.reset();
                 lastState = intakeState;
 
-                if(Input.onKeyDown("scorer_a", gamepad2.a)) intakeState = State.RAISE_VERTICAL;
+                if (Input.onKeyDown("scorer_a", gamepad2.a))
+                    intakeState = State.RAISE_VERTICAL;
                 break;
 
             case RAISE_VERTICAL:
-                robotStates.raiseVerticalSpecimen();
-                if(lastState != State.RAISE_VERTICAL)
+                Actions.raiseVertical();
+
+                if (lastState != State.RAISE_VERTICAL)
                     timer.reset();
                 lastState = intakeState;
-                if(Input.onKeyDown("scorer_a", gamepad2.a)) intakeState = State.TRANSFER;
+
+                if (Input.onKeyDown("scorer_a", gamepad2.a)) intakeState = State.TRANSFER;
                 break;
 
             case TRANSFER:
-                backClawPos = 0.4;
-                rotateBackClawPos=0.67;
-                robotStates.transferSpecimen();
+                Actions.transferSpecimen();
 
-                if(lastState != State.TRANSFER)
+                if (lastState != State.TRANSFER)
                     timer.reset();
                 lastState = intakeState;
 
-                if(Input.onKeyDown("scorer_a", gamepad2.a)) intakeState = State.TRANSFER2;
+                if (Input.onKeyDown("scorer_a", gamepad2.a)) intakeState = State.TRANSFER2;
                 break;
 
             case TRANSFER2:
-                robotStates.transfer2Sample();
+                Actions.transfer2();
 
-                if(lastState != State.TRANSFER2)
+                if (lastState != State.TRANSFER2)
                     timer.reset();
                 lastState = intakeState;
 
-                if(Input.onKeyDown("scorer_a", gamepad2.a)) intakeState = State.DO_TRANSFER;
+                if (Input.onKeyDown("scorer_a", gamepad2.a)) intakeState = State.DO_TRANSFER;
                 break;
 
             case DO_TRANSFER:
-                openBackClaw(false);
-
-                if(lastState != State.DO_TRANSFER)
+                Actions.openBackClaw(false);
+                Actions.doTransferSpecimen();
+                if (lastState != State.DO_TRANSFER)
                     timer.reset();
-                if(timer.seconds() > 0.5) {
-                    openFrontClaw(true);
-                    linkagePos=0.52;
+                if (timer.seconds() > 0.5) {
+                    Actions.openFrontClaw(true);
                 }
-
                 lastState = intakeState;
 
-                if(Input.onKeyDown("scorer_a", gamepad2.a)) intakeState = State.LEAVE_SPECIMEN_RANK;
+                if (Input.onKeyDown("scorer_a", gamepad2.a))
+                    intakeState = State.LEAVE_SPECIMEN_RANK;
                 break;
 
             case LEAVE_SPECIMEN_RANK:
-
-                robotStates.leaveSpecimenRank();
-                if(lastState != State.LEAVE_SPECIMEN_RANK)
+                Actions.leaveSpecimenRank();
+                if (lastState != State.LEAVE_SPECIMEN_RANK)
                     timer.reset();
-                if(timer.seconds() > 0.5)
-                    robotStates.transferSpecimen();
                 lastState = intakeState;
 
-                if(Input.onKeyDown("scorer_a", gamepad2.a)) intakeState = State.LOWER_VERTICAL;
+                if (Input.onKeyDown("scorer_a", gamepad2.a))
+                    intakeState = State.LOWER_VERTICAL;
                 break;
 
             case LOWER_VERTICAL:
-                verticalPos=500;
-                if(lastState != State.LOWER_VERTICAL)
+                Positions.vertical = 500;
+                if (lastState != State.LOWER_VERTICAL)
                     timer.reset();
                 lastState = intakeState;
-                if(Input.onKeyDown("scorer_a", gamepad2.a)) intakeState = State.CLOSE_CLAW;
+                if (Input.onKeyDown("scorer_a", gamepad2.a)) intakeState = State.CLOSE_CLAW;
                 break;
             case CLOSE_CLAW:
-                backClawPos = 0.4;
-                if(lastState != State.CLOSE_CLAW)
+                Positions.backClaw = 0.55;
+                lastState = intakeState;
+
+                if (Input.onKeyDown("scorer_a", gamepad2.a))
+                    intakeState = State.PREPARE_SPECIMEN;
+                break;
+        }
+    }*/
+
+    private void specimenAttachStates() {
+        switch (intakeState) {
+            case PREPARE_SPECIMEN:
+                Actions.prepareSpecimen();
+                lastState = intakeState;
+
+                if (Input.onKeyDown("scorer_a", gamepad2.a)) intakeState = State.CLOSE_CLAW;
+                break;
+
+            case CLOSE_CLAW:
+                Actions.openFrontClaw(false);
+                if (lastState != State.CLOSE_CLAW)
                     timer.reset();
                 lastState = intakeState;
 
-                if(Input.onKeyDown("scorer_a", gamepad2.a)) intakeState = State.PREPARE_PICKUP;
+                if (timer.seconds() > 0.25) intakeState = State.PICKUP_SPECIMEN;
                 break;
-            case PREPARE_PICKUP:
-                robotStates.transfer();
-                if(lastState != State.PREPARE_PICKUP)
+
+            case PICKUP_SPECIMEN:
+                Actions.pickupSpecimen();
+                if (lastState != State.PICKUP_SPECIMEN)
                     timer.reset();
                 lastState = intakeState;
-                if(Input.onKeyDown("scorer_a", gamepad2.a)) intakeState = State.PREPARE_SPECIMEN;
+
+                if (timer.seconds() > 1) intakeState = State.PREPARE_TRANSFER;
                 break;
+
+            case PREPARE_TRANSFER:
+                Actions.prepareTransfer();
+                if (lastState != State.PREPARE_TRANSFER)
+                    timer.reset();
+                lastState = intakeState;
+
+                if (timer.seconds() > 1) intakeState = State.DO_TRANSFER;
+                break;
+
+            case DO_TRANSFER:
+                Actions.openBackClaw(false);
+
+                if (lastState != State.DO_TRANSFER)
+                    timer.reset();
+                lastState = intakeState;
+
+                if (timer.seconds() > 0.25) intakeState = State.DO_TRANSFER2;
+                break;
+
+            case DO_TRANSFER2:
+                Actions.openFrontClaw(true);
+
+                if (lastState != State.DO_TRANSFER)
+                    timer.reset();
+                lastState = intakeState;
+
+                if (timer.seconds() > 0.25) intakeState = State.RAISE_VERTICAL;
+                break;
+
+            case RAISE_VERTICAL:
+                Actions.raiseVertical();
+                if (lastState != State.RAISE_VERTICAL)
+                    timer.reset();
+                lastState = intakeState;
+
+                if (timer.seconds() > 0.5)
+                    intakeState = State.LEAVE_SPECIMEN_RANK;
+                break;
+
+            case LEAVE_SPECIMEN_RANK:
+                Actions.leaveSpecimenRank();
+                if (lastState != State.LEAVE_SPECIMEN_RANK)
+                    timer.reset();
+                lastState = intakeState;
+
+                if (Input.onKeyDown("scorer_a", gamepad2.a))
+                    intakeState = State.LOWER_VERTICAL;
+                break;
+
+            case LOWER_VERTICAL:
+                Actions.lowerVertical();
+                if (lastState != State.LOWER_VERTICAL)
+                    timer.reset();
+                lastState = intakeState;
+                if (timer.seconds() > 0.5) intakeState = State.OPEN_CLAW;
+                break;
+
+            case OPEN_CLAW:
+                Actions.openBackClaw(true);
+                lastState = intakeState;
+
+                if (timer.seconds() <= 0.5) return;
+                Actions.setAxisStraight();
+                if (timer.seconds() <= 0.5 + 0.5) return;
+                intakeState = State.PREPARE_SPECIMEN;
+                break;
+
         }
     }
 
-    private void updatePositions()
-    {
-        Servos.linkageLeft.setPosition(linkagePos);
-        Servos.linkageRight.setPosition(linkagePos);
-        Servos.rotateAxis.setPosition(rotateAxisPos);
-        Servos.rotateBody.setPosition(rotateBodyPos);
-        Servos.rotateHead.setPosition(rotateHeadPos);
-        Servos.rotateClaw.setPosition(rotateClawPos);
-        Servos.claw.setPosition(clawPos);
-        Servos.rotateBackBody.setPosition(rotateBackBodyPos);
-        Servos.rotateBackClaw.setPosition(rotateBackClawPos);
-        Servos.backClaw.setPosition(backClawPos);
-
-        Func.SetMotorPosition(Motors.verticalLeft, verticalPos);
-        Func.SetMotorPosition(Motors.verticalRight, verticalPos);
-    }
-
-    private double getParallel(double x)
-    {
-        return 1.1 * x + 0.29;
-    }
-
-    private void openFrontClaw(boolean value)
-    {
-        if (value) clawPos = 0.29;
-        else clawPos = 0.19;
-    }
-
-    private void openBackClaw(boolean value)
-    {
-        if (value) backClawPos = 0.26;
-        else backClawPos = 0.4;
-    }
-
-    private class STATES
-    {
-        private void init()
-        {
-            isParallel = false;
-            rotateAxisPos = Constants.ROTATE_AXIS.MID;
-            rotateClawPos = Constants.ROTATE_CLAW.INIT;
-            rotateBodyPos = 0.73; //Constants.ROTATE_BODY.MAX;
-            rotateHeadPos = Constants.ROTATE_HEAD.INIT;
-            verticalPos = Constants.VERTICAL.MIN;
-            linkagePos = Constants.LINKAGE.CLOSED;
-            openFrontClaw(true);
-            openBackClaw(true);
-            rotateBackBodyPos = Constants.ROTATE_BACK_BODY.INIT;
-            rotateBackClawPos = Constants.ROTATE_BACK_CLAW.INIT;
-        }
-
-        private void prepareSample()
-        {
-            isParallel = true;
-            if(State.PREPARE_SAMPLE != lastState)
-            {
-                rotateClawPos = Constants.ROTATE_CLAW.INIT;
-                linkagePos = Constants.LINKAGE.CLOSED;
-                verticalPos = Constants.VERTICAL.MIN;
-                rotateBodyPos = 0.23;
-            }
-            rotateAxisPos = Constants.ROTATE_AXIS.MID;
-            rotateHeadPos = 0.5;//Constants.ROTATE_HEAD.INIT;
-
-            openFrontClaw(false);
-            openBackClaw(true);
-            rotateBackBodyPos = Constants.ROTATE_BACK_BODY.INIT;
-            rotateBackClawPos = Constants.ROTATE_BACK_CLAW.INIT;
-
-        }
-
-        private void pickupSample()
-        {
-            isParallel = true;
-            rotateBodyPos = 0.15;
-        }
-
-
-        private void prepareSpecimen()
-        {
-            isParallel = false;
-            if(State.PREPARE_SPECIMEN != lastState)
-            {
-                rotateClawPos = Constants.ROTATE_CLAW.INIT;
-                linkagePos = Constants.LINKAGE.CLOSED;
-                verticalPos = Constants.VERTICAL.MIN;
-                rotateBodyPos = 0.2;
-            }
-            rotateAxisPos = Constants.ROTATE_AXIS.MID;
-            rotateHeadPos = 0.17;//Constants.ROTATE_HEAD.INIT;
-
-            openFrontClaw(true);
-            openBackClaw(true);
-            rotateBackBodyPos = Constants.ROTATE_BACK_BODY.INIT;
-            rotateBackClawPos = Constants.ROTATE_BACK_CLAW.INIT;
-
-        }
-
-        private void pickupSpecimen()
-        {
-            rotateBodyPos = 0.5;
-            rotateClawPos = 0.21;
-        }
-
-        private void raiseVertical()
-        {
-            verticalPos = 1100;
-            backClawPos = 0.4;
-        }
-        private void raiseVerticalSpecimen()
-        {
-            verticalPos = 600;
-            backClawPos = 0.4;
-        }
-
-        private void transfer()
-        {
-            isParallel = false;
-            rotateAxisPos = 0.42;
-            rotateHeadPos = 0.25;//
-            rotateBodyPos = 0.48;//
-            rotateClawPos = 0.6;
-            linkagePos = 0.62;
-            backClawPos = 0.4;
-            rotateBackClawPos=0.72;
-        }
-        private void transferSpecimen()
-        {
-            isParallel = false;
-            rotateBodyPos = 0.4;
-            rotateAxisPos = 0.75;
-            rotateHeadPos = 0.62;//
-            rotateClawPos = Constants.ROTATE_CLAW.INIT;
-            linkagePos = 0.53;
-        }
-        private void transfer2() {
-            rotateBackBodyPos = 0.44;
-        }
-        private void transfer2Sample()
-        {
-            rotateBackBodyPos = 0.545;
-            rotateBodyPos=0.35;
-            rotateAxisPos = 1;
-            linkagePos=0.4;
-
-        }
-
-        private void doTransfer()
-        {
-            backClawPos = 0.4;
-            openFrontClaw(false);
-        }
-
-
-        private void leaveSpecimenRank()
-        {
-            rotateBackBodyPos = 0.1;
-            rotateBackClawPos = 0;
-            verticalPos = 1550;
-        }
-
-        private void leaveSampleBasket()
-        {
-            rotateBackBodyPos = 0.17;
-            rotateBackClawPos = 0.17;
-            verticalPos = 3250;
-            linkagePos=Constants.LINKAGE.CLOSED;
-        }
+    private void onDebug() {
+        debug.addData("CurrentState", intakeState);
+        debug.addData("lastState", lastState);
+        debug.addData("CurrentState2", isSpecimen);
+        debug.addData("isbuttonadown", Input.onKeyDown("scorer_a", gamepad2.a));
+        debug.addData("Timer", timer.seconds());
+        debug.addData("Motor Encoder Ticks", Motors.verticalLeft.getCurrentPosition());
+        debug.update();
     }
 }

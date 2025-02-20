@@ -24,14 +24,12 @@ public class SamplePipeline extends OpenCvPipeline {
 
     public Scalar upperYellow;
     public Scalar lowerYellow;
-
-    private double angle;
     public double redAngle;
     public double blueAngle;
     public double yellowAngle;
-
     boolean viewportPaused;
     OpenCvWebcam webcam;
+    private double angle;
 
     public SamplePipeline(OpenCvWebcam camera) {
         webcam = camera;

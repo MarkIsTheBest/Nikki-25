@@ -4,8 +4,7 @@ import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 
-public class Motors
-{
+public class Motors {
     public static DcMotor leftFront;
     public static DcMotor leftRear;
     public static DcMotor rightFront;
@@ -17,37 +16,33 @@ public class Motors
     public static DcMotor[] allMotors = new DcMotor[6];
 
     public static void init(HardwareMap hardwareMap) {
-        try
-        {
+        try {
             getMotors(hardwareMap);
             setZeroPowerBehaviour();
             setDirection();
             setAllMotors();
+        } catch (Exception ignored) {
         }
-        catch (Exception ignored) {}
     }
 
-    private static void getMotors(HardwareMap hardwareMap)
-    {
+    private static void getMotors(HardwareMap hardwareMap) {
         leftFront = hardwareMap.tryGet(DcMotor.class, "leftFront");
         leftRear = hardwareMap.tryGet(DcMotor.class, "leftRear");
         rightFront = hardwareMap.tryGet(DcMotor.class, "rightFront");
         rightRear = hardwareMap.tryGet(DcMotor.class, "rightRear");
 
-        verticalLeft= hardwareMap.tryGet(DcMotor.class, "verticalLeft");
+        verticalLeft = hardwareMap.tryGet(DcMotor.class, "verticalLeft");
         verticalRight = hardwareMap.tryGet(DcMotor.class, "verticalRight");
     }
 
-    private static void setZeroPowerBehaviour()
-    {
+    private static void setZeroPowerBehaviour() {
         leftFront.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         leftRear.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         rightFront.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         rightRear.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
     }
 
-    private static void setDirection()
-    {
+    private static void setDirection() {
         verticalLeft.setDirection(DcMotorSimple.Direction.REVERSE);
         verticalLeft.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         verticalRight.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);

@@ -74,16 +74,16 @@ public class MotorDirections extends OpMode {
         rightFront.setDirection(rightFrontMotorDirection);
         rightRear.setDirection(rightRearMotorDirection);
 
-        if(gamepad1.a)
+        if (gamepad1.a)
             leftFront.setPower(1);
 
-        if(gamepad1.y)
+        if (gamepad1.y)
             leftRear.setPower(1);
 
-        if(gamepad1.b)
+        if (gamepad1.b)
             rightFront.setPower(1);
 
-        if(gamepad1.x)
+        if (gamepad1.x)
             rightRear.setPower(1);
 
         telemetryA.addLine("Press A to spin the left front motor at 100% power");

@@ -2,21 +2,19 @@ package subsystems;
 
 import com.qualcomm.robotcore.util.ElapsedTime;
 
-public class PIDFControl
-{
+public class PIDFControl {
     private double lastError;
     private double integralSum = 0;
-    private double target;
-    private double current;
-    private double p;
-    private double i;
-    private double d;
-    private double f;
+    private final double target;
+    private final double current;
+    private final double p;
+    private final double i;
+    private final double d;
+    private final double f;
 
-    private ElapsedTime timer;
+    private final ElapsedTime timer;
 
-    public PIDFControl(double target, double current, double p, double i, double d, double f)
-    {
+    public PIDFControl(double target, double current, double p, double i, double d, double f) {
         this.target = target;
         this.current = current;
         this.p = p;
@@ -26,8 +24,7 @@ public class PIDFControl
         timer = new ElapsedTime();
     }
 
-    public double getPower()
-    {
+    public double getPower() {
         double error = target - current;
         integralSum += error * timer.seconds();
 
