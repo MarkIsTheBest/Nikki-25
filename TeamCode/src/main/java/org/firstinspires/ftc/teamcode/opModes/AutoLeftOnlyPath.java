@@ -26,7 +26,7 @@ import static org.firstinspires.ftc.teamcode.subsystems.Positions.ROTATE_SLIDER_
 import static org.firstinspires.ftc.teamcode.subsystems.Positions.ROTATE_SLIDER_OUTTAKE_FIRST_WORD;
 
 @Autonomous
-public class AutoLeft extends LinearOpMode {
+public class AutoLeftOnlyPath extends LinearOpMode {
 
     private Follower follower;
     private Timer pathTimer;
@@ -145,7 +145,7 @@ public class AutoLeft extends LinearOpMode {
         {
             double tx = 0;
 
-           // LLResult result = Other.Limelight.getLatestResult();
+            // LLResult result = Other.Limelight.getLatestResult();
             //if (result != null && result.isValid()) {
             //    tx = result.getTx();
             //}
@@ -217,7 +217,7 @@ public class AutoLeft extends LinearOpMode {
                         follower.followPath(startLeft, true);
                         break;
                 }
-                setPathState(1);
+                setPathState(18);
 
                 break;
 

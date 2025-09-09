@@ -26,7 +26,7 @@ import static org.firstinspires.ftc.teamcode.subsystems.Positions.ROTATE_SLIDER_
 import static org.firstinspires.ftc.teamcode.subsystems.Positions.ROTATE_SLIDER_OUTTAKE_FIRST_WORD;
 
 @Autonomous
-public class AutoLeft extends LinearOpMode {
+public class AutoRight extends LinearOpMode {
 
     private Follower follower;
     private Timer pathTimer;
@@ -49,32 +49,32 @@ public class AutoLeft extends LinearOpMode {
         double offsetStart = -7.5;
 
         startLeft = follower.pathBuilder(Constants.pathConstraints)
-                .addPath(new BezierLine(new Pose(57.982*1.5, 9.770*1.5), new Pose(55.9*1.5, (22.938*1.5) +offsetStart)))
-                .setLinearHeadingInterpolation(Math.toRadians(180-90), Math.toRadians(108))
+                .addPath(new BezierLine(new Pose(216-(57.982*1.5), 9.770*1.5), new Pose(216-(55.9*1.5), (22.938*1.5) +offsetStart)))
+                .setLinearHeadingInterpolation(Math.toRadians(90), Math.toRadians(180-108))
                 .build();
 
         resetStartLeft = follower.pathBuilder(Constants.pathConstraints)
-                .addPath(new BezierLine(new Pose(57.982*1.5, 9.770*1.5), new Pose(55.9*1.5, (22.938*1.5) +offsetStart)))
-                .setLinearHeadingInterpolation(Math.toRadians(180-120), Math.toRadians(90))
+                .addPath(new BezierLine(new Pose(216-(57.982*1.5), 9.770*1.5), new Pose(216-(55.9*1.5), (22.938*1.5) +offsetStart)))
+                .setLinearHeadingInterpolation(Math.toRadians(180-(180-120)), Math.toRadians(180-90))
                 .build();
 
         startRight = follower.pathBuilder(Constants.pathConstraints)
-                .addPath(new BezierLine(new Pose(57.982*1.5, 9.770*1.5), new Pose(55.9*1.5, (22.938*1.5) +offsetStart)))
-                .setLinearHeadingInterpolation(Math.toRadians(180-90), Math.toRadians(60))
+                .addPath(new BezierLine(new Pose(216-(57.982*1.5), 9.770*1.5), new Pose(216-(55.9*1.5), (22.938*1.5) +offsetStart)))
+                .setLinearHeadingInterpolation(Math.toRadians(180-90), Math.toRadians(180-60))
                 .build();
 
         resetStartRight = follower.pathBuilder(Constants.pathConstraints)
-                .addPath(new BezierLine(new Pose(57.982*1.5, 9.770*1.5), new Pose(55.9*1.5, (22.938*1.5) +offsetStart)))
-                .setLinearHeadingInterpolation(Math.toRadians(60), Math.toRadians(90))
+                .addPath(new BezierLine(new Pose(216-(57.982*1.5), 9.770*1.5), new Pose(216-(55.9*1.5), (22.938*1.5) +offsetStart)))
+                .setLinearHeadingInterpolation(Math.toRadians(180-60), Math.toRadians(90))
                 .build();
 
         startCenter = follower.pathBuilder(Constants.pathConstraints)
-                .addPath(new BezierLine(new Pose(57.982*1.5, 9.770*1.5), new Pose(55.9*1.5, (22.938*1.5) +offsetStart)))
+                .addPath(new BezierLine(new Pose(216-(57.982*1.5), 9.770*1.5), new Pose(216-(55.9*1.5), (22.938*1.5) +offsetStart)))
                 .setLinearHeadingInterpolation(Math.toRadians(90), Math.toRadians(90))
                 .build();
 
         resetStartCenter = follower.pathBuilder(Constants.pathConstraints)
-                .addPath(new BezierLine(new Pose(57.982*1.5, 9.770*1.5), new Pose(55.9*1.5, (22.938*1.5) +offsetStart)))
+                .addPath(new BezierLine(new Pose(216-(57.982*1.5), 9.770*1.5), new Pose(216-(55.9*1.5), (22.938*1.5) +offsetStart)))
                 .setLinearHeadingInterpolation(Math.toRadians(90), Math.toRadians(90))
                 .build();
 
@@ -83,54 +83,54 @@ public class AutoLeft extends LinearOpMode {
         prepareOuttake = follower.pathBuilder(Constants.pathConstraints)
                 .addPath(
                         new BezierCurve(
-                                new Pose(55.9*1.5, (22.938*1.5) +offsetStart),
-                                new Pose(12.818*1.5, 18.978*1.5),
-                                new Pose((45.75*1.5) + outtakeOffset, (49.110*1.5)+outtakeOffset)
+                                new Pose(216-(55.9*1.5), (22.938*1.5) +offsetStart),
+                                new Pose(216-(12.818*1.5), 18.978*1.5),
+                                new Pose(216-((45.75*1.5) + outtakeOffset), (49.110*1.5)+outtakeOffset)
                         )
                 )
-                .setLinearHeadingInterpolation(Math.toRadians(90), Math.toRadians(180-135))
+                .setLinearHeadingInterpolation(Math.toRadians(90), Math.toRadians(180-(180-135)))
                 .build();
 
         endRight = follower.pathBuilder(Constants.pathConstraints)
-                .addPath(new BezierLine(new Pose(45.75*1.5, 49.110*1.5), new Pose(46.77*1.5, 48.111*1.5)))
-                .setLinearHeadingInterpolation(Math.toRadians(180-135), Math.toRadians(-45))
+                .addPath(new BezierLine(new Pose(216-(45.75*1.5), 49.110*1.5), new Pose(216-(46.77*1.5), 48.111*1.5)))
+                .setLinearHeadingInterpolation(Math.toRadians(-145), Math.toRadians(180+45))
                 .build();
 
         endLeft = follower.pathBuilder(Constants.pathConstraints)
-                .addPath(new BezierLine(new Pose(45.75*1.5, 49.110*1.5), new Pose(46.77*1.5, 48.111*1.5)))
-                .setLinearHeadingInterpolation(Math.toRadians(180-135), Math.toRadians(-60))
+                .addPath(new BezierLine(new Pose(216-(45.75*1.5), 49.110*1.5), new Pose(216-(46.77*1.5), 48.111*1.5)))
+                .setLinearHeadingInterpolation(Math.toRadians(-145), Math.toRadians(180+60))
                 .build();
 
         endCenter = follower.pathBuilder(Constants.pathConstraints)
-                .addPath(new BezierLine(new Pose(45.75*1.5, 49.110*1.5), new Pose(46.77*1.5, 48.111*1.5)))
-                .setLinearHeadingInterpolation(Math.toRadians(180-135), Math.toRadians(-82))
+                .addPath(new BezierLine(new Pose(216-(45.75*1.5), 49.110*1.5), new Pose(216-(46.77*1.5), 48.111*1.5)))
+                .setLinearHeadingInterpolation(Math.toRadians(135), Math.toRadians(180+82))
                 .build();
 
         resetEndRight = follower.pathBuilder(Constants.pathConstraints)
-                .addPath(new BezierLine(new Pose(45.75*1.5, 49.110*1.5), new Pose(46.77*1.5, 48.111*1.5)))
-                .setLinearHeadingInterpolation(Math.toRadians(-45), Math.toRadians(-45))
+                .addPath(new BezierLine(new Pose(216-(45.75*1.5), 49.110*1.5), new Pose(216-(46.77*1.5), 48.111*1.5)))
+                .setLinearHeadingInterpolation(Math.toRadians(180+45), Math.toRadians(180+45))
                 .build();
 
         resetEndLeft = follower.pathBuilder(Constants.pathConstraints)
-                .addPath(new BezierLine(new Pose(45.75*1.5, 49.110*1.5), new Pose(46.77*1.5, 48.111*1.5)))
-                .setLinearHeadingInterpolation(Math.toRadians(-60), Math.toRadians(-45))
+                .addPath(new BezierLine(new Pose(216-(45.75*1.5), 49.110*1.5), new Pose(216-(46.77*1.5), 48.111*1.5)))
+                .setLinearHeadingInterpolation(Math.toRadians(180+60), Math.toRadians(180+45))
                 .build();
 
         resetEndCenter = follower.pathBuilder(Constants.pathConstraints)
-                .addPath(new BezierLine(new Pose(45.75*1.5, 49.110*1.5), new Pose(46.77*1.5, 48.111*1.5)))
-                .setLinearHeadingInterpolation(Math.toRadians(-82), Math.toRadians(-30))
+                .addPath(new BezierLine(new Pose(216-(45.75*1.5), 49.110*1.5), new Pose(216-(46.77*1.5), 48.111*1.5)))
+                .setLinearHeadingInterpolation(Math.toRadians(180+82), Math.toRadians(180+30))
                 .build();
 
         line6 = follower.pathBuilder(Constants.pathConstraints)
-                .addPath(new BezierLine(new Pose(46.77*1.5, 48.111*1.5), new Pose((45.75*1.5) + outtakeOffset + 3, (49.110*1.5)+outtakeOffset - 3)))
-                .setLinearHeadingInterpolation(Math.toRadians(-30), Math.toRadians(55))
+                .addPath(new BezierLine(new Pose(216-(46.77*1.5), 48.111*1.5), new Pose(216-((45.75*1.5) + outtakeOffset + 3), (49.110*1.5)+outtakeOffset - 3)))
+                .setLinearHeadingInterpolation(Math.toRadians(180+30), Math.toRadians(180-55))
                 .build();
 
         line7 = follower.pathBuilder(Constants.pathConstraints)
                 .addPath(
-                        new BezierLine(new Pose((45.75*1.5) + outtakeOffset, (49.110*1.5)+outtakeOffset), new Pose(30.797*1.5, 32.962*1.5))
+                        new BezierLine(new Pose(216-((45.75*1.5) + outtakeOffset), (49.110*1.5)+outtakeOffset), new Pose(216-(30.797*1.5), 32.962*1.5))
                 )
-                .setLinearHeadingInterpolation(Math.toRadians(55), Math.toRadians(180+45))
+                .setLinearHeadingInterpolation(Math.toRadians(180-55), Math.toRadians(180-(180+45)))
                 .build();
     }
 
@@ -145,10 +145,10 @@ public class AutoLeft extends LinearOpMode {
         {
             double tx = 0;
 
-           // LLResult result = Other.Limelight.getLatestResult();
-            //if (result != null && result.isValid()) {
-            //    tx = result.getTx();
-            //}
+            LLResult result = Other.Limelight.getLatestResult();
+            if (result != null && result.isValid()) {
+                tx = result.getTx();
+            }
 
             /*if (tx < -5) randomness = 0;
             if (tx > 5) randomness = 1;
@@ -174,9 +174,14 @@ public class AutoLeft extends LinearOpMode {
         follower = Constants.createFollower(hardwareMap);
         pathTimer = new Timer();
 
-        Pose startPose = new Pose((144-86.018)*1.5, 9.770*1.5, Math.toRadians(90));
+        Pose startPose = new Pose(216-((144-86.018)*1.5), 9.770*1.5, Math.toRadians(90));
         follower.setStartingPose(startPose);
         buildPaths();
+
+        Other.init(hardwareMap);
+        Other.Limelight.setPollRateHz(100);
+        Other.Limelight.start();
+        Other.Limelight.pipelineSwitch(1);
 
         Motors.init(hardwareMap);
         Servos.init(hardwareMap);
@@ -194,8 +199,6 @@ public class AutoLeft extends LinearOpMode {
         telemetry.addData("timer", pathTimer.getElapsedTimeSeconds());
         telemetry.addData("state", currentState);
         telemetry.addData("randomness", randomness);
-        telemetry.addData("extendMotor", Motors.extendSlider.getCurrentPosition());
-        telemetry.addData("rotate", Motors.rotateSlider.getCurrentPosition());
         telemetry.update();
 
         follower.update();
@@ -262,7 +265,7 @@ public class AutoLeft extends LinearOpMode {
                 break;
 
             case 4:
-                if (!Motors.extendSlider.isBusy() && !follower.isBusy())
+                if (!follower.isBusy())
                 {
                     follower.followPath(prepareOuttake);
                     Motors.goToPosition(Motors.rotateSlider, ROTATE_SLIDER_OUTTAKE_FIRST_WORD, 1);
@@ -271,7 +274,7 @@ public class AutoLeft extends LinearOpMode {
                 break;
 
             case 5:
-                if(!follower.isBusy())
+                if(!follower.isBusy() || pathTimer.getElapsedTimeSeconds() > 5)
                 {
                     Motors.setPosition(Motors.extendSlider, EXTEND_SLIDER_FIRST_WORD, 1);
                     setPathState(7);

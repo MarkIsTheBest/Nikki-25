@@ -11,8 +11,10 @@ public class Motors
     public static DcMotorEx leftRear;
     public static DcMotorEx rightFront;
     public static DcMotorEx rightRear;
+    public static DcMotorEx rotateSlider;
+    public static DcMotorEx extendSlider;
 
-    public static DcMotorEx[] allMotors = new DcMotorEx[4];
+    public static DcMotorEx[] allMotors = new DcMotorEx[6];
 
     public static void init(HardwareMap hardwareMap) {
         try {
@@ -28,6 +30,8 @@ public class Motors
         leftRear = hardwareMap.tryGet(DcMotorEx.class, "leftRear");
         rightFront = hardwareMap.tryGet(DcMotorEx.class, "rightFront");
         rightRear = hardwareMap.tryGet(DcMotorEx.class, "rightRear");
+        rotateSlider = hardwareMap.tryGet(DcMotorEx.class, "rotateSlider");
+        extendSlider = hardwareMap.tryGet(DcMotorEx.class, "extendSlider");
     }
 
     private static void setZeroPowerBehaviour() {
@@ -35,6 +39,8 @@ public class Motors
         leftRear.setZeroPowerBehavior(DcMotorEx.ZeroPowerBehavior.BRAKE);
         rightFront.setZeroPowerBehavior(DcMotorEx.ZeroPowerBehavior.BRAKE);
         rightRear.setZeroPowerBehavior(DcMotorEx.ZeroPowerBehavior.BRAKE);
+        rotateSlider.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+        extendSlider.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
     }
 
     private static void setDirection() {
@@ -42,10 +48,12 @@ public class Motors
         leftRear.setDirection(DcMotorSimple.Direction.REVERSE);
         rightFront.setDirection(DcMotorSimple.Direction.FORWARD);
         rightRear.setDirection(DcMotorSimple.Direction.FORWARD);
+        rotateSlider.setDirection(DcMotorSimple.Direction.FORWARD);
+        extendSlider.setDirection(DcMotorSimple.Direction.FORWARD);
     }
 
     private static void setAllMotors() {
-        DcMotorEx[] motors = {leftFront, rightFront, leftRear, rightRear};
+        DcMotorEx[] motors = {leftFront, rightFront, leftRear, rightRear, rotateSlider, extendSlider};
 
         for (int i = 0; i < motors.length; i++) {
             if (motors[i] != null) {
@@ -55,5 +63,34 @@ public class Motors
             }
         }
     }
+
+    public static void setPosition(DcMotorEx motor, int position, double power)
+    {
+        motor.setTargetPosition(position);
+        motor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+        motor.setPower(power);
+    }
+
+    public static void goToPosition(DcMotorEx motor, int position, double power) {
+        // Set target position
+        motor.setTargetPosition(position);
+
+        // Run to position
+        motor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+        motor.setPower(power);
+
+        // Wait until the motor reaches the target
+        while (motor.isBusy()) {
+            // You might want to add an OpMode idle() or Thread.yield() here
+            // if running inside a LinearOpMode
+        }
+
+        // Stop applying power so it doesn't hold
+        motor.setPower(0);
+
+        // Switch back to normal mode (so it's free afterwards)
+        motor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+    }
+
 
 }

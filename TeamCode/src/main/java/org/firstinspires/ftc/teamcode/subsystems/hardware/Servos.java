@@ -4,26 +4,22 @@ import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.hardware.Servo;
 
 public class Servos {
-    public static Servo[] allServos = new Servo[0];
+    public static Servo claw;
+
+    public static Servo[] allServos = new Servo[1];
 
     public static void init(HardwareMap hardwareMap) {
         try {
-
+            getHardware(hardwareMap);
+            setAllMotors();
         } catch (Exception ignore) {
         }
     }
 
     public static void getHardware(HardwareMap hardwareMap) {
-
+        claw = hardwareMap.get(Servo.class, "servo");
     }
 
-    private static void setZeroPowerBehaviour() {
-
-    }
-
-    private static void setDirection() {
-
-    }
 
     private static void setAllMotors() {
         Servo[] servos = {};

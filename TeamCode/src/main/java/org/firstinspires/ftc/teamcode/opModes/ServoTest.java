@@ -25,7 +25,6 @@ public class ServoTest extends LinearOpMode {
     private void initialize()
     {
         servo = hardwareMap.get(Servo.class, "servo");
-        servo.setPosition(0);
     }
 
     private void update()
@@ -33,21 +32,26 @@ public class ServoTest extends LinearOpMode {
         if(gamepad1.dpadRightWasPressed())
         {
             position += 0.05;
-            updateServoPosition();
+
         }
         if(gamepad1.dpadLeftWasPressed())
         {
             position -= 0.05;
+
+        }
+        if(gamepad1.aWasPressed())
+        {
             updateServoPosition();
         }
+        TelemetryManager telm = PanelsTelemetry.INSTANCE.getTelemetry();
+        telm.addData("Position", position);
+        telm.update();
     }
 
     private void updateServoPosition()
     {
         servo.setPosition(position);
 
-        TelemetryManager telm = PanelsTelemetry.INSTANCE.getTelemetry();
-        telm.addData("Position", position);
-        telm.update();
+
     }
 }
