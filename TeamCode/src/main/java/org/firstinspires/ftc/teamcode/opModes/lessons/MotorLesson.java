@@ -15,6 +15,8 @@ public class MotorLesson extends LinearOpMode {
 
     private DcMotor motor; // Declare Motor variable, which can be later called to rotate
     private Servo servo;
+    private double MoveForward;
+    private double Steering;
 
     @Override
     public void runOpMode() throws InterruptedException {
@@ -25,6 +27,9 @@ public class MotorLesson extends LinearOpMode {
 
         while (opModeIsActive())
         {
+            MoveForward = gamepad1.left_stick_y;
+            Steering = gamepad1.right_stick_x;
+
             if(gamepad1.left_stick_y > 0.03) { // Every frame a(xbox)/x(playstation) is held down, the boolean returns true
                 motor.setPower(-0.75); // powers the motor to run at a set speed [-1,1] is the interval (negative numbers mean backwards)
             }
