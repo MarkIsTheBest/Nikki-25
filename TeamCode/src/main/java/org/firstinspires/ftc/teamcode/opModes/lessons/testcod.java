@@ -14,6 +14,7 @@ public class testcod extends LinearOpMode {
     private double motorPower;
 
 
+
     @Override
     public void runOpMode() throws InterruptedException{
 
@@ -26,11 +27,30 @@ public class testcod extends LinearOpMode {
         while (opModeIsActive()){
             motorPower = gamepad1.left_stick_y;
             motorLeft.setPower(motorPower);
-            motorRight.setPower(motorPower);
+            motorRight.setPower(-motorPower);
 
+//
+//
+//            if(gamepad1.left_stick_y < 0.03) {
+//                motorLeft.setPower(0.75);
+//            }
+//            else if(gamepad1.left_stick_y > -0.03){
+//                motorLeft.setPower(-0.75);
+//            }
+//            else {
+//                motorLeft.setPower(0);
+//            }
+//
 
-
-
+            if (gamepad1.right_stick_x > 0.03){
+                servoSteering.setPosition(1);
+            }
+            else if(gamepad1.right_stick_x < -0.03){
+                servoSteering.setPosition(0);
+            }
+            else{
+                servoSteering.setPosition(0.5);
+            }
 
         }
     }
