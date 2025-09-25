@@ -30,7 +30,7 @@ public class LinearValueLesson extends LinearOpMode {
             motorSpeed = gamepad1.left_stick_y;
             motor.setPower(motorSpeed);
             // For application where the intervals are different (servo pos [SERVO_MIN,SERVO_MAX] gamepad.right_stick_x [-1,1])
-            servoPosition = map(gamepad1.right_stick_x,-1,1, SERVO_MIN, SERVO_MAX);
+                servoPosition = map(gamepad1.right_stick_x,-1,1, SERVO_MIN, SERVO_MAX);
             servo.setPosition(servoPosition);
         }
     }

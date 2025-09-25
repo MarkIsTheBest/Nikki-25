@@ -41,13 +41,13 @@ public class MotorLesson extends LinearOpMode {
             }
 
             if(gamepad1.right_stick_x < -0.03){
-                servo.setPosition(0.76);
+                servo.setPosition(1);
             }
             else if(gamepad1.right_stick_x > 0.03){
-                servo.setPosition(0.43);
+                servo.setPosition(0);
             }
             else{
-                servo.setPosition(0.59);
+                servo.setPosition(0.5);
             }
         }
     }

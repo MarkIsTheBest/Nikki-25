@@ -8,7 +8,7 @@ import com.qualcomm.robotcore.hardware.Servo;
 public class ServoPositionLesson extends LinearOpMode {
 
     private Servo servo;
-    private double position;
+    private double position = 0.5;
 
     @Override
     public void runOpMode() throws InterruptedException {
