@@ -42,7 +42,7 @@ public class testcod extends LinearOpMode {
 //            else {
 //                motorLeft.setPower(0);
 //            }
-            servoDir = gamepad1.right_stick_x;
+            servoDir = -gamepad1.right_stick_x;
 
             servoPower = LinearValueLesson.map(servoDir,-1,1, 0, 1);
 //
