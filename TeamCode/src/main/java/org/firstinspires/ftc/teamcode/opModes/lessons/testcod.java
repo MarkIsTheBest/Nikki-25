@@ -13,6 +13,8 @@ public class testcod extends LinearOpMode {
     private Servo servoSteering;
     private double motorPower;
 
+    private double servoDir;
+    private double servoPower;
 
 
     @Override
@@ -40,17 +42,11 @@ public class testcod extends LinearOpMode {
 //            else {
 //                motorLeft.setPower(0);
 //            }
-//
+            servoDir = gamepad1.right_stick_x;
 
-            if (gamepad1.right_stick_x > 0.03){
-                servoSteering.setPosition(1);
-            }
-            else if(gamepad1.right_stick_x < -0.03){
-                servoSteering.setPosition(0);
-            }
-            else{
-                servoSteering.setPosition(0.5);
-            }
+            servoPower = LinearValueLesson.map(servoDir,-1,1, 0, 1);
+//
+            servoSteering.setPosition(servoPower);
 
         }
     }
