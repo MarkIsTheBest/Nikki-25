@@ -13,6 +13,9 @@ public class RoboMegaCock extends LinearOpMode {
     private DcMotor leftMotor;
     private DcMotor rightMotor;
     private double motorPower;
+    private double steeringPos;
+    private double steerPercent;
+
 
     @Override
     public void runOpMode() throws InterruptedException {
@@ -27,18 +30,30 @@ public class RoboMegaCock extends LinearOpMode {
         leftMotor = hardwareMap.get(DcMotor.class, "leftMotor");
         rightMotor = hardwareMap.get(DcMotor.class, "rightMotor");
         steering = hardwareMap.get(Servo.class, "steering");
-        leftMotor.setDirection(DcMotorSimple.Direction.REVERSE);
     }
 
     private void play() {
 
     }
-
+ //DIFERENCIALLL UPDATE
     private void update() {
         motorPower = gamepad1.left_stick_y;
-        leftMotor.setPower(motorPower);
+        steerPercent = LinearValueLesson.map(gamepad1.right_stick_x, -1, 1, -0.9, 0.9);
+
+        if(steerPercent >= 0){
+            leftMotor.setPower(motorPower);
+            rightMotor.setPower(motorPower*(1-steerPercent));
+        }
+        else{
+            leftMotor.setPower(motorPower*(1 + steerPercent));
+            rightMotor.setPower(motorPower);
+        }
+
+        leftMotor.setPower(motorPower * (1 - steerPercent));
+
         rightMotor.setPower(motorPower);
 
-
+        steeringPos = LinearValueLesson.map(gamepad1.right_stick_x, -1, 1, 0.25, 0.75);
+        steering.setPosition(steeringPos);
     }
 }
