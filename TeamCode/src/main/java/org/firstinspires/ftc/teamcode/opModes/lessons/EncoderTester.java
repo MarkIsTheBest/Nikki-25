@@ -10,13 +10,11 @@ import com.qualcomm.robotcore.hardware.Servo;
 public class EncoderTester extends LinearOpMode { // Class that inherits from LinearOpMode(base class for opModes)
 
     private DcMotor armMotor;
-    private Servo servoClaw;
 
     @Override // Overrides function \/ from LinearOpMode to write custom code
     public void runOpMode() throws InterruptedException { // function that runs at init of OpMode
 
         armMotor = hardwareMap.dcMotor.get("armMotor");
-        servoClaw = hardwareMap.servo.get("servoClaw");
 
         waitForStart(); // stops the thread(code) until the start button on the Driver Station (DS) is pressed
 
