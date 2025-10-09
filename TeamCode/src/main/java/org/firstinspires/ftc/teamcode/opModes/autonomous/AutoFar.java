@@ -8,6 +8,7 @@ import com.pedropathing.util.Timer;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 
+import org.firstinspires.ftc.teamcode.helper.Debug;
 import org.firstinspires.ftc.teamcode.pedroPathing.Constants;
 
 @Autonomous
@@ -151,11 +152,11 @@ public class AutoFar extends LinearOpMode {
         follower.update();
         autonomousPathUpdate();
 
-        telemetry.addData("path state", pathState);
-        telemetry.addData("x", follower.getPose().getX());
-        telemetry.addData("y", follower.getPose().getY());
-        telemetry.addData("heading", follower.getPose().getHeading());
-        telemetry.update();
+        Debug.INSTANCE.addData("path state", pathState);
+        Debug.INSTANCE.addData("x", follower.getPose().getX());
+        Debug.INSTANCE.addData("y", follower.getPose().getY());
+        Debug.INSTANCE.addData("heading", follower.getPose().getHeading());
+        Debug.INSTANCE.update();
     }
 }
 
