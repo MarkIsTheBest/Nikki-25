@@ -13,7 +13,7 @@ public class ServoPositionLesson extends LinearOpMode {
     @Override
     public void runOpMode() throws InterruptedException {
 
-        servo = hardwareMap.get(Servo.class, "servo");
+        servo = hardwareMap.get(Servo.class, "steering");
         waitForStart();
 
         while (opModeIsActive())

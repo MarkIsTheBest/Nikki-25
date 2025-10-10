@@ -9,7 +9,7 @@ public class EmptyTemplate extends LinearOpMode { // Class that inherits from Li
 
     @Override // Overrides function \/ from LinearOpMode to write custom code
     public void runOpMode() throws InterruptedException { // function that runs at init of OpMode
-
+        
         waitForStart(); // stops the thread(code) until the start button on the Driver Station (DS) is pressed
 
         while (opModeIsActive()) {  // loops each frame until the OpMode is stopped, by pressing the stop button

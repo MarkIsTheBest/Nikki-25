@@ -3,6 +3,7 @@ package org.firstinspires.ftc.teamcode.opModes.lessons;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotor;
+import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.Servo;
 
 /*
@@ -21,6 +22,8 @@ public class MotorLesson extends LinearOpMode {
     @Override
     public void runOpMode() throws InterruptedException {
 
+
+        motor.setDirection(DcMotorSimple.Direction.REVERSE);
         motor = hardwareMap.get(DcMotor.class, "motor"); // Assign the variable to a reference from the config map on DS
         servo = hardwareMap.get(Servo.class, "servo");
         waitForStart();
@@ -41,13 +44,13 @@ public class MotorLesson extends LinearOpMode {
             }
 
             if(gamepad1.right_stick_x < -0.03){
-                servo.setPosition(1);
+                servo.setPosition(0.33);
             }
             else if(gamepad1.right_stick_x > 0.03){
-                servo.setPosition(0);
+                servo.setPosition(0.6);
             }
             else{
-                servo.setPosition(0.5);
+                servo.setPosition(0.45);
             }
         }
     }
