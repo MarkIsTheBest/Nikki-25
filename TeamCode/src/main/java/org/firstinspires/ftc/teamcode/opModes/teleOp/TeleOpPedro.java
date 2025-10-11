@@ -1,16 +1,14 @@
 package org.firstinspires.ftc.teamcode.opModes.teleOp;
 
 import com.pedropathing.follower.Follower;
-import com.pedropathing.geometry.BezierLine;
-import com.pedropathing.geometry.Pose;
-import com.pedropathing.paths.PathChain;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
-import  com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
-import org.firstinspires.ftc.teamcode.constants.Positions;
+import org.firstinspires.ftc.teamcode.constants.Configurables;
 import org.firstinspires.ftc.teamcode.constants.State;
 import org.firstinspires.ftc.teamcode.helper.Debug;
+import org.firstinspires.ftc.teamcode.helper.hardware.sensors.ColorSensors;
+import org.firstinspires.ftc.teamcode.helper.hardware.sensors.LEDs;
 import org.firstinspires.ftc.teamcode.pedroPathing.Constants;
 
 @TeleOp
@@ -31,7 +29,7 @@ public class TeleOpPedro extends LinearOpMode {
 
     private void initialize() {
         follower = Constants.createFollower(hardwareMap);
-        follower.setStartingPose(Positions.AutoPosition.STARTPOSE);
+        follower.setStartingPose(Configurables.Positions.AutoPosition.STARTPOSE);
     }
 
     private void play() {
@@ -40,6 +38,8 @@ public class TeleOpPedro extends LinearOpMode {
 
     private void update() {
         drive();
+        manipulate();
+        checkArtifacts();
         debug();
     }
 
@@ -62,6 +62,24 @@ public class TeleOpPedro extends LinearOpMode {
                 break;
         }
     }
+
+    private void checkArtifacts() {
+        for (int i = 0; i < 3; i++) {
+            if (ColorSensors.INSTANCE.isGreen(ColorSensors.INSTANCE.AllColorSensors()[i]))
+            {
+                LEDs.INSTANCE.setGreen(LEDs.INSTANCE.AllLEDs()[i]);
+            }
+            else if (ColorSensors.INSTANCE.isPurple(ColorSensors.INSTANCE.AllColorSensors()[i]))
+            {
+                LEDs.INSTANCE.setPurple(LEDs.INSTANCE.AllLEDs()[i]);
+            }
+            else
+            {
+                LEDs.INSTANCE.setEmpty(LEDs.INSTANCE.AllLEDs()[i]);
+            }
+        }
+    }
+
 
     private void debug() {
         Debug.INSTANCE.addData("X", follower.getPose().getX());

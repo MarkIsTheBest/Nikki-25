@@ -62,7 +62,9 @@ public class CustomPID extends LinearOpMode {
 
         timer.reset();
 
-        return (error * p) + (derivative * d) + (integralSum * i) + (reference * f);
+        double output = (error * p) + (derivative * d) + (integralSum * i) + (reference * f);
+        Debug.INSTANCE.addData("Output Power", output);
 
+        return output;
     }
 }

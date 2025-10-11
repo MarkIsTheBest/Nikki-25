@@ -139,7 +139,7 @@ The readme.md file located in the [/TeamCode/src/main/java/org/firstinspires/ftc
 * Fixes issue [1478](https://github.com/FIRST-Tech-Challenge/FtcRobotController/issues/1478) in AnnotatedHooksClassFilter that ignored exceptions if they occur in one of the SDK app hooks.
 * Fix initialize in distance sensor (Rev 2m) to prevent bad data in first call to getDistance.
 * Fixes issue [1470](https://github.com/FIRST-Tech-Challenge/FtcRobotController/issues/1470) Scaling a servo range is now irrespective of reverse() being called.  For example, if you set the scale range to [0.0, 0.5] and the servo is reversed, it will be from 0.5 to 0.0, NOT 1.0 to 0.5.
-* Fixes issue [1232](https://github.com/FIRST-Tech-Challenge/FtcRobotController/issues/1232), a rare race condition where using the log rapidly along with other telemetry could cause a crash.
+* Fixes issue [1232](https://github.com/FIRST-Tech-Challenge/FtcRobotController/issues/1232), a rare race condition where using the log rapidly along with other Debug.INSTANCE could cause a crash.
 
 ## Version 10.2 (20250121-174034)
 
@@ -206,8 +206,8 @@ The readme.md file located in the [/TeamCode/src/main/java/org/firstinspires/ftc
 * Adds I2C driver for Maxbotix Maxsonar I2CXL sonar rangefinder
 * Adds Blocks for setPwmEnable, setPwmDisable, and isPwmEnabled for servos and CR servos.
 * In the Blocks editor: a \n in the ExportToBlocks annotation's comment field is displayed as a line break.
-* Telemetry has new method setNumDecimalPlaces
-* Telemetry now formats doubles and floats (not inside objects, just by themselves)
+* Debug.INSTANCE has new method setNumDecimalPlaces
+* Debug.INSTANCE now formats doubles and floats (not inside objects, just by themselves)
 * Adds support for the Limelight 3A.
 * Adds initial support for the REV Servo Hub
   * Both the Robot Controller and Driver Station need to be updated to version 10.0 in order for Servo Hubs to be
@@ -230,7 +230,7 @@ The readme.md file located in the [/TeamCode/src/main/java/org/firstinspires/ftc
 * Two OpModes with the same name now automatically get renamed with the name followed by a "-" and the class name allowing them to both be on the device.
 * Shows the name of the active configuration on the Manage page of the Robot Controller Console
 * Updated AprilTag Library for INTO THE DEEP. Notably, `getCurrentGameTagLibrary()` now returns INTO THE DEEP tags.
-* Adds Blocks for Telemetry.setMsTransmissionInterval and Telemetry.getMsTransmissionInterval.
+* Adds Blocks for Debug.INSTANCE.setMsTransmissionInterval and Debug.INSTANCE.getMsTransmissionInterval.
 * Adds Blocks sample SensorOctoQuad.
 
 ### Bug Fixes
@@ -299,7 +299,7 @@ The readme.md file located in the [/TeamCode/src/main/java/org/firstinspires/ftc
   * Fixes inability to use EasyOpenCV CameraFactory in OnBotJava
   * Fixes entire RC app crash when user pipeline throws an exception
   * Fixes entire RC app crash when user user canvas annotator throws an exception
-  * Use the modern stacktrace display when handling user exceptions instead of the legacy ESTOP telemetry message
+  * Use the modern stacktrace display when handling user exceptions instead of the legacy ESTOP Debug.INSTANCE message
 
 ## Version 9.0.1 (20230929-083754)
 
@@ -345,7 +345,7 @@ The readme.md file located in the [/TeamCode/src/main/java/org/firstinspires/ftc
 * Fixes a bug which prevented PlayStation gamepads from being used in bluetooth mode. Bluetooth is NOT legal for competition but may be useful to allow a DS device to be used while charging, or at an outreach event.
 * Fixes a bug where a Blocks OpMode's Date Modified value can change to December 31, 1969, if the Control Hub is rebooted while the Blocks OpMode is being edited.
 * Fixes the automatic TeleOp preselection feature (was broken in 8.2)
-* Fixes a bug where passing an integer number such as 123 to the Telemetry.addData block that takes a number shows up as 123.0 in the telemetry.
+* Fixes a bug where passing an integer number such as 123 to the Debug.INSTANCE.addData block that takes a number shows up as 123.0 in the Debug.INSTANCE.
 * Fixes OnBotJava autocomplete issues:
   * Autocomplete would incorrectly provide values for the current class when autocompleting a local variable
   * `hardwareMap` autocomplete would incorrectly include lambda class entries
@@ -353,7 +353,7 @@ The readme.md file located in the [/TeamCode/src/main/java/org/firstinspires/ftc
 * Fixes OnBotJava tabs failing to close when their file is deleted.
 * Fixes a project view refresh not happening when a file is renamed in OnBotJava.
 * Fixes the "Download" context menu item for external libraries in the OnBotJava interface.
-* Fixes issue where Driver Station telemetry would intermittently freeze when set to Monospace mode.
+* Fixes issue where Driver Station Debug.INSTANCE would intermittently freeze when set to Monospace mode.
 * Fixes performance regression for certain REV Hub operations that was introduced in version 8.2.
 * Fixes TagID comparison logic in DriveToTag samples.
 
@@ -422,7 +422,7 @@ The readme.md file located in the [/TeamCode/src/main/java/org/firstinspires/ftc
 This is a bug fix only release to address the following four issues.
 
 * [Issue #492](https://github.com/FIRST-Tech-Challenge/FtcRobotController/issues/492) - Can't create new blocks opmodes.
-* [Issue #495](https://github.com/FIRST-Tech-Challenge/FtcRobotController/issues/495) - Remove the final modifier from the OpMode's Telemetry object.
+* [Issue #495](https://github.com/FIRST-Tech-Challenge/FtcRobotController/issues/495) - Remove the final modifier from the OpMode's Debug.INSTANCE object.
 * [Issue #500](https://github.com/FIRST-Tech-Challenge/FtcRobotController/issues/500) - Some devices cannot be configured when the Driver Station app has been updated to 8.1
   * Updating either the Robot Controller app or the Driver Station app to 8.1.1 or later will fix this issue.
 * The Modern Robotics touch sensor was configurable as a  Digital Device. It can only be used as an Analog Device.
@@ -520,7 +520,7 @@ This is a bug fix only release to address the following four issues.
 
 ### Enhancements
 * Uncaught exceptions in OpModes no longer require a Restart Robot
-  * A blue screen popping up with a stacktrace is not an SDK error; this replaces the red text in the telemetry area.
+  * A blue screen popping up with a stacktrace is not an SDK error; this replaces the red text in the Debug.INSTANCE area.
   * Since the very first SDK release, OpMode crashes have put the robot into "EMERGENCY STOP" state, only showing the first line of the exception, and requiring the user to press "Restart Robot" to continue
   * Exceptions during an OpMode now open a popup window with the same color scheme as the log viewer, containing 15 lines of the exception stacktrace to allow easily tracing down the offending line without needing to connect to view logs over ADB or scroll through large amounts of logs in the log viewer.
   * The exception text in the popup window is both zoomable and scrollable just like a webpage.
@@ -777,11 +777,11 @@ Version 5.5 requires Android Studio 4.0 or later.
 ### New features
 * Adds support for calling custom Java classes from Blocks OpModes (fixes [SkyStone issue #161](https://github.com/FIRST-Tech-Challenge/SkyStone/issues/161)).
     * Classes must be in the org.firstinspires.ftc.teamcode package.
-    * To have easy access to the opMode, hardwareMap, telemetry, gamepad1, and gamepad2, classes can
+    * To have easy access to the opMode, hardwareMap, Debug.INSTANCE, gamepad1, and gamepad2, classes can
       extends org.firstinspires.ftc.robotcore.external.BlocksOpModeCompanion.
     * Methods must be public static and have no more than 21 parameters.
     * Methods must be annotated with org.firstinspires.ftc.robotcore.external.ExportToBlocks.
-    * Parameters declared as OpMode, LinearOpMode, Telemetry, and HardwareMap are supported and the
+    * Parameters declared as OpMode, LinearOpMode, Debug.INSTANCE, and HardwareMap are supported and the
       argument is provided automatically, regardless of the order of the parameters. On the block,
       the sockets for those parameters are automatically filled in.
     * Parameters declared as char or java.lang.Character will accept any block that returns text
@@ -792,7 +792,7 @@ Version 5.5 requires Android Studio 4.0 or later.
       value to the nearest whole number.
     * Parameters declared as float, java.lang.Float, double, java.lang.Double will accept any
       block that returns a number.
-* Adds telemetry API method for setting display format
+* Adds Debug.INSTANCE API method for setting display format
     * Classic
     * Monospace
     * HTML (certain tags only)
@@ -927,7 +927,7 @@ Version 5.5 requires Android Studio 4.0 or later.
 * Fixes system responsiveness issue when an Expansion Hub is disconnected
 * Fixes issue where IMU initialization could prevent OpModes from stopping
 * Fixes issue where AndroidTextToSpeech.speak() would fail if it was called too early
-* Adds telemetry.speak() methods and blocks, which cause the Driver Station (if also updated) to speak text
+* Adds Debug.INSTANCE.speak() methods and blocks, which cause the Driver Station (if also updated) to speak text
 * Adds and improves Expansion Hub-related warnings
     * Improves Expansion Hub low battery warning
         * Displays the warning immediately after the hub reports it
@@ -1034,7 +1034,7 @@ Known issues:
  * Adds calibration for Logitech C270
  * Updates build tooling and target SDK.
  * Compliance with Google's permissions infrastructure (Required after build tooling update).
- * Keep Alives to mitigate the Motorola Wi-Fi scanning problem.  Telemetry substitute no longer necessary.
+ * Keep Alives to mitigate the Motorola Wi-Fi scanning problem.  Debug.INSTANCE substitute no longer necessary.
  * Improves Vuforia error reporting.
  * Fixes ftctechnh/ftc_app issues 621, 713.
  * Miscellaneous bug fixes and improvements.
@@ -1071,7 +1071,7 @@ Changes include:
  * Fix to prevent crash when deprecated configuration annotations are used.
  * Change to allow FTC Robot Controller APK to be auto-updated using FIRST Global Control Hub update scripts.
  * Removed samples for non supported / non legal hardware.
- * Improvements to Telemetry.addData block with "text" socket.
+ * Improvements to Debug.INSTANCE.addData block with "text" socket.
  * Updated Blocks sample OpMode list to include Rover Ruckus Vuforia example.
  * Update SDK library version number.
 
@@ -1123,7 +1123,7 @@ Changes include:
     - Support for USB connected UVC webcams.
     - Refactored optimized Blocks Vuforia code to support Rover Ruckus image targets.
     - Added programming blocks to support PIDF (proportional, integral, derivative and feed forward) motor control.
-    - Added formatting options (under Telemetry and Miscellaneous categories) so user can set how many decimal places to display a numerical value.
+    - Added formatting options (under Debug.INSTANCE and Miscellaneous categories) so user can set how many decimal places to display a numerical value.
     - Support to play audio files (which are uploaded through Blocks web interface) on Driver Station in addition to the Robot Controller.
     - Fixed bug with Download Image of Blocks feature.
     - Support for REV Robotics Blinkin LED Controller.
@@ -1208,7 +1208,7 @@ Changes with version 3.5 include:
 ## Version 3.4 (built on 17.09.06)
 
 Changes with version 3.4 include:
- * Added telemetry.update() statement for BlankLinearOpMode template.
+ * Added Debug.INSTANCE.update() statement for BlankLinearOpMode template.
  * Renamed sample Block OpModes to be more consistent with Java samples.
  * Added some additional sample Block OpModes.
  * Reworded OnBot Java readme slightly.
@@ -1324,7 +1324,7 @@ Changes include:
  * Fix to reset Autonomous timer back to 30 seconds.
  * Implementation of specific motor profiles for approved 12V motors (includes Tetrix, AndyMark, Matrix and REV models).
  * Modest improvements to enhance Wi-Fi P2P pairing.
- * Fixes telemetry log addition race.
+ * Fixes Debug.INSTANCE log addition race.
  * Publishes all the sources (not just a select few).
  * Includes Block programming improvements
     - Addition of optimized Vuforia blocks.
@@ -1394,7 +1394,7 @@ Changes include:
      - Added type safety to blocks for Quaternion.
      - Added type safety to blocks for Servo.
      - Added type safety to blocks for ServoController.
-     - Added type safety to blocks for Telemetry.
+     - Added type safety to blocks for Debug.INSTANCE.
      - Added type safety to blocks for Temperature.
      - Added type safety to blocks for TouchSensor.
      - Added type safety to blocks for UltrasonicSensor.
@@ -1438,7 +1438,7 @@ Changes include:
   * Added log info to help diagnose why the Robot Controller app was terminated (for example, by watch dog function).
   * Added ability to transfer log from the controller.
   * Fixed inconsistency for AngularVelocity
-  * Limit unbounded growth of data for telemetry.  If user does not call telemetry.update() for LinearOpMode in a timely manner, data added for telemetry might get lost if size limit is exceeded.
+  * Limit unbounded growth of data for Debug.INSTANCE.  If user does not call Debug.INSTANCE.update() for LinearOpMode in a timely manner, data added for Debug.INSTANCE might get lost if size limit is exceeded.
 
 ## Version 2.35 (released on 16.10.06)
   * Blockly programming mode - Removed unnecesary idle() call from blocks for new project.
@@ -1523,7 +1523,7 @@ Changes include:
  * Swap mechanism added to FTC Robot Controller configuration activity.  For example, if you have two motor controllers on a robot, and you misidentified them in your configuration file, you can use the Swap button to swap the devices within the configuration file (so you do not have to manually re-enter in the configuration info for the two devices).
  * Fix mechanism added to all user to replace an electronic module easily.  For example, suppose a servo controller dies on your robot. You replace the broken module with a new module, which has a different serial number from the original servo controller.  You can use the Fix button to automatically reconfigure your configuration file to use the serial number of the new module.
  * Improvements made to fix resiliency and responsiveness of the system.
- * For LinearOpMode the user now must for a telemetry.update() to update the telemetry data on the driver station.  This update() mechanism ensures that the driver station gets the updated data properly and at the same time.
+ * For LinearOpMode the user now must for a Debug.INSTANCE.update() to update the Debug.INSTANCE data on the driver station.  This update() mechanism ensures that the driver station gets the updated data properly and at the same time.
  * The Auto Configure function of the Robot Controller is now template based.  If there is a commonly used robot configuration, a template can be created so that the Auto Configure mechanism can be used to quickly configure a robot of this type.
  * The logic to detect a runaway OpMode (both in the LinearOpMode and OpMode types) and to abort the run, then auto recover has been improved/implemented.
  * Fix has been incorporated so that Logitech F310 gamepad mappings will be correct for Marshmallow users.
@@ -1599,8 +1599,8 @@ Changes include:
  * Corrrected "Dead zone" joystick code.
  * LED.getDeviceName and .getConnectionInfo() return null
  * apps check for ROBOCOL_VERSION mismatch
- * Fix for Telemetry also has off-by-one errors in its data string sizing / short size limitations error
- * User telemetry output is sorted.
+ * Fix for Debug.INSTANCE also has off-by-one errors in its data string sizing / short size limitations error
+ * User Debug.INSTANCE output is sorted.
  * added formatting variants to DbgLog and RobotLog APIs
  * code modified to allow for a long list of OpMode names.
  * changes to improve thread safety of RobocolDatagramSocket
