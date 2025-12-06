@@ -1,19 +1,26 @@
 package org.firstinspires.ftc.teamcode.opModes.lessons;
 
+import static java.lang.Math.pow;
+
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
+import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.Servo;
 
 @TeleOp
 public class ServoPositionLesson extends LinearOpMode {
 
-    private Servo servo;
+    private Servo bL;
+    private Servo bR;
     private double position = 0.5;
 
     @Override
     public void runOpMode() throws InterruptedException {
 
-        servo = hardwareMap.get(Servo.class, "steering");
+        bL = hardwareMap.get(Servo.class, "bL");
+        bR = hardwareMap.get(Servo.class, "bR");
+
+
         waitForStart();
 
         while (opModeIsActive())
@@ -26,8 +33,10 @@ public class ServoPositionLesson extends LinearOpMode {
             }
 
             if(gamepad1.aWasPressed()) {
-                servo.setPosition(position);
+                bL.setPosition(position);
+                bR.setPosition(position);
             }
+
 
             telemetry.addData("Servo Position", position);
             telemetry.update();

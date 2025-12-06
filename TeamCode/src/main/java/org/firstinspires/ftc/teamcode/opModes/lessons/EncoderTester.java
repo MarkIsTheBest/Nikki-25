@@ -11,11 +11,12 @@ public class EncoderTester extends LinearOpMode { // Class that inherits from Li
 
     private DcMotor armMotor;
     private int motorPower;
+    private double angle;
 
     @Override // Overrides function \/ from LinearOpMode to write custom code
     public void runOpMode() throws InterruptedException { // function that runs at init of OpMode
 
-        armMotor = hardwareMap.dcMotor.get("armMotor");
+        armMotor = hardwareMap.dcMotor.get("armRotation");
 
         waitForStart(); // stops the thread(code) until the start button on the Driver Station (DS) is pressed
 
@@ -25,11 +26,14 @@ public class EncoderTester extends LinearOpMode { // Class that inherits from Li
 
             // Show the position of the motor on telemetry
             telemetry.addData("Encoder Position", position);
+            telemetry.addData("Angle", angle);
             telemetry.update();
 
             if(gamepad1.aWasPressed()){
                 armMotor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
             }
+
+           angle = (position/537.7) * 360;
 
         }
     }
