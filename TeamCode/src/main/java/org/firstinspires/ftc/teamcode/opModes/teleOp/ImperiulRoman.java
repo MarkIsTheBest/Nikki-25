@@ -2,6 +2,7 @@ package org.firstinspires.ftc.teamcode.opModes.teleOp; // <- Location of script/
 
 /* \/ Here are the imports/library files references \/ */
 import static java.lang.Math.abs;
+import static java.lang.Math.pow;
 
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
@@ -28,6 +29,7 @@ public class ImperiulRoman extends LinearOpMode {
     private DcMotor intake;
     private DcMotorEx launcher;
     private double launchSpeed;
+    private double variableSpeed = 175;
 
     private Servo barrierRight;
     private boolean rightSpinningUp = false;
@@ -117,7 +119,7 @@ public class ImperiulRoman extends LinearOpMode {
         backLeft.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         backRight.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
 
-        launcher.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+        launcher.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
         intake.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
 
     }
@@ -139,6 +141,12 @@ public class ImperiulRoman extends LinearOpMode {
     private void shoot()
     {
         launchSpeed = launcher.getVelocity(AngleUnit.DEGREES);
+        if (aprilTags.detectedDistance != -1) {
+            variableSpeed = 17181860 + (141.7382 - 17181860) / ( 1 + Math.pow((aprilTags.detectedDistance / 293105.9), 1.444734));
+        }
+
+        //y = 17181860 + (141.7382 - 17181860)/(1 + (x/293105.9)^1.444734)
+        else variableSpeed = 175;
 
         // ===== RIGHT SIDE PRESS =====
         if (gamepad1.rightBumperWasPressed() && !rightSpinningUp && !rightShooting && !launcherSpinningUp && shootDelay.seconds() > 0.1) {
@@ -153,7 +161,7 @@ public class ImperiulRoman extends LinearOpMode {
         }
 
         // Spin-up complete → fire
-        if (rightSpinningUp && Math.abs(launchSpeed) >= 175) {
+        if (rightSpinningUp && Math.abs(launchSpeed) >= variableSpeed) {
             launcherSpinningUp = false; // allow other side
             barrierRight.setPosition(0.75); // raise barrier
             intake.setPower(1);
@@ -188,7 +196,7 @@ public class ImperiulRoman extends LinearOpMode {
         }
 
         // Spin-up complete → fire
-        if (leftSpinningUp && Math.abs(launchSpeed) >= 175) {
+        if (leftSpinningUp && Math.abs(launchSpeed) >= variableSpeed) {
             launcherSpinningUp = false;
             barrierLeft.setPosition(0.25); // raise barrier
             intake.setPower(1);
@@ -245,6 +253,7 @@ public class ImperiulRoman extends LinearOpMode {
         telemetry.addData("backLeft Encoder Ticks", backLeft.getCurrentPosition());
         telemetry.addData("frontLeft Encoder Ticks", frontLeft.getCurrentPosition());
         telemetry.addData("Launcher Velocity", launchSpeed);
+        telemetry.addData("variable speed", variableSpeed);
 
         telemetry.addData("April Tag ID", aprilTags.detectedId);
         telemetry.addData("April Tag Distance (Inches)", aprilTags.detectedDistance);

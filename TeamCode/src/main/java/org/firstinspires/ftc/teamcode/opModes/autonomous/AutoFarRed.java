@@ -21,7 +21,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 
 @Autonomous
-public class AutoFar extends LinearOpMode {
+public class AutoFarRed extends LinearOpMode {
 
     private double launchSpeed;
     private Servo barrierRight;
@@ -67,17 +67,17 @@ public class AutoFar extends LinearOpMode {
     private int pathState;
 
     // Start Pose
-    private final Pose startPose = new Pose(22.1, 127, Math.toRadians(143)); // Start position
+    private final Pose startPose = new Pose(22.1, 127, Math.toRadians(143)).mirror(); // Start position
 
     // Trajectory Poses
-    private final Pose path1Pose = new Pose(30.5-2, 116.7-2, Math.toRadians(140)); // Path 1
-    private final Pose path2Pose = new Pose(50, 84, Math.toRadians(180)); // Path 2
-    private final Pose path3Pose = new Pose(16, 84, Math.toRadians(180)); // Path 3
-    private final Pose path5Pose = new Pose(30.5-2, 116.7-2, Math.toRadians(140)); // Path 5
-    private final Pose path6Pose = new Pose(50, 60, Math.toRadians(180)); // Path 6
-    private final Pose path7Pose = new Pose(16-14, 60, Math.toRadians(180)); // Path 7
-    private final Pose path8Pose = new Pose(30.5-2, 116.7-2, Math.toRadians(150)); // Path 8
-    private final Pose parkPose = new Pose(30.6, 79, Math.toRadians(-90)); // Path Pose
+    private final Pose path1Pose = new Pose(30.5-2, 116.7-2, Math.toRadians(140)).mirror(); // Path 1
+    private final Pose path2Pose = new Pose(50, 84, Math.toRadians(180)).mirror(); // Path 2
+    private final Pose path3Pose = new Pose(16, 84, Math.toRadians(180)).mirror(); // Path 3
+    private final Pose path5Pose = new Pose(30.5-2, 116.7-2, Math.toRadians(140)).mirror(); // Path 5
+    private final Pose path6Pose = new Pose(50, 60, Math.toRadians(180)).mirror(); // Path 6
+    private final Pose path7Pose = new Pose(16-14, 60, Math.toRadians(180)).mirror(); // Path 7
+    private final Pose path8Pose = new Pose(30.5-2, 116.7-2, Math.toRadians(150)).mirror(); // Path 8
+    private final Pose parkPose = new Pose(30.6, 79, Math.toRadians(-90)).mirror(); // Path Pose
 
 
     private PathChain path1Path, path2Path, path3Path, path4Path, path6Path, path7Path, path8Path, parkPath;
