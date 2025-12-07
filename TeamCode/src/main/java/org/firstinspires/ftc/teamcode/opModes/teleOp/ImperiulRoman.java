@@ -12,6 +12,11 @@ import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
+import org.firstinspires.ftc.teamcode.opModes.helper.AprilTagHelper;
+
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 
 @TeleOp // Makes the OpMode accessible in the TeleOp panel
 public class ImperiulRoman extends LinearOpMode {
@@ -23,7 +28,6 @@ public class ImperiulRoman extends LinearOpMode {
     private DcMotor intake;
     private DcMotorEx launcher;
     private double launchSpeed;
-    private double max = 0;
 
     private Servo barrierRight;
     private boolean rightSpinningUp = false;
@@ -44,9 +48,40 @@ public class ImperiulRoman extends LinearOpMode {
     private float number;
     private boolean backwards;
 
-    @Override
-    public void runOpMode() throws InterruptedException {
+    private AprilTagHelper aprilTags = new AprilTagHelper();
 
+    @Override
+    public void runOpMode() throws InterruptedException
+    {
+        initialize();
+        waitForStart();
+
+        while (opModeIsActive()) update();
+    }
+
+    private void initialize()
+    {
+        aprilTags.init(hardwareMap, "Webcam");
+        aprilTags.allowedIDs(new ArrayList<>(Arrays.asList(20,24)));
+
+        initializeHardware();
+    }
+
+    private void update()
+    {
+        aprilTags.update();
+
+        double y = -gamepad1.left_stick_y;
+        double x = gamepad1.left_stick_x;
+        double rx = gamepad1.right_stick_x;
+
+        movement(y, x, rx);
+        shoot();
+        telemetry();
+    }
+
+    private void initializeHardware()
+    {
         frontLeft = hardwareMap.dcMotor.get("frontLeft");
         frontRight = hardwareMap.dcMotor.get("frontRight");
         backLeft = hardwareMap.dcMotor.get("backLeft");
@@ -63,6 +98,7 @@ public class ImperiulRoman extends LinearOpMode {
         frontLeft.setDirection(DcMotorSimple.Direction.REVERSE);
         backLeft.setDirection(DcMotorSimple.Direction.REVERSE );
         frontRight.setDirection(DcMotorSimple.Direction.FORWARD);
+
 
         backRight.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         frontLeft.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
@@ -84,40 +120,10 @@ public class ImperiulRoman extends LinearOpMode {
         launcher.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         intake.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
 
-
-        waitForStart();
-
-        while (opModeIsActive()) {
-            double y = -gamepad1.left_stick_y; // Remember, Y stick value is reversed
-            double x = gamepad1.left_stick_x; // Counteract imperfect strafing
-            double rx = gamepad1.right_stick_x;
-
-            movement(y, x, rx);
-            shoot();
-            launchSpeed = launcher.getVelocity(AngleUnit.DEGREES);
-
-            if (abs(launchSpeed) > max) {
-                max = abs(launchSpeed);
-            }
-
-            telemetry.addData("toggle", toggle);
-
-            telemetry.addData("frontRight", frontRight.getPower());
-            telemetry.addData("backRight", backRight.getPower());
-            telemetry.addData("backLeft", backLeft.getPower());
-            telemetry.addData("frontLeft", frontLeft.getPower());
-
-            telemetry.addData("frontRight Encoder Ticks", frontRight.getCurrentPosition());
-            telemetry.addData("backRight Encoder Ticks", backRight.getCurrentPosition());
-            telemetry.addData("backLeft Encoder Ticks", backLeft.getCurrentPosition());
-            telemetry.addData("frontLeft Encoder Ticks", frontLeft.getCurrentPosition());
-            telemetry.addData("Launcher Velocity", launchSpeed);
-            telemetry.addData("Max Speed Reached", max);
-
-            telemetry.update();
-        }
     }
-    private void movement(double y, double x, double rx) {
+
+    private void movement(double y, double x, double rx)
+    {
         double denominator = Math.max(abs(y) + abs(x) + abs(rx), 1);
         double frontLeftPower = (y + x + rx) / denominator;
         double backLeftPower = (y - x + rx) / denominator;
@@ -130,9 +136,9 @@ public class ImperiulRoman extends LinearOpMode {
         backRight.setPower(backRightPower);
     }
 
-
-
-    private void shoot() {
+    private void shoot()
+    {
+        launchSpeed = launcher.getVelocity(AngleUnit.DEGREES);
 
         // ===== RIGHT SIDE PRESS =====
         if (gamepad1.rightBumperWasPressed() && !rightSpinningUp && !rightShooting && !launcherSpinningUp && shootDelay.seconds() > 0.1) {
@@ -225,8 +231,28 @@ public class ImperiulRoman extends LinearOpMode {
         else if (toggle2 == -1 && !launcherBusy) launcher.setPower(0);
     }
 
-}
+    private void telemetry()
+    {
+        telemetry.addData("toggle", toggle);
 
+        telemetry.addData("frontRight", frontRight.getPower());
+        telemetry.addData("backRight", backRight.getPower());
+        telemetry.addData("backLeft", backLeft.getPower());
+        telemetry.addData("frontLeft", frontLeft.getPower());
+
+        telemetry.addData("frontRight Encoder Ticks", frontRight.getCurrentPosition());
+        telemetry.addData("backRight Encoder Ticks", backRight.getCurrentPosition());
+        telemetry.addData("backLeft Encoder Ticks", backLeft.getCurrentPosition());
+        telemetry.addData("frontLeft Encoder Ticks", frontLeft.getCurrentPosition());
+        telemetry.addData("Launcher Velocity", launchSpeed);
+
+        telemetry.addData("April Tag ID", aprilTags.detectedId);
+        telemetry.addData("April Tag Distance (Inches)", aprilTags.detectedDistance);
+
+        telemetry.update();
+    }
+
+}
 
 // cine vede asta, sa stie ca suge pula tare de tot <3
 //fac iu :(
