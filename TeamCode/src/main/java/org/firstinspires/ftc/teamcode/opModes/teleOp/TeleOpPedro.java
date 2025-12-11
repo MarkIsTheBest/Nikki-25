@@ -1,5 +1,7 @@
 package org.firstinspires.ftc.teamcode.opModes.teleOp;
 
+import com.pedropathing.control.PIDFCoefficients;
+import com.pedropathing.control.PIDFController;
 import com.pedropathing.follower.Follower;
 import com.pedropathing.geometry.BezierLine;
 import com.pedropathing.geometry.Pose;
@@ -29,9 +31,17 @@ public class TeleOpPedro extends LinearOpMode {
     private State currentState = State.INIT;
     private State lastState;
 
+    double targetHeadingRad; // Radians
+
+    PIDFController controller;
+    boolean headingLock = true;
+
+    PIDFCoefficients coefficients = new PIDFCoefficients(0.7, 0, 0.02, 0.01);
+
     private void initialize() {
         follower = Constants.createFollower(hardwareMap);
         follower.setStartingPose(Positions.AutoPosition.STARTPOSE);
+        controller = new PIDFController(coefficients);
     }
 
     private void play() {
@@ -44,15 +54,35 @@ public class TeleOpPedro extends LinearOpMode {
     }
 
     private void drive() {
+        if (gamepad1.left_stick_x > 0.1 || gamepad1.left_stick_x < -0.1 || gamepad1.left_stick_y > 0.1 || gamepad1.left_stick_y < -0.1) {
+            headingLock = true;
+        }
+        else {
+            headingLock = false;
+            targetHeadingRad = follower.getHeading();
+        }
+
         double speedScale = gamepad1.right_trigger > 0.1 ? 0.33 : 1;
 
-        follower.setTeleOpDrive(-gamepad1.left_stick_y * speedScale,
-                -gamepad1.left_stick_x * speedScale,
-                -gamepad1.right_stick_x * speedScale,
-                true);
+        double error = angleWrap(targetHeadingRad - follower.getHeading());
+        controller.updateError(error);
+
+        if (headingLock)
+            follower.setTeleOpDrive(
+                    -gamepad1.left_stick_y * speedScale,
+                    -gamepad1.left_stick_x * speedScale,
+                    controller.run()
+            );
+        else
+            follower.setTeleOpDrive(
+                    -gamepad1.left_stick_y * speedScale,
+                    -gamepad1.left_stick_x * speedScale,
+                    -gamepad1.right_stick_x
+            );
 
         follower.update();
     }
+
 
     private void manipulate() {
         switch (currentState)
@@ -70,4 +100,12 @@ public class TeleOpPedro extends LinearOpMode {
 
         Debug.INSTANCE.update();
     }
+
+    private double angleWrap(double angle) {
+        while (angle > Math.PI) angle -= 2 * Math.PI;
+        while (angle < -Math.PI) angle += 2 * Math.PI;
+        return angle;
+    }
+
+
 }

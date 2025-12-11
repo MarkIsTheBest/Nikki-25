@@ -7,6 +7,7 @@ import com.pedropathing.paths.PathChain;
 import com.pedropathing.util.Timer;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
+import com.qualcomm.robotcore.hardware.ColorSensor;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
@@ -22,6 +23,8 @@ import java.util.Arrays;
 
 @Autonomous
 public class AutoFar extends LinearOpMode {
+    private ColorSensor rightSensor;
+    private ColorSensor leftSensor;
 
     private double launchSpeed;
     private Servo barrierRight;
@@ -318,6 +321,9 @@ public class AutoFar extends LinearOpMode {
         barrierRight = hardwareMap.servo.get("barrierRight");
         barrierLeft = hardwareMap.servo.get("barrierLeft");
 
+        //rightSensor = hardwareMap.colorSensor.get("sensorRight");
+        //leftSensor = hardwareMap.colorSensor.get("sensorLeft");
+
         barrierRight.setPosition(0.6);
         barrierLeft.setPosition(0.4);
 
@@ -326,5 +332,12 @@ public class AutoFar extends LinearOpMode {
         launcher.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         intake.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
 
+    }
+
+    public float rgbToHue(int r, int g, int b) {
+        float[] hsv = new float[3];
+        // Android/FTC built-in convert function
+        android.graphics.Color.RGBToHSV(r, g, b, hsv);
+        return hsv[0];  // hue in degrees (0–360)
     }
 }
