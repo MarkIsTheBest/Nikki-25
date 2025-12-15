@@ -1,6 +1,5 @@
 package org.firstinspires.ftc.teamcode.opModes.autonomous;
 import com.pedropathing.follower.Follower;
-import com.pedropathing.geometry.BezierCurve;
 import com.pedropathing.geometry.BezierLine;
 import com.pedropathing.geometry.Pose;
 import com.pedropathing.paths.PathChain;
@@ -21,7 +20,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 
 @Autonomous
-public class AutoNear extends LinearOpMode {
+public class AutoNearRed extends LinearOpMode {
 
     private double launchSpeed;
     private Servo barrierRight;
@@ -66,10 +65,10 @@ public class AutoNear extends LinearOpMode {
     private Timer pathTimer;
     private int pathState;
 
-    private final Pose startPose = new Pose(59.6, 9, Math.toRadians(90)); // Start position
+    private final Pose startPose = new Pose(59.6, 9, Math.toRadians(90)).mirror(); // Start position
 
     // Trajectory Poses
-    private final Pose path1Pose = new Pose(34.4, 17, Math.toRadians(90)); // Path 1
+    private final Pose path1Pose = new Pose(34.4, 17, Math.toRadians(90)).mirror(); // Path 1
 
     private PathChain parkPath;
 

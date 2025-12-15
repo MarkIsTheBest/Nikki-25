@@ -11,10 +11,12 @@ import com.qualcomm.robotcore.hardware.ColorSensor;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
+import com.qualcomm.robotcore.hardware.PIDCoefficients;
 import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
+import org.firstinspires.ftc.teamcode.helper.MotorHelper;
 import org.firstinspires.ftc.teamcode.opModes.helper.AprilTagHelper;
 import org.firstinspires.ftc.teamcode.pedroPathing.Constants;
 
@@ -23,8 +25,13 @@ import java.util.Arrays;
 
 @Autonomous
 public class AutoFar extends LinearOpMode {
+
+    private PIDCoefficients velocityPID = new PIDCoefficients(150, 5.9, 40);
+
     private ColorSensor rightSensor;
     private ColorSensor leftSensor;
+
+    private final double TARGETRPM = 2775;
 
     private double launchSpeed;
     private Servo barrierRight;
@@ -43,6 +50,7 @@ public class AutoFar extends LinearOpMode {
 
     private DcMotor intake;
     private DcMotorEx launcher;
+    private DcMotorEx launcher2;
 
     private AprilTagHelper aprilTags = new AprilTagHelper();
 
@@ -78,8 +86,8 @@ public class AutoFar extends LinearOpMode {
     private final Pose path3Pose = new Pose(16, 84, Math.toRadians(180)); // Path 3
     private final Pose path5Pose = new Pose(30.5-2, 116.7-2, Math.toRadians(140)); // Path 5
     private final Pose path6Pose = new Pose(50, 60, Math.toRadians(180)); // Path 6
-    private final Pose path7Pose = new Pose(16-14, 60, Math.toRadians(180)); // Path 7
-    private final Pose path8Pose = new Pose(30.5-2, 116.7-2, Math.toRadians(150)); // Path 8
+    private final Pose path7Pose = new Pose(16-12, 60, Math.toRadians(180)); // Path 7
+    private final Pose path8Pose = new Pose(30.5-2, 116.7-2, Math.toRadians(140)); // Path 8
     private final Pose parkPose = new Pose(30.6, 79, Math.toRadians(-90)); // Path Pose
 
 
@@ -156,6 +164,18 @@ public class AutoFar extends LinearOpMode {
         barrierRight.setPosition(0.6);
     }
 
+    private void startLaunchers()
+    {
+        MotorHelper.setRPM(launcher, TARGETRPM, 28, 6000, velocityPID);
+        MotorHelper.setRPM(launcher2, TARGETRPM, 28, 6000, velocityPID);
+    }
+
+    private void stopLaunchers()
+    {
+        MotorHelper.setRPM(launcher, 0, 28, 6000, velocityPID);
+        MotorHelper.setRPM(launcher2, 0, 28, 6000, velocityPID);
+    }
+
     public void autonomousPathUpdate() {
 
         switch (pathState) {
@@ -168,13 +188,14 @@ public class AutoFar extends LinearOpMode {
                 throwCycle = 0;
                 shootStep = 0;       // left → right → both
                 follower.followPath(path1Path);
+                startLaunchers();
                 setPathState(1);
                 break;
 
             case 1: // Arrived at launch → spin up shooter
                 if (!follower.isBusy()) {
                     intake.setPower(1);
-                    launcher.setPower(0.8);
+                    startLaunchers();
                     setPathState(2);
                 }
                 break;
@@ -184,8 +205,8 @@ public class AutoFar extends LinearOpMode {
             /* -------------------------- */
 
             case 2:   // Spin-up then fire correct step
-                if (Math.abs(launcher.getVelocity(AngleUnit.DEGREES)) >= 170 &&
-                        pathTimer.getElapsedTimeSeconds() > 0.5)
+                if (launchSpeed >= TARGETRPM &&
+                        pathTimer.getElapsedTimeSeconds() > 0.35)
                 {
                     fireCurrentStep();
                     setPathState(3);
@@ -193,7 +214,7 @@ public class AutoFar extends LinearOpMode {
                 break;
 
             case 3:  // Wait and close barriers
-                if (pathTimer.getElapsedTimeSeconds() > 0.5) {
+                if (pathTimer.getElapsedTimeSeconds() > 0.2) {
 
                     closeBarriers();
 
@@ -206,7 +227,7 @@ public class AutoFar extends LinearOpMode {
                         // finished 3 throws → go collect
                         shootStep = 0;
                         throwCycle++;
-                        launcher.setPower(0);
+                        stopLaunchers();
                         intake.setPower(1);
 
                         if (throwCycle < 3) {
@@ -239,11 +260,10 @@ public class AutoFar extends LinearOpMode {
                 break;
 
             case 11: // At stack → return to launch point
-                if (!follower.isBusy() && pathTimer.getElapsedTimeSeconds() > 1) {
+                if (!follower.isBusy()) {
 
                     // spin up launcher for next cycle
-                    launcher.setPower(0.8);
-
+                    startLaunchers();
                     if (throwCycle == 1) {
                         follower.followPath(path4Path);  // return path for 2nd cycle
                     } else {
@@ -265,7 +285,7 @@ public class AutoFar extends LinearOpMode {
 
             case -1:
                 intake.setPower(0);
-                launcher.setPower(0);
+                stopLaunchers();
                 follower.followPath(parkPath);
                 setPathState(-2);
                 break;
@@ -305,12 +325,14 @@ public class AutoFar extends LinearOpMode {
         follower.update();
         autonomousPathUpdate();
 
+        launchSpeed = (launcher.getVelocity() * 60) / 28.0;
+
         telemetry.addData("isFollowerBusy",follower.isBusy());
         telemetry.addData("path state", pathState);
         telemetry.addData("times thrown", timesThrown);
         telemetry.addData("thrownSecond", secondThrow);
         telemetry.addData("throwThird", thirdThrow);
-        telemetry.addData("velocity",launcher.getVelocity(AngleUnit.DEGREES));
+        telemetry.addData("velocity",launchSpeed);
         telemetry.update();
     }
 
@@ -318,6 +340,7 @@ public class AutoFar extends LinearOpMode {
     {
         intake = hardwareMap.dcMotor.get("intake");
         launcher = hardwareMap.get(DcMotorEx.class, "launcher");
+        launcher2 = hardwareMap.get(DcMotorEx.class, "launcher2");
         barrierRight = hardwareMap.servo.get("barrierRight");
         barrierLeft = hardwareMap.servo.get("barrierLeft");
 
@@ -327,9 +350,6 @@ public class AutoFar extends LinearOpMode {
         barrierRight.setPosition(0.6);
         barrierLeft.setPosition(0.4);
 
-        launcher.setDirection(DcMotorSimple.Direction.REVERSE);
-
-        launcher.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         intake.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
 
     }

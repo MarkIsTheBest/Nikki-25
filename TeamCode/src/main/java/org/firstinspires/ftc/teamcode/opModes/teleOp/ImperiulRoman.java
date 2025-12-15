@@ -2,27 +2,23 @@ package org.firstinspires.ftc.teamcode.opModes.teleOp; // <- Location of script/
 
 /* \/ Here are the imports/library files references \/ */
 import static java.lang.Math.abs;
-import static java.lang.Math.pow;
 
-import com.pedropathing.control.PIDFCoefficients;
 import com.qualcomm.hardware.bosch.BNO055IMU;
-import com.qualcomm.hardware.rev.RevColorSensorV3;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.ColorSensor;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
+import com.qualcomm.robotcore.hardware.PIDCoefficients;
 import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
-import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
+import org.firstinspires.ftc.teamcode.helper.MotorHelper;
 import org.firstinspires.ftc.teamcode.opModes.helper.AprilTagHelper;
-import org.firstinspires.ftc.teamcode.pedroPathing.Constants;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.List;
 
 @TeleOp // Makes the OpMode accessible in the TeleOp panel
 public class ImperiulRoman extends LinearOpMode {
@@ -32,6 +28,8 @@ public class ImperiulRoman extends LinearOpMode {
     private ElapsedTime headingTimer = new ElapsedTime();
     private ColorSensor sensorRight;
     private ColorSensor sensorLeft;
+
+    private PIDCoefficients velocityPID = new PIDCoefficients(150, 5.9, 40);
 
     private DcMotor frontLeft;
     private DcMotor frontRight;
@@ -146,10 +144,10 @@ public class ImperiulRoman extends LinearOpMode {
     private void movement(double y, double x, double rx)
     {
         if (gamepad1.dpadUpWasPressed()) {
-            slower += 0.1;
+            variableSpeed += 100;
         }
         else if (gamepad1.dpadDownWasPressed()) {
-            slower -= 0.1;
+            variableSpeed -= 100;
         }
 
         double frontLeftPower  = (y + x + rx);
@@ -162,27 +160,27 @@ public class ImperiulRoman extends LinearOpMode {
         backLeft.setPower(backLeftPower / 1.15);
         frontRight.setPower(frontRightPower);
         backRight.setPower(backRightPower);
-
-
     }
 
     private void shoot()
     {
-        launchSpeed = launcher.getVelocity(AngleUnit.DEGREES);
+        launchSpeed = (launcher.getVelocity() * 60) / 28.0;
         if (aprilTags.detectedDistance != -1) {
-            variableSpeed = 31948090 + (118.5061 - 31948090)/(1 + Math.pow((aprilTags.detectedDistance/993163.5), 1.325604));
+            variableSpeed = 123478700 + (2619.018 - 123478700) / (1 + Math.pow((aprilTags.detectedDistance/7930.813), 2.509353));
         }
 
-        //y = 17181860 + (141.7382 - 17181860)/(1 + (x/293105.9)^1.444734)
-        else variableSpeed = 175;
+        //y = 3584.81 + (3055.446 - 3584.81)/(1 + (x/57.42379)^14.70318)
+        else variableSpeed = 2800;
+
+
 
         // ===== RIGHT SIDE PRESS =====
         if (gamepad1.rightBumperWasPressed() && !rightSpinningUp && !rightShooting && !launcherSpinningUp && shootDelay.seconds() > 0.1) {
             // Only spin up if motor is below threshold
             if (Math.abs(launchSpeed) < variableSpeed) {
-                launcher.setPower(1);
-                launcher2.setPower(1);
-                intake.setPower(1);
+                MotorHelper.setRPM(launcher, variableSpeed, 28, 6000, velocityPID);
+                MotorHelper.setRPM(launcher2, variableSpeed, 28, 6000, velocityPID);
+                intake.setPower(0.5);
                 launcherSpinningUp = true;  // lock during spin-up
             }
             rightTimer.reset();
@@ -210,8 +208,8 @@ public class ImperiulRoman extends LinearOpMode {
 
             // Stop launcher only if left side is NOT shooting or spinning up
             if (!leftShooting && !leftSpinningUp) {
-                launcher.setPower(0);
-                launcher2.setPower(0);
+                MotorHelper.setRPM(launcher, 0, 28, 6000, velocityPID);
+                MotorHelper.setRPM(launcher2, 0, 28, 6000, velocityPID);
             }
         }
 
@@ -221,7 +219,7 @@ public class ImperiulRoman extends LinearOpMode {
             if (Math.abs(launchSpeed) < variableSpeed) {
                 launcher.setPower(1);
                 launcher2.setPower(1);
-                intake.setPower(1);
+                intake.setPower(0.5);
                 launcherSpinningUp = true;
             }
             leftTimer.reset();
@@ -272,13 +270,13 @@ public class ImperiulRoman extends LinearOpMode {
 
         if (gamepad1.yWasPressed() || gamepad2.yWasPressed()) toggle2 = -toggle2;
         if (toggle2 == 1) {
-            launcher.setPower(1);
-            launcher2.setPower(1);
+            MotorHelper.setRPM(launcher, variableSpeed, 28, 6000, velocityPID);
+            MotorHelper.setRPM(launcher2, variableSpeed, 28, 6000, velocityPID);
         }
 
         else if (toggle2 == -1 && !launcherBusy) {
-            launcher.setPower(0);
-            launcher2.setPower(0);
+            MotorHelper.setRPM(launcher, 0, 28, 6000, velocityPID);
+            MotorHelper.setRPM(launcher2, 0, 28, 6000, velocityPID);
         }
     }
 
@@ -304,5 +302,4 @@ public class ImperiulRoman extends LinearOpMode {
 
         telemetry.update();
     }
-
 }
