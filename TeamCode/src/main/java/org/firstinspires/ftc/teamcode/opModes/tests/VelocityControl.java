@@ -47,6 +47,7 @@ public class VelocityControl extends LinearOpMode {
         flywheelMotor.setVelocityPIDFCoefficients(p,i,d,f);
         double targetTicksPerSec = targetRPM * TICKS_PER_REV / 60.0;
         flywheelMotor.setVelocity(targetTicksPerSec);
+        debug();
     }
     
     private void debug()
@@ -55,6 +56,7 @@ public class VelocityControl extends LinearOpMode {
         Debug.INSTANCE.addData("Target RPM", targetRPM);
         Debug.INSTANCE.addData("Current RPM", currentRPM);
         Debug.INSTANCE.addData("Error", targetRPM - currentRPM);
+        Debug.INSTANCE.addData("Power", flywheelMotor.getPower());
         Debug.INSTANCE.update();
 
     }

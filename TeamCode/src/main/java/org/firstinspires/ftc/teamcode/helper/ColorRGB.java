@@ -13,3 +13,4 @@ public class ColorRGB
         blue = b;
     }
 }
+

@@ -3,8 +3,13 @@ package org.firstinspires.ftc.teamcode.opModes.tests;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
-public class LockOnAprilTag extends LinearOpMode {
+import org.firstinspires.ftc.teamcode.helper.Debug;
+import org.firstinspires.ftc.teamcode.helper.hardware.sensors.Limelight;
 
+@TeleOp
+public class DistanceAprilTag extends LinearOpMode {
+
+    final double e = 2.71828;
     @Override
     public void runOpMode() throws InterruptedException {
         initialize();
@@ -15,7 +20,9 @@ public class LockOnAprilTag extends LinearOpMode {
     }
 
     private void initialize() {
-        // Init logic
+        Limelight.init();
+        Limelight.setPipeline(0);
+        Limelight.start();
     }
 
     private void play() {
@@ -23,6 +30,9 @@ public class LockOnAprilTag extends LinearOpMode {
     }
 
     private void update() {
-        // loop logic
+        Limelight.update();
+        Debug.INSTANCE.addData("Ta", Limelight.Ta());
+        Debug.INSTANCE.addData("Distance", 180.2858*Math.pow(Limelight.Ta(),-0.5027412));
+        Debug.INSTANCE.update();
     }
 }

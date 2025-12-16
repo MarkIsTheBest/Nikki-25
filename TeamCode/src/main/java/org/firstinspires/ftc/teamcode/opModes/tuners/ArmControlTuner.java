@@ -3,22 +3,26 @@ package org.firstinspires.ftc.teamcode.opModes.tuners;
 import com.bylazar.configurables.annotations.Configurable;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
+import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.PIDCoefficients;
 import com.qualcomm.robotcore.hardware.PIDFCoefficients;
 
+import org.firstinspires.ftc.teamcode.helper.Debug;
+import org.firstinspires.ftc.teamcode.helper.MotorHelper;
+import org.firstinspires.ftc.teamcode.helper.PIDF;
 import org.firstinspires.ftc.teamcode.helper.hardware.Motors;
 
 @Configurable
 @TeleOp(name = "Arm Control Tuner", group = "Tuners")
 public class ArmControlTuner extends LinearOpMode {
 
-    private DcMotorEx[] motors;
+    private DcMotorEx motor;
 
     public static double maxPower;
     public static double motorTicksPerRev;
 
-    public static PIDFCoefficients pidf;
+    public static double p, i, d, f;
     public static double targetAngle;
 
     @Override
@@ -31,9 +35,9 @@ public class ArmControlTuner extends LinearOpMode {
     }
 
     private void initialize() {
-        motors = new DcMotorEx[] {
-
-        };
+        motor = hardwareMap.get(DcMotorEx.class, "motor");
+        motor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        motor.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
     }
 
     private void play() {
@@ -41,8 +45,8 @@ public class ArmControlTuner extends LinearOpMode {
     }
 
     private void update() {
-        for (DcMotorEx motor : motors) {
-            Motors.INSTANCE.setArmAngle(motor, targetAngle, motorTicksPerRev, maxPower, pidf);
-        }
+        MotorHelper.setArmAngle(motor, targetAngle, motorTicksPerRev, maxPower, new PIDFCoefficients(p, i, d, f));
+        Debug.INSTANCE.addData("Tick Position", motor.getCurrentPosition());
+        Debug.INSTANCE.update();
     }
 }

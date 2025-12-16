@@ -8,7 +8,7 @@ import com.pedropathing.util.Timer;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 
-import org.firstinspires.ftc.teamcode.constants.Motif;
+import org.firstinspires.ftc.teamcode.constants.enums.Motif;
 import org.firstinspires.ftc.teamcode.pedroPathing.Constants;
 
 @Autonomous
@@ -145,7 +145,6 @@ public class AutoNear extends LinearOpMode {
                 .setLinearHeadingInterpolation(intakeArtifactsHpPose.getHeading(), launchHpPose.getHeading())
                 .build();
     }
-
     public void autonomousPathUpdate() {
         switch (pathState) {
             case 0:

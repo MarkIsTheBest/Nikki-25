@@ -9,45 +9,40 @@ import org.firstinspires.ftc.teamcode.helper.Debug;
 import dev.nextftc.ftc.ActiveOpMode;
 
 public class Limelight {
-    public static final Limelight INSTANCE = new Limelight();
+    private static Limelight3A limelight;
 
-    public Limelight() {
-        init();
-    }
-
-    private Limelight3A limelight;
-
-    public Limelight3A LimelightSensor() {
+    public static Limelight3A LimelightSensor() {
         return limelight;
     }
 
-    private double tx = -999; public double Tx() { return tx; }
-    private double ty = -999; public double Ty() { return ty; }
-    private double ta = -999; public double Ta() { return ta; }
-    private Pose3D botPose; public Pose3D BotPose() { return botPose; }
+    private static double tx = -999; public static double Tx() { return tx; }
+    private static double ty = -999; public static double Ty() { return ty; }
+    private static double ta = -999; public static double Ta() { return ta; }
+    private static Pose3D botPose; public static Pose3D BotPose() { return botPose; }
 
-    private void init() {
+    public static void init() {
         try {
             getHardware(ActiveOpMode.hardwareMap());
+            setPipeline(0);
         } catch (Exception ex) {
             Debug.INSTANCE.addData("ERROR", ex.getMessage());
             Debug.INSTANCE.update();
         }
     }
 
-    private void getHardware(HardwareMap hardwareMap) {
+    private static void getHardware(HardwareMap hardwareMap) {
         limelight = hardwareMap.tryGet(Limelight3A.class, "limelight");
     }
 
-    public void setLimelightPipeline(int pipeline) {
+    public static void setPipeline(int pipeline) {
         limelight.pipelineSwitch(pipeline);
     }
 
-    public void startLimelight() {
+    public static void start() {
         limelight.start();
     }
 
-    public void updateLimelight() {
+    public static void update() {
         LLResult result = limelight.getLatestResult();
         if (result != null) {
             if (result.isValid()) {

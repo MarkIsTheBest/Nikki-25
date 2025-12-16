@@ -12,8 +12,6 @@ import org.firstinspires.ftc.teamcode.helper.ColorHelper;
 import org.firstinspires.ftc.teamcode.helper.ColorRGB;
 import org.firstinspires.ftc.teamcode.helper.Debug;
 import org.firstinspires.ftc.teamcode.helper.hardware.Motors;
-import org.firstinspires.ftc.teamcode.helper.hardware.sensors.ColorSensors;
-
 @Configurable
 @TeleOp(name = "Color Interval Tuner", group = "Tuners")
 public class ColorIntervalTuner extends LinearOpMode {
@@ -34,7 +32,7 @@ public class ColorIntervalTuner extends LinearOpMode {
     }
 
     private void initialize() {
-        colorSensor = ColorSensors.INSTANCE.Launcher1();
+        //colorSensor = ColorSensors.INSTANCE.Launcher1();
     }
 
     private void play() {

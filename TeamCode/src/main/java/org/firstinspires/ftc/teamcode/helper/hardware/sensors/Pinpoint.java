@@ -8,19 +8,13 @@ import org.firstinspires.ftc.teamcode.helper.Debug;
 import dev.nextftc.ftc.ActiveOpMode;
 
 public class Pinpoint {
-    public static final Pinpoint INSTANCE = new Pinpoint();
+    private static SensorGoBildaPinpoint pinpoint;
 
-    public Pinpoint() {
-        init();
-    }
-
-    private SensorGoBildaPinpoint pinpoint;
-
-    public SensorGoBildaPinpoint PinpointSensor() {
+    public static SensorGoBildaPinpoint PinpointSensor() {
         return pinpoint;
     }
 
-    private void init() {
+    public static void init() {
         try {
             getHardware(ActiveOpMode.hardwareMap());
         } catch (Exception ex) {
@@ -29,7 +23,7 @@ public class Pinpoint {
         }
     }
 
-    private void getHardware(HardwareMap hardwareMap) {
+    private static void getHardware(HardwareMap hardwareMap) {
         pinpoint = hardwareMap.tryGet(SensorGoBildaPinpoint.class, "pinpoint");
     }
 }

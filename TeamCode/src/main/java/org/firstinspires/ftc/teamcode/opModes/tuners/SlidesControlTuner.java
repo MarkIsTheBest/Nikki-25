@@ -1,3 +1,4 @@
+/*
 package org.firstinspires.ftc.teamcode.opModes.tuners;
 
 import com.bylazar.configurables.annotations.Configurable;
@@ -45,4 +46,4 @@ public class SlidesControlTuner extends LinearOpMode {
             Motors.INSTANCE.setSlidePosition(motor, targetPosition, pidf);
         }
     }
-}
+}*/

@@ -6,6 +6,8 @@ import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.PIDCoefficients;
 
+import org.firstinspires.ftc.teamcode.helper.Debug;
+import org.firstinspires.ftc.teamcode.helper.MotorHelper;
 import org.firstinspires.ftc.teamcode.helper.hardware.Motors;
 
 @Configurable
@@ -17,7 +19,10 @@ public class VelocityControlTuner extends LinearOpMode {
     public static double motorMaxRPM;
     public static double motorTicksPerRev;
 
-    public static PIDCoefficients pid;
+    public static double p;
+    public static double i;
+    public static double d;
+
     public static double targetRPM;
 
     @Override
@@ -31,8 +36,7 @@ public class VelocityControlTuner extends LinearOpMode {
 
     private void initialize() {
         motors = new DcMotorEx[] {
-                Motors.INSTANCE.Launcher1(),
-                Motors.INSTANCE.Launcher2()
+                hardwareMap.get(DcMotorEx.class,"motor")
         };
     }
 
@@ -42,7 +46,10 @@ public class VelocityControlTuner extends LinearOpMode {
 
     private void update() {
         for (DcMotorEx motor : motors) {
-            Motors.INSTANCE.setRPM(motor, targetRPM, motorTicksPerRev, motorMaxRPM, pid);
+            MotorHelper.setRPM(motor, targetRPM, motorTicksPerRev, motorMaxRPM, new PIDCoefficients(p,i,d));
         }
+        Debug.INSTANCE.addData("RPM", MotorHelper.getCurrentRPM(motors[0],motorTicksPerRev));
+        Debug.INSTANCE.addData("Power", motors[0].getPower());
+        Debug.INSTANCE.update();
     }
 }

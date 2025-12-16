@@ -1,18 +1,16 @@
-package org.firstinspires.ftc.teamcode.opModes.tests;
+package org.firstinspires.ftc.teamcode.opModes.tuners;
 
 import com.bylazar.configurables.annotations.Configurable;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
-import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.Servo;
 
 import org.firstinspires.ftc.teamcode.helper.Debug;
-import org.firstinspires.ftc.teamcode.helper.hardware.Motors;
 import org.firstinspires.ftc.teamcode.helper.hardware.Servos;
 
-@TeleOp(name = "Servo Tester", group = "Tests")
+@TeleOp(name = "Servo Position Tuner", group = "Tuners")
 @Configurable
-public class ServoPositionTester extends LinearOpMode {
+public class ServoPositionTuner extends LinearOpMode {
 
     @Override
     public void runOpMode() throws InterruptedException {
@@ -25,7 +23,7 @@ public class ServoPositionTester extends LinearOpMode {
         }
     }
 
-    private final ServoPos[] servos = new ServoPos[Servos.INSTANCE.AllServos().length];
+    private final ServoPos[] servos = new ServoPos[Servos.AllServos().length];
 
     private void initialize() {
         initArrays();
@@ -55,15 +53,29 @@ public class ServoPositionTester extends LinearOpMode {
     }
 
     private void updateServoStates() {
-        servos[0].position = PT_Servos._0_servo;
+        servos[0].position = PT_Servos.door1_position;
+        servos[0].active = PT_Servos.door1_active;
+        servos[0].servo = Servos.Door1();
 
-        servos[0].active = PT_Servos._0_active;
+        servos[1].position = PT_Servos.door2_position;
+        servos[1].active = PT_Servos.door2_active;
+        servos[1].servo = Servos.Door2();
 
-        servos[0].servo = Servos.INSTANCE.Servo();
+        servos[2].position = PT_Servos.holder1_position;
+        servos[2].active = PT_Servos.holder1_active;
+        servos[2].servo = Servos.Holder1();
+
+        servos[3].position = PT_Servos.holder2_position;
+        servos[3].active = PT_Servos.holder2_active;
+        servos[3].servo = Servos.Holder2();
+
+        servos[4].position = PT_Servos.holder3_position;
+        servos[4].active = PT_Servos.holder3_active;
+        servos[4].servo = Servos.Holder3();
     }
 
     private void updatePositions() {
-        for (int i = 0; i < Servos.INSTANCE.AllServos().length; i++) {
+        for (int i = 0; i < Servos.AllServos().length; i++) {
             if (servos[i].active && servos[i].servo.getPosition() != servos[i].position) servos[i].servo.setPosition(servos[i].position);
         }
     }
@@ -72,8 +84,20 @@ public class ServoPositionTester extends LinearOpMode {
     public static class PT_Servos {
         public static boolean activeTelemetry;
 
-        public static double _0_servo;
-        public static boolean _0_active;
+        public static double door1_position;
+        public static boolean door1_active;
+
+        public static double door2_position;
+        public static boolean door2_active;
+
+        public static double holder1_position;
+        public static boolean holder1_active;
+
+        public static double holder2_position;
+        public static boolean holder2_active;
+
+        public static double holder3_position;
+        public static boolean holder3_active;
     }
 
     private static class ServoPos {
