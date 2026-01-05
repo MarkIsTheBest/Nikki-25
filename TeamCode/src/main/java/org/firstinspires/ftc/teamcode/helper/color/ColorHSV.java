@@ -1,4 +1,4 @@
-package org.firstinspires.ftc.teamcode.helper;
+package org.firstinspires.ftc.teamcode.helper.color;
 
 public class ColorHSV
 {

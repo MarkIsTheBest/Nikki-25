@@ -1,4 +1,4 @@
-package org.firstinspires.ftc.teamcode.helper;
+package org.firstinspires.ftc.teamcode.helper.general;
 
 import com.bylazar.telemetry.PanelsTelemetry;
 import com.bylazar.telemetry.TelemetryManager;
@@ -14,6 +14,10 @@ public class Debug {
     public void addData(String key, Object value) {
         telemetry.addData(key,value);
     }
+
+    public void addLine(String line) {telemetry.addLine(line);}
+
+    public void addBreak() {telemetry.addLine("");}
 
     public void update() {
         telemetry.update(ActiveOpMode.telemetry());

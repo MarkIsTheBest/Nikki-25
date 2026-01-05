@@ -8,8 +8,7 @@ import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.Servo;
 
 import org.firstinspires.ftc.teamcode.constants.Colors;
-import org.firstinspires.ftc.teamcode.helper.ColorHelper;
-import org.firstinspires.ftc.teamcode.pedroPathing.Constants;
+import org.firstinspires.ftc.teamcode.helper.color.ColorHelper;
 
 @TeleOp(name = "Color Sensor Test (with Purple)", group = "Sensor")
 public class Lights extends LinearOpMode {

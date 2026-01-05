@@ -3,7 +3,7 @@ package org.firstinspires.ftc.teamcode.helper.hardware.sensors;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 
 import org.firstinspires.ftc.robotcontroller.external.samples.SensorGoBildaPinpoint;
-import org.firstinspires.ftc.teamcode.helper.Debug;
+import org.firstinspires.ftc.teamcode.helper.general.Debug;
 
 import dev.nextftc.ftc.ActiveOpMode;
 

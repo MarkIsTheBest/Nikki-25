@@ -5,7 +5,7 @@ import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.Servo;
 
-import org.firstinspires.ftc.teamcode.helper.Debug;
+import org.firstinspires.ftc.teamcode.helper.general.Debug;
 import org.firstinspires.ftc.teamcode.helper.hardware.Servos;
 
 @TeleOp(name = "Servo Position Tuner", group = "Tuners")
@@ -23,9 +23,11 @@ public class ServoPositionTuner extends LinearOpMode {
         }
     }
 
-    private final ServoPos[] servos = new ServoPos[Servos.AllServos().length];
+    private ServoPos[] servos;
 
     private void initialize() {
+        Servos.init();
+        servos = new ServoPos[Servos.AllServos().length];
         initArrays();
         updateServoStates();
     }

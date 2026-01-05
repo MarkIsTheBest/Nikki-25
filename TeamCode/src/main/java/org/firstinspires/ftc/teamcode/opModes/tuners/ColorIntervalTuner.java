@@ -4,14 +4,11 @@ import com.bylazar.configurables.annotations.Configurable;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.ColorSensor;
-import com.qualcomm.robotcore.hardware.DcMotorEx;
-import com.qualcomm.robotcore.hardware.PIDCoefficients;
-import com.qualcomm.robotcore.hardware.PIDFCoefficients;
 
-import org.firstinspires.ftc.teamcode.helper.ColorHelper;
-import org.firstinspires.ftc.teamcode.helper.ColorRGB;
-import org.firstinspires.ftc.teamcode.helper.Debug;
-import org.firstinspires.ftc.teamcode.helper.hardware.Motors;
+import org.firstinspires.ftc.teamcode.helper.color.ColorHelper;
+import org.firstinspires.ftc.teamcode.helper.color.ColorRGB;
+import org.firstinspires.ftc.teamcode.helper.general.Debug;
+
 @Configurable
 @TeleOp(name = "Color Interval Tuner", group = "Tuners")
 public class ColorIntervalTuner extends LinearOpMode {

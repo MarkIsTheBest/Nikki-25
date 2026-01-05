@@ -5,8 +5,12 @@ import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
 
+import org.firstinspires.ftc.teamcode.helper.general.FpsCounter;
+
 @TeleOp(name = "TeleOp GM Zero (Improved)")
 public class TeleOpGMZero extends LinearOpMode {
+
+    FpsCounter fps = new FpsCounter();
 
     // Deadzone for joysticks
     private static final double DEADZONE = 0.05;
@@ -77,6 +81,9 @@ public class TeleOpGMZero extends LinearOpMode {
             frontRight.setPower(frontRightPower * speedMultiplier);
             backRight.setPower(backRightPower * speedMultiplier);
 
+            fps.update();
+
+            telemetry.addData("Fps", fps.getFps());
             telemetry.addData("Speed Mode", gamepad1.left_bumper ? "SLOW" : "NORMAL");
             telemetry.update();
         }

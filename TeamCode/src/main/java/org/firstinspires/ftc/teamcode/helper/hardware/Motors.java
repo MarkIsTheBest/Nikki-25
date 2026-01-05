@@ -4,7 +4,7 @@ import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 
-import org.firstinspires.ftc.teamcode.helper.Debug;
+import org.firstinspires.ftc.teamcode.helper.general.Debug;
 import dev.nextftc.ftc.ActiveOpMode;
 
 public class Motors
@@ -18,6 +18,7 @@ public class Motors
     private static DcMotorEx intake; public static DcMotorEx Intake() { return intake; }
 
     private static DcMotorEx[] allMotors; public static DcMotorEx[] AllMotors() { return allMotors; }
+    private static DcMotorEx[] launchers; public static DcMotorEx[] Launchers() { return launchers; }
 
     public static void init() {
         try {
@@ -57,8 +58,8 @@ public class Motors
         rightFront.setDirection(DcMotorSimple.Direction.FORWARD);
         rightRear.setDirection(DcMotorSimple.Direction.FORWARD);
 
-        launcher1.setDirection(DcMotorSimple.Direction.FORWARD);
-        launcher2.setDirection(DcMotorSimple.Direction.REVERSE);
+        launcher1.setDirection(DcMotorSimple.Direction.REVERSE);
+        launcher2.setDirection(DcMotorSimple.Direction.FORWARD);
 
         intake.setDirection(DcMotorSimple.Direction.REVERSE);
     }

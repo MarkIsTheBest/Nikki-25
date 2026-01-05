@@ -2,8 +2,7 @@ package org.firstinspires.ftc.teamcode.constants;
 
 import com.bylazar.configurables.annotations.Configurable;
 
-import org.firstinspires.ftc.teamcode.helper.ColorHSV;
-import org.firstinspires.ftc.teamcode.helper.ColorRGB;
+import org.firstinspires.ftc.teamcode.helper.color.ColorHSV;
 
 @Configurable
 public class Colors {

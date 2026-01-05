@@ -5,6 +5,8 @@ import com.qualcomm.robotcore.hardware.PIDCoefficients;
 import com.qualcomm.robotcore.hardware.PIDFCoefficients;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
+import org.firstinspires.ftc.teamcode.constants.Control;
+
 import java.util.HashMap;
 import java.util.Map;
 
@@ -33,13 +35,36 @@ public class MotorHelper {
         motor.setVelocity(targetRPM * ticksPerRev / 60.0); // Convert RPM to Ticks per Second
     }
 
-    public static double getCurrentRPM(DcMotorEx motor, double ticksPerRev) {
-        return motor.getVelocity() * 60.0 / ticksPerRev; // Convert Ticks per Second to RPM
+    public static void setRPM(DcMotorEx motor, double targetRPM) {
+        double maxRPM = 6000.0;
+        double ticksPerRev = 28.0;
+        PIDCoefficients pid = Control.FlywheelPID.pid;
+
+        double f = 32767.0 / (maxRPM * ticksPerRev / 60.0);
+        motor.setVelocityPIDFCoefficients(pid.p, pid.i, pid.d, f);
+        motor.setVelocity(targetRPM * ticksPerRev / 60.0);
     }
 
-    // ==========================
-    // Positional PID Control (Slides & Arms)
-    // ==========================
+    public static void setRPM(DcMotorEx[] motors, double targetRPM) {
+        double maxRPM = 6000.0;
+        double ticksPerRev = 28.0;
+        PIDCoefficients pid = Control.FlywheelPID.pid;
+
+        double f = 32767.0 / (maxRPM * ticksPerRev / 60.0);
+
+        for (DcMotorEx motor : motors) {
+            motor.setVelocityPIDFCoefficients(pid.p, pid.i, pid.d, f);
+            motor.setVelocity(targetRPM * ticksPerRev / 60.0);
+        }
+    }
+
+    public static double getCurrentRPM(DcMotorEx motor, double ticksPerRev) {
+        return motor.getVelocity() * 60.0 / ticksPerRev;
+    }
+
+    public static double getCurrentRPM(DcMotorEx motor) {
+        return motor.getVelocity() * 60.0 / 28.0;
+    }
 
     public static void setSlidePosition(DcMotorEx[] motors, double targetPosition, PIDFCoefficients pidf) {
         for (DcMotorEx motor : motors) {

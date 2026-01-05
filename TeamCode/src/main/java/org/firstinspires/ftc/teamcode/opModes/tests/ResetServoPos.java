@@ -4,12 +4,14 @@ import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
 import org.firstinspires.ftc.teamcode.helper.general.Debug;
-import org.firstinspires.ftc.teamcode.helper.hardware.sensors.Limelight;
+import org.firstinspires.ftc.teamcode.helper.general.FpsCounter;
+import org.firstinspires.ftc.teamcode.helper.hardware.Servos;
 
 @TeleOp
-public class DistanceAprilTag extends LinearOpMode {
+public class ResetServoPos extends LinearOpMode {
 
-    final double e = 2.71828;
+    FpsCounter fps = new FpsCounter();
+
     @Override
     public void runOpMode() throws InterruptedException {
         initialize();
@@ -20,19 +22,19 @@ public class DistanceAprilTag extends LinearOpMode {
     }
 
     private void initialize() {
-        Limelight.init();
-        Limelight.setPipeline(0);
-        Limelight.start();
+        Servos.init();
     }
 
     private void play() {
-        // start logic
+        Servos.setPosition(Servos.Holder1(),0.5);
+        Servos.setPosition(Servos.Holder2(),0.5);
+        Servos.setPosition(Servos.Holder3(),0.5);
     }
 
     private void update() {
-        Limelight.update();
-        Debug.INSTANCE.addData("Ta", Limelight.Ta());
-        Debug.INSTANCE.addData("Distance", 180.2858*Math.pow(Limelight.Ta(),-0.5027412));
+        // loop logic
+        fps.update();
+        Debug.INSTANCE.addData("fps", fps.getFps());
         Debug.INSTANCE.update();
     }
 }

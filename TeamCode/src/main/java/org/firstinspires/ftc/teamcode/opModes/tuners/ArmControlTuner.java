@@ -5,13 +5,10 @@ import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
-import com.qualcomm.robotcore.hardware.PIDCoefficients;
 import com.qualcomm.robotcore.hardware.PIDFCoefficients;
 
-import org.firstinspires.ftc.teamcode.helper.Debug;
+import org.firstinspires.ftc.teamcode.helper.general.Debug;
 import org.firstinspires.ftc.teamcode.helper.MotorHelper;
-import org.firstinspires.ftc.teamcode.helper.PIDF;
-import org.firstinspires.ftc.teamcode.helper.hardware.Motors;
 
 @Configurable
 @TeleOp(name = "Arm Control Tuner", group = "Tuners")

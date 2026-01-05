@@ -4,7 +4,7 @@ import com.qualcomm.hardware.rev.Rev2mDistanceSensor;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 
 import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
-import org.firstinspires.ftc.teamcode.helper.Debug;
+import org.firstinspires.ftc.teamcode.helper.general.Debug;
 
 import dev.nextftc.ftc.ActiveOpMode;
 
@@ -28,10 +28,14 @@ public class DistanceSensors {
         return distanceSensor.getDistance(DU);
     }
 
+    public static double getDistance(Rev2mDistanceSensor distanceSensor) {
+        return distanceSensor.getDistance(DistanceUnit.INCH);
+    }
+
     public static double Min(Rev2mDistanceSensor distanceSensor1,
                              Rev2mDistanceSensor distanceSensor2,
                              DistanceUnit DU) {
-        return Math.min(distanceSensor1.getDistance(DU), distanceSensor2.getDistance(DU));
+            return Math.min(distanceSensor1.getDistance(DU), distanceSensor2.getDistance(DU));
     }
 
     public static double Max(Rev2mDistanceSensor distanceSensor1,

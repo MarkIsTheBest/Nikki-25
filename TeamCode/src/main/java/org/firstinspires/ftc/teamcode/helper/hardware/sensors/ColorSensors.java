@@ -4,10 +4,11 @@ import com.qualcomm.robotcore.hardware.ColorSensor;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 
 import org.firstinspires.ftc.teamcode.constants.Colors;
-import org.firstinspires.ftc.teamcode.helper.ColorHSV;
-import org.firstinspires.ftc.teamcode.helper.ColorHelper;
-import org.firstinspires.ftc.teamcode.helper.ColorRGB;
-import org.firstinspires.ftc.teamcode.helper.Debug;
+import org.firstinspires.ftc.teamcode.constants.enums.ArtifactColor;
+import org.firstinspires.ftc.teamcode.helper.color.ColorHSV;
+import org.firstinspires.ftc.teamcode.helper.color.ColorHelper;
+import org.firstinspires.ftc.teamcode.helper.color.ColorRGB;
+import org.firstinspires.ftc.teamcode.helper.general.Debug;
 
 import dev.nextftc.ftc.ActiveOpMode;
 
@@ -30,14 +31,14 @@ public class ColorSensors {
     }
 
     private static void getHardware(HardwareMap hardwareMap) {
-        launcher1 = hardwareMap.tryGet(ColorSensor.class, "launcher1");
-        launcher2 = hardwareMap.tryGet(ColorSensor.class, "launcher2");
-        launcher3 = hardwareMap.tryGet(ColorSensor.class, "launcher3");
+        launcher1 = hardwareMap.tryGet(ColorSensor.class, "launcher1Color");
+        launcher2 = hardwareMap.tryGet(ColorSensor.class, "launcher2Color");
+        launcher3 = hardwareMap.tryGet(ColorSensor.class, "launcher3Color");
     }
 
     private static void setAllColorSensors()
     {
-        allColorSensors = new ColorSensor[]{launcher1, launcher2, launcher3};
+        allColorSensors = new ColorSensor[]{launcher3, launcher2, launcher1};
     }
 
     private static void activateLED() {
@@ -46,21 +47,27 @@ public class ColorSensors {
         launcher3.enableLed(true);
     }
 
-    public static boolean isGreen(ColorSensor colorSensor) {
+    private static boolean isGreen(ColorSensor colorSensor) {
         ColorRGB color = new ColorRGB(colorSensor.red(), colorSensor.green(), colorSensor.blue());
         ColorHSV hsvColor = ColorHelper.fromRGB(color);
         return ColorHelper.inHue(hsvColor.hue,
                 Colors.GREEN_MIN,
                 Colors.GREEN_MAX
-        );
+        ) && hsvColor.saturation > 45;
     }
 
-    public static boolean isPurple(ColorSensor colorSensor) {
+    private static boolean isPurple(ColorSensor colorSensor) {
         ColorRGB color = new ColorRGB(colorSensor.red(), colorSensor.green(), colorSensor.blue());
         ColorHSV hsvColor = ColorHelper.fromRGB(color);
         return ColorHelper.inHue(hsvColor.hue,
                 Colors.PURPLE_MIN,
                 Colors.PURPLE_MAX
         );
+    }
+
+    public static ArtifactColor getColor(ColorSensor colorSensor) {
+        if(isGreen(colorSensor)) return ArtifactColor.GREEN;
+        else if(isPurple(colorSensor)) return ArtifactColor.PURPLE;
+        else return ArtifactColor.EMPTY;
     }
 }
