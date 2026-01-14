@@ -15,100 +15,118 @@ public class MotorHelper {
         double integralSum = 0;
         double lastError = 0;
         ElapsedTime timer = new ElapsedTime();
-
-        PIDState() {
-            timer.reset();
-        }
+        PIDState() { timer.reset(); }
     }
+
     private static final Map<DcMotorEx, PIDState> pidStateMap = new HashMap<>();
 
-    private MotorHelper() {} // Prevent instantiation
+    // Optimization: Caches for Hardware Writes
+    private static final Map<DcMotorEx, Double> velocityCache = new HashMap<>();
+    private static final Map<DcMotorEx, PIDFCoefficients> pidfCache = new HashMap<>();
+
+    private MotorHelper() {}
 
     // ==========================
     // Velocity / RPM Control
     // ==========================
 
-    public static void setRPM(DcMotorEx motor, double targetRPM, double ticksPerRev, double maxRPM, PIDCoefficients pid) {
-        // **FIXED:** Correctly calculate the F coefficient for the Rev Hub internal controller.
-        double f = 32767.0 / (maxRPM * ticksPerRev / 60.0);
-        motor.setVelocityPIDFCoefficients(pid.p, pid.i, pid.d, f);
-        motor.setVelocity(targetRPM * ticksPerRev / 60.0); // Convert RPM to Ticks per Second
-    }
-
     public static void setRPM(DcMotorEx motor, double targetRPM) {
+        if (motor == null) return;
+
         double maxRPM = 6000.0;
         double ticksPerRev = 28.0;
         PIDCoefficients pid = Control.FlywheelPID.pid;
-
         double f = 32767.0 / (maxRPM * ticksPerRev / 60.0);
-        motor.setVelocityPIDFCoefficients(pid.p, pid.i, pid.d, f);
-        motor.setVelocity(targetRPM * ticksPerRev / 60.0);
+
+        setRPM(motor, targetRPM, ticksPerRev, maxRPM, pid);
     }
 
     public static void setRPM(DcMotorEx[] motors, double targetRPM) {
-        double maxRPM = 6000.0;
-        double ticksPerRev = 28.0;
-        PIDCoefficients pid = Control.FlywheelPID.pid;
+        for (DcMotorEx motor : motors) {
+            setRPM(motor, targetRPM);
+        }
+    }
+
+    public static void setRPM(DcMotorEx motor, double targetRPM, double ticksPerRev, double maxRPM, PIDCoefficients pid) {
+        if (motor == null) return;
 
         double f = 32767.0 / (maxRPM * ticksPerRev / 60.0);
 
-        for (DcMotorEx motor : motors) {
+        // 1. Optimize PIDF Writes (VERY SLOW OPERATION)
+        // Only write coefficients if they have changed substantially
+        PIDFCoefficients newPIDF = new PIDFCoefficients(pid.p, pid.i, pid.d, f);
+        PIDFCoefficients cachedPIDF = pidfCache.get(motor);
+
+        if (cachedPIDF == null ||
+                cachedPIDF.p != newPIDF.p ||
+                cachedPIDF.i != newPIDF.i ||
+                cachedPIDF.d != newPIDF.d ||
+                cachedPIDF.f != newPIDF.f) {
+
             motor.setVelocityPIDFCoefficients(pid.p, pid.i, pid.d, f);
-            motor.setVelocity(targetRPM * ticksPerRev / 60.0);
+            pidfCache.put(motor, newPIDF);
+        }
+
+        // 2. Optimize Velocity Writes
+        // Only write velocity if target changed
+        double targetVelocityTicks = targetRPM * ticksPerRev / 60.0;
+        Double cachedVel = velocityCache.get(motor);
+
+        if (cachedVel == null || Math.abs(cachedVel - targetVelocityTicks) > 0.1) {
+            motor.setVelocity(targetVelocityTicks);
+            velocityCache.put(motor, targetVelocityTicks);
         }
     }
 
     public static double getCurrentRPM(DcMotorEx motor, double ticksPerRev) {
+        if (motor == null) return 0;
         return motor.getVelocity() * 60.0 / ticksPerRev;
     }
 
     public static double getCurrentRPM(DcMotorEx motor) {
-        return motor.getVelocity() * 60.0 / 28.0;
+        return getCurrentRPM(motor, 28.0);
     }
+
+    // ==========================
+    // Custom PID Update Logic
+    // ==========================
 
     public static void setSlidePosition(DcMotorEx[] motors, double targetPosition, PIDFCoefficients pidf) {
         for (DcMotorEx motor : motors) {
-            if (motor != null) {
-                updateSlidePID(motor, targetPosition, pidf);
-            }
+            if (motor != null) updateSlidePID(motor, targetPosition, pidf);
         }
     }
 
     public static void setSlidePosition(DcMotorEx motor, double targetPosition, PIDFCoefficients pidf) {
-        updateSlidePID(motor, targetPosition, pidf);
+        if (motor != null) updateSlidePID(motor, targetPosition, pidf);
     }
 
     public static void setArmAngle(DcMotorEx motor, double targetAngleDeg, double motorTicksPerRev, double powerLimit, PIDFCoefficients pidf) {
-        updateArmPID(motor, targetAngleDeg, motorTicksPerRev, powerLimit, pidf);
+        if (motor != null) updateArmPID(motor, targetAngleDeg, motorTicksPerRev, powerLimit, pidf);
     }
 
-    // ==========================
-    // Core PID Update Logic (Refactored)
-    // ==========================
-
     private static void updateSlidePID(DcMotorEx motor, double targetPosition, PIDFCoefficients pidf) {
-        // Get or create the state for this motor
         PIDState state = pidStateMap.computeIfAbsent(motor, k -> new PIDState());
 
         double dt = state.timer.seconds();
         state.timer.reset();
-        // **FIXED:** Prevent division by zero on the first loop.
-        if (dt == 0) return;
+        if (dt == 0) return; // Prevent division by zero
 
         double currentPosition = motor.getCurrentPosition();
         double error = targetPosition - currentPosition;
 
-        // Update integral sum with clamping to prevent windup
         state.integralSum += error * dt;
-        state.integralSum = clamp(state.integralSum, -100, 100); // This range may need tuning
+        state.integralSum = clamp(state.integralSum, -100, 100);
 
-        // Update derivative
         double derivative = (error - state.lastError) / dt;
         state.lastError = error;
 
-        // The 'f' term for a slide can be a constant feedforward to counteract gravity if vertical
         double output = (pidf.p * error) + (pidf.i * state.integralSum) + (pidf.d * derivative) + pidf.f;
 
+        // Use cached setPower via Motors class if available, or direct setPower (but carefully)
+        // Since this class doesn't see Motors.setPower easily without circular dep,
+        // we will just set it directly but check against local cache if we wanted.
+        // For now, assuming direct setPower is fine as this PID updates constantly.
         motor.setPower(clamp(output, -1.0, 1.0));
     }
 
@@ -117,7 +135,6 @@ public class MotorHelper {
 
         double dt = state.timer.seconds();
         state.timer.reset();
-        // **FIXED:** Prevent division by zero on the first loop.
         if (dt == 0) return;
 
         double currentAngle = motor.getCurrentPosition() * 360.0 / ticksPerRev;
@@ -129,7 +146,6 @@ public class MotorHelper {
         double derivative = (error - state.lastError) / dt;
         state.lastError = error;
 
-        // The 'f' term for an arm is gravity compensation based on the angle (cosine term)
         double gravityComp = pidf.f * Math.cos(Math.toRadians(currentAngle));
         double output = (pidf.p * error) + (pidf.i * state.integralSum) + (pidf.d * derivative) + gravityComp;
 

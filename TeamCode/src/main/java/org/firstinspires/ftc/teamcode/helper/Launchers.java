@@ -1,11 +1,9 @@
 package org.firstinspires.ftc.teamcode.helper;
 
-import static org.firstinspires.ftc.teamcode.constants.Positions.Servo.H_PREPARE;
-
 import org.firstinspires.ftc.teamcode.constants.enums.ArtifactColor;
 import org.firstinspires.ftc.teamcode.helper.general.Debug;
-import org.firstinspires.ftc.teamcode.helper.hardware.Servos;
 import org.firstinspires.ftc.teamcode.helper.hardware.sensors.LEDs;
+import com.qualcomm.robotcore.hardware.Servo;
 
 import java.util.Arrays;
 
@@ -15,6 +13,7 @@ public class Launchers {
 
     private boolean[] filledLaunchers = {false,false,false};
     private ArtifactColor[] launcherColor = {ArtifactColor.EMPTY, ArtifactColor.EMPTY, ArtifactColor.EMPTY};
+    private ArtifactColor[] lastLedState = {null, null, null}; // Cache for LEDs
 
     public ArtifactColor[] getLauncherColorArray() {
         return launcherColor;
@@ -22,10 +21,6 @@ public class Launchers {
 
     public boolean[] getFilledLaunchers() {
         return filledLaunchers;
-    }
-
-    public String ToString() {
-        return Arrays.toString(filledLaunchers);
     }
 
     public void setLauncherColor(int index, ArtifactColor color) {
@@ -39,6 +34,7 @@ public class Launchers {
     public void clearAllLaunchers() {
         Arrays.fill(getFilledLaunchers(), false);
         Arrays.fill(getLauncherColorArray(), ArtifactColor.EMPTY);
+        HandleLEDS(); // Force update
     }
 
     public void clearLauncher(int index) {
@@ -46,21 +42,24 @@ public class Launchers {
     }
 
     public void HandleLEDS() {
-        if(getLauncherColorArray()[0] == ArtifactColor.GREEN) LEDs.setGreen(LEDs.LauncherLeft());
-        if(getLauncherColorArray()[0] == ArtifactColor.PURPLE) LEDs.setPurple(LEDs.LauncherLeft());
-        if(getLauncherColorArray()[0] == ArtifactColor.EMPTY) LEDs.setEmpty(LEDs.LauncherLeft());
+        updateLedForLauncher(0, LEDs.LauncherLeft());
+        updateLedForLauncher(1, LEDs.LauncherCenter());
+        updateLedForLauncher(2, LEDs.LauncherRight());
+    }
 
-        if(getLauncherColorArray()[1] == ArtifactColor.GREEN) LEDs.setGreen(LEDs.LauncherCenter());
-        if(getLauncherColorArray()[1] == ArtifactColor.PURPLE) LEDs.setPurple(LEDs.LauncherCenter());
-        if(getLauncherColorArray()[1] == ArtifactColor.EMPTY) LEDs.setEmpty(LEDs.LauncherCenter());
+    private void updateLedForLauncher(int index, Servo ledServo) {
+        ArtifactColor color = launcherColor[index];
+        // Optimization: Don't set servo position if color hasn't changed
+        if (color != lastLedState[index]) {
+            if (color == ArtifactColor.GREEN) LEDs.setGreen(ledServo);
+            else if (color == ArtifactColor.PURPLE) LEDs.setPurple(ledServo);
+            else LEDs.setEmpty(ledServo);
 
-        if(getLauncherColorArray()[2] == ArtifactColor.GREEN) LEDs.setGreen(LEDs.LauncherRight());
-        if(getLauncherColorArray()[2] == ArtifactColor.PURPLE) LEDs.setPurple(LEDs.LauncherRight());
-        if(getLauncherColorArray()[2] == ArtifactColor.EMPTY) LEDs.setEmpty(LEDs.LauncherRight());
+            lastLedState[index] = color;
+        }
     }
 
     public void showTelemetry() {
-        Debug.INSTANCE.addData("Filled Launchers", Arrays.toString(filledLaunchers));
-        Debug.INSTANCE.addData("Filled Launchers", Arrays.toString(launcherColor));
+        Debug.INSTANCE.addData("Filled", Arrays.toString(filledLaunchers));
     }
 }

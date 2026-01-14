@@ -1,7 +1,6 @@
 package org.firstinspires.ftc.teamcode.helper;
 
-import static org.firstinspires.ftc.teamcode.constants.Positions.Servo.H_LAUNCH;
-import static org.firstinspires.ftc.teamcode.constants.Positions.Servo.H_PREPARE;
+import static org.firstinspires.ftc.teamcode.constants.Positions.Servo.*;
 import static org.firstinspires.ftc.teamcode.constants.Timers.Launch.LAUNCH_DELAY;
 
 import com.pedropathing.util.Timer;
@@ -12,7 +11,6 @@ import org.firstinspires.ftc.teamcode.constants.enums.Launcher;
 import org.firstinspires.ftc.teamcode.constants.enums.Motif;
 import org.firstinspires.ftc.teamcode.helper.general.Debug;
 import org.firstinspires.ftc.teamcode.helper.general.MathHelper;
-import org.firstinspires.ftc.teamcode.helper.hardware.Hardware;
 import org.firstinspires.ftc.teamcode.helper.hardware.Motors;
 import org.firstinspires.ftc.teamcode.helper.hardware.Servos;
 
@@ -36,15 +34,8 @@ public class LaunchHelper {
 
     public LaunchHelper() {
         launcherHelper = Launchers.INSTANCE;
-        initialize();
     }
 
-    private void initialize() {
-    }
-
-    /**
-     * Call this in your TeleOp loop
-     */
     public void update() {
         if (isLaunching) {
             runLaunchStateMachine();
@@ -53,17 +44,15 @@ public class LaunchHelper {
 
     public void startLaunchSequence() {
         if (!isLaunching) {
-            isLaunching = true;
-            generateExecutionQueue(); // Build the plan ONCE
+            generateExecutionQueue();
 
             if (executionQueue.isEmpty()) {
-                // Nothing to shoot, abort immediately
                 isLaunching = false;
                 return;
             }
 
-            currentStep = LaunchStep.SPIN_UP;
-            launchTimer.resetTimer();
+            isLaunching = true;
+            changeStep(LaunchStep.SPIN_UP);
         }
     }
 
@@ -75,10 +64,9 @@ public class LaunchHelper {
             case GPP: greenIndex = 0; break;
             case PGP: greenIndex = 1; break;
             case PPG: greenIndex = 2; break;
-            default: greenIndex = -1; break; // Should not happen
+            default: greenIndex = -1; break;
         }
 
-        // Iterate through launchers and decide order based on color rules
         for (int i = 0; i < 3; i++) {
             if (launcherHelper.getFilledLaunchers()[i]) {
                 ArtifactColor color = launcherHelper.getLauncherColorArray()[i];
@@ -102,11 +90,12 @@ public class LaunchHelper {
         switch (currentStep) {
             case SPIN_UP:
                 MotorHelper.setRPM(Motors.Launchers(), targetRPM);
-                // Move immediately to LAUNCH state logic
                 changeStep(LaunchStep.LAUNCH);
                 break;
 
             case LAUNCH:
+                // Optimization: getRPM is reading encoder.
+                // Because of Bulk Reads in TeleOpPedro, this is now instant.
                 double currentRPM = MotorHelper.getCurrentRPM(Motors.Launchers()[0]);
                 boolean isSpeedCorrect = MathHelper.inInterval(currentRPM, targetRPM - RPM_TOLERANCE, targetRPM + RPM_TOLERANCE);
                 boolean isDelayFinished = launchTimer.getElapsedTimeSeconds() > LAUNCH_DELAY;
@@ -114,11 +103,8 @@ public class LaunchHelper {
                 if (isSpeedCorrect && isDelayFinished) {
                     if (!executionQueue.isEmpty()) {
                         fireLauncher(executionQueue.poll());
-
-                        // Reset timer to ensure delay between THIS shot and the NEXT shot
                         launchTimer.resetTimer();
                     } else {
-                        // Queue is empty, we are done
                         changeStep(LaunchStep.RESET);
                     }
                 }
@@ -126,56 +112,24 @@ public class LaunchHelper {
 
             case RESET:
                 MotorHelper.setRPM(Motors.Launchers(), 0);
-
-                // Clear data
                 launcherHelper.clearAllLaunchers();
 
-                // Reset Servos
                 Servos.setPosition(Servos.Holder1(), H_PREPARE);
                 Servos.setPosition(Servos.Holder2(), H_PREPARE);
                 Servos.setPosition(Servos.Holder3(), H_PREPARE);
 
-                isLaunching = false; // Sequence complete
+                isLaunching = false;
                 break;
         }
     }
 
     private void fireLauncher(Launcher launcher) {
         switch (launcher) {
-            case LEFT:
-                Servos.setPosition(Servos.Holder1(), H_LAUNCH);
-                break;
-            case CENTER:
-                Servos.setPosition(Servos.Holder2(), H_LAUNCH);
-                break;
-            case RIGHT:
-                Servos.setPosition(Servos.Holder3(), H_LAUNCH);
-                break;
+            case LEFT: Servos.setPosition(Servos.Holder1(), H_LAUNCH); break;
+            case CENTER: Servos.setPosition(Servos.Holder2(), H_LAUNCH); break;
+            case RIGHT: Servos.setPosition(Servos.Holder3(), H_LAUNCH); break;
         }
     }
 
-    public double GetTargetRPM() { return targetRPM; }
-
-    public void SetTargetRPM(double targetRPM) {
-        this.targetRPM = targetRPM;
-    }
-
-    public void setMotif(Motif motif) {
-        this.currentMotif = motif;
-    }
-
-    public void showTelemetry() {
-        Debug.INSTANCE.addData("Launch Active", isLaunching);
-        Debug.INSTANCE.addData("Current Step", currentStep);
-        Debug.INSTANCE.addData("Current Motif", currentMotif);
-        Debug.INSTANCE.addData("Shots Remaining", executionQueue.size());
-
-        Debug.INSTANCE.addData("Launcher1 RPM", MotorHelper.getCurrentRPM(Motors.Launcher1()));
-        Debug.INSTANCE.addData("Launcher2 RPM", MotorHelper.getCurrentRPM(Motors.Launcher2()));
-
-        Launcher next = executionQueue.peek();
-        Debug.INSTANCE.addData("Next in Queue", next != null ? next : "None");
-
-        Debug.INSTANCE.addData("Target RPM", targetRPM);
-    }
+    // Setters/Getters...
 }

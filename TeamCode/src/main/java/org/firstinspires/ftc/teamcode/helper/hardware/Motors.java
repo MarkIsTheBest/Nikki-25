@@ -4,8 +4,9 @@ import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 
-import org.firstinspires.ftc.teamcode.helper.general.Debug;
 import dev.nextftc.ftc.ActiveOpMode;
+import java.util.HashMap;
+import java.util.Map;
 
 public class Motors
 {
@@ -20,13 +21,18 @@ public class Motors
     private static DcMotorEx[] allMotors; public static DcMotorEx[] AllMotors() { return allMotors; }
     private static DcMotorEx[] launchers; public static DcMotorEx[] Launchers() { return launchers; }
 
+    // Optimization: Cache power levels to prevent duplicate hardware writes
+    private static final Map<DcMotorEx, Double> powerCache = new HashMap<>();
+
     public static void init() {
+        powerCache.clear(); // Reset cache on init
         try {
             getHardware(ActiveOpMode.hardwareMap());
             setAllMotors();
             setDirection();
             setZeroPowerBehaviour();
         } catch (Exception ex) {
+            // Log error if needed
         }
     }
 
@@ -41,27 +47,41 @@ public class Motors
     }
 
     private static void setZeroPowerBehaviour() {
-        leftFront.setZeroPowerBehavior(DcMotorEx.ZeroPowerBehavior.BRAKE);
-        leftRear.setZeroPowerBehavior(DcMotorEx.ZeroPowerBehavior.BRAKE);
-        rightFront.setZeroPowerBehavior(DcMotorEx.ZeroPowerBehavior.BRAKE);
-        rightRear.setZeroPowerBehavior(DcMotorEx.ZeroPowerBehavior.BRAKE);
+        if(leftFront != null) leftFront.setZeroPowerBehavior(DcMotorEx.ZeroPowerBehavior.BRAKE);
+        if(leftRear != null) leftRear.setZeroPowerBehavior(DcMotorEx.ZeroPowerBehavior.BRAKE);
+        if(rightFront != null) rightFront.setZeroPowerBehavior(DcMotorEx.ZeroPowerBehavior.BRAKE);
+        if(rightRear != null) rightRear.setZeroPowerBehavior(DcMotorEx.ZeroPowerBehavior.BRAKE);
     }
 
     private static void setDirection() {
-        leftFront.setDirection(DcMotorSimple.Direction.REVERSE);
-        leftRear.setDirection(DcMotorSimple.Direction.REVERSE);
-        rightFront.setDirection(DcMotorSimple.Direction.FORWARD);
-        rightRear.setDirection(DcMotorSimple.Direction.FORWARD);
+        if(leftFront != null) leftFront.setDirection(DcMotorSimple.Direction.REVERSE);
+        if(leftRear != null) leftRear.setDirection(DcMotorSimple.Direction.REVERSE);
+        if(rightFront != null) rightFront.setDirection(DcMotorSimple.Direction.FORWARD);
+        if(rightRear != null) rightRear.setDirection(DcMotorSimple.Direction.FORWARD);
 
-        launcher1.setDirection(DcMotorSimple.Direction.REVERSE);
-        launcher2.setDirection(DcMotorSimple.Direction.FORWARD);
+        if(launcher1 != null) launcher1.setDirection(DcMotorSimple.Direction.REVERSE);
+        if(launcher2 != null) launcher2.setDirection(DcMotorSimple.Direction.FORWARD);
 
-        intake.setDirection(DcMotorSimple.Direction.REVERSE);
+        if(intake != null) intake.setDirection(DcMotorSimple.Direction.REVERSE);
     }
 
     private static void setAllMotors() {
+        // Filter out nulls to prevent crashes later
         allMotors = new DcMotorEx[]{leftFront, rightFront, leftRear, rightRear, launcher1, launcher2, intake};
-
         launchers = new DcMotorEx[]{launcher1, launcher2};
+    }
+
+    /**
+     * Optimized setPower that checks cache before writing to hardware.
+     */
+    public static void setPower(DcMotorEx motor, double power) {
+        if (motor == null) return;
+
+        Double cached = powerCache.get(motor);
+        // Only write if power changed by more than 0.005 (0.5%)
+        if (cached == null || Math.abs(cached - power) > 0.005) {
+            motor.setPower(power);
+            powerCache.put(motor, power);
+        }
     }
 }

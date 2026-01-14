@@ -3,7 +3,6 @@ package org.firstinspires.ftc.teamcode.helper.hardware;
 import com.qualcomm.robotcore.hardware.AnalogInput;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.hardware.Servo;
-import org.firstinspires.ftc.teamcode.helper.general.Debug;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -26,6 +25,9 @@ public class Servos
 
     private static final Map<Servo, Double> targetPositions = new HashMap<>();
 
+    // Optimization: Cache actually sent values to avoid USB spam
+    private static final Map<Servo, Double> lastSentPositions = new HashMap<>();
+
     public static void init() {
         if(door1 == null) {
             try {
@@ -33,8 +35,7 @@ public class Servos
                 setAllServos();
                 setDirection();
                 setScaleRange();
-            } catch (Exception ex) {
-            }
+            } catch (Exception ex) { }
         }
     }
 
@@ -52,7 +53,6 @@ public class Servos
     private static void setScaleRange() {
         door1.scaleRange(0, 1);
         door2.scaleRange(0, 1);
-
         holder1.scaleRange(0, 1);
         holder2.scaleRange(0, 1);
         holder3.scaleRange(0, 1);
@@ -61,7 +61,6 @@ public class Servos
     private static void setDirection() {
         door1.setDirection(Servo.Direction.FORWARD);
         door2.setDirection(Servo.Direction.FORWARD);
-
         holder1.setDirection(Servo.Direction.FORWARD);
         holder2.setDirection(Servo.Direction.FORWARD);
         holder3.setDirection(Servo.Direction.FORWARD);
@@ -72,8 +71,15 @@ public class Servos
     }
 
     public static void setPosition(Servo servo, double pos) {
-        servo.setPosition(pos);
         targetPositions.put(servo, pos);
+
+        // Optimization: Hardware Write Caching
+        // If we last sent this position (within tolerance), don't send it again.
+        Double lastSent = lastSentPositions.get(servo);
+        if (lastSent == null || Math.abs(lastSent - pos) > 0.001) {
+            servo.setPosition(pos);
+            lastSentPositions.put(servo, pos);
+        }
     }
 
     private static AnalogInput getMatchingServoAnalog(Servo servo) {

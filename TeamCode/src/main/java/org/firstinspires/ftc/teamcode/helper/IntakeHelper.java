@@ -1,16 +1,7 @@
 package org.firstinspires.ftc.teamcode.helper;
 
 import static org.firstinspires.ftc.teamcode.constants.Distances.Intake.BALL_DETECT_DISTANCE;
-import static org.firstinspires.ftc.teamcode.constants.Positions.Servo.C_D1_PREPARE;
-import static org.firstinspires.ftc.teamcode.constants.Positions.Servo.L_D1_PARTIAL;
-import static org.firstinspires.ftc.teamcode.constants.Positions.Servo.C_D2_PREPARE;
-import static org.firstinspires.ftc.teamcode.constants.Positions.Servo.L_D1_PREPARE;
-import static org.firstinspires.ftc.teamcode.constants.Positions.Servo.L_D2_PREPARE;
-import static org.firstinspires.ftc.teamcode.constants.Positions.Servo.H_CLOSE;
-import static org.firstinspires.ftc.teamcode.constants.Positions.Servo.H_PREPARE;
-import static org.firstinspires.ftc.teamcode.constants.Positions.Servo.R_D1_PREPARE;
-import static org.firstinspires.ftc.teamcode.constants.Positions.Servo.R_D2_PARTIAL;
-import static org.firstinspires.ftc.teamcode.constants.Positions.Servo.R_D2_PREPARE;
+import static org.firstinspires.ftc.teamcode.constants.Positions.Servo.*;
 
 import com.pedropathing.util.Timer;
 import com.qualcomm.robotcore.hardware.Servo;
@@ -21,24 +12,23 @@ import org.firstinspires.ftc.teamcode.constants.enums.ArtifactColor;
 import org.firstinspires.ftc.teamcode.constants.enums.IntakeStep;
 import org.firstinspires.ftc.teamcode.constants.enums.Launcher;
 import org.firstinspires.ftc.teamcode.helper.general.Debug;
-import org.firstinspires.ftc.teamcode.helper.hardware.Hardware;
 import org.firstinspires.ftc.teamcode.helper.hardware.Motors;
 import org.firstinspires.ftc.teamcode.helper.hardware.Servos;
 import org.firstinspires.ftc.teamcode.helper.hardware.sensors.ColorSensors;
 import org.firstinspires.ftc.teamcode.helper.hardware.sensors.DistanceSensors;
 import org.firstinspires.ftc.teamcode.helper.hardware.sensors.LEDs;
 
-import java.util.Arrays;
-
 public class IntakeHelper {
 
     public static IntakeHelper INSTANCE;
 
-    private double leftDistance;
     private double rightDistance;
     private double distance;
     private boolean jammed = false;
     private boolean spinIntake = false;
+
+    // Optimization: Cache last set power to prevent duplicate hardware writes
+    private double lastIntakePower = 0.0;
 
     private Launchers launcherHelper;
 
@@ -50,9 +40,12 @@ public class IntakeHelper {
     private final Timer intakeTimer = new Timer();
     private final Timer jamTimer = new Timer();
 
+    // Optimization: Rate limit I2C distance reads
+    private final Timer sensorTimer = new Timer();
+    private static final double SENSOR_READ_DELAY_MS = 50; // Read at 20Hz
+
     private IntakeStep currentStep = IntakeStep.PREPARE_DOORS;
     private Launcher activeLauncher = null;
-
     private boolean hasBall = false;
 
     double intakeTime;
@@ -66,23 +59,20 @@ public class IntakeHelper {
         Servos.setPosition(Servos.Holder1(), H_PREPARE);
         Servos.setPosition(Servos.Holder2(), H_PREPARE);
         Servos.setPosition(Servos.Holder3(), H_PREPARE);
-
         Servos.setPosition(Servos.Door1(), L_D1_PREPARE);
         Servos.setPosition(Servos.Door2(), L_D2_PREPARE);
     }
 
     private Launcher getFirstEmptyLauncher() {
-        for (Launcher l : Launcher.values()) {
-            if (!launcherHelper.getFilledLaunchers()[l.index]) {
-                return l;
-            }
-        }
+        boolean[] filled = launcherHelper.getFilledLaunchers();
+        if (!filled[0]) return Launcher.LEFT;
+        if (!filled[1]) return Launcher.CENTER;
+        if (!filled[2]) return Launcher.RIGHT;
         return null;
     }
 
     private void selectLauncherIfNeeded() {
         if (activeLauncher != null) return;
-
         Launcher next = getFirstEmptyLauncher();
         if (next == null) return;
 
@@ -92,6 +82,7 @@ public class IntakeHelper {
     }
 
     private void endIntake(Launcher launcher) {
+        // This color sensor read is unavoidable, but happens rarely (once per ball)
         ArtifactColor color = ColorSensors.getColor(ColorSensors.AllColorSensors()[launcher.index]);
 
         if (color != ArtifactColor.EMPTY) {
@@ -114,10 +105,7 @@ public class IntakeHelper {
             case PREPARE_DOORS:
                 applyDoorPositions(activeLauncher);
                 Servos.setPosition(holder, H_PREPARE);
-
-                if (hasBall) {
-                    changeStep(IntakeStep.PARTIAL);
-                }
+                if (hasBall) changeStep(IntakeStep.PARTIAL);
                 break;
 
             case PARTIAL:
@@ -125,6 +113,7 @@ public class IntakeHelper {
                     if (activeLauncher == Launcher.LEFT) Servos.setPosition(Servos.Door1(), L_D1_PARTIAL);
                     if (activeLauncher == Launcher.RIGHT) Servos.setPosition(Servos.Door2(), R_D2_PARTIAL);
 
+                    // Servos.isBusy is now fast due to Bulk Reads
                     if (!Servos.isBusy(Servos.Door1()) && !Servos.isBusy(Servos.Door2())) {
                         Servos.setPosition(holder, H_CLOSE);
                         changeStep(IntakeStep.CLOSE);
@@ -157,12 +146,6 @@ public class IntakeHelper {
         }
     }
 
-    private double computeMinDistance(double left, double right) {
-        double avg = (left + right) / 2.0;
-        if (avg <= BALL_DETECT_DISTANCE * 2) return Math.min(left, right);
-        return 999;
-    }
-
     private void checkJammed() {
         if (jammed) {
             if (jamTimer.getElapsedTimeSeconds() > Timers.Intake.UNJAM_TIME) {
@@ -177,7 +160,6 @@ public class IntakeHelper {
         if (!Servos.isBusy(Servos.Door1()) && !Servos.isBusy(Servos.Door2())) {
             jamTimer.resetTimer();
         } else if (jamTimer.getElapsedTimeSeconds() > Timers.Intake.JAMMED_TIME) {
-            // JAM DETECTED
             jammed = true;
             hasBall = false;
             currentStep = IntakeStep.PREPARE_DOORS;
@@ -186,19 +168,27 @@ public class IntakeHelper {
     }
 
     public void HandleIntakeSpin() {
-        if(spinIntake && !jammed) Motors.Intake().setPower(1);
-        else if (!spinIntake && !jammed) Motors.Intake().setPower(0);
-        else Motors.Intake().setPower(-1);
+        double targetPower = 0;
+        if(spinIntake && !jammed) targetPower = 1;
+        else if (jammed) targetPower = -1;
+
+        // Optimization: Only write to hardware if power changed
+        if (Math.abs(targetPower - lastIntakePower) > 0.01) {
+            Motors.Intake().setPower(targetPower);
+            lastIntakePower = targetPower;
+        }
     }
 
     public void update() {
         checkJammed();
         selectLauncherIfNeeded();
 
-        if (!jammed) {
-            if (getFirstEmptyLauncher() != null && !hasBall) {
+        if (!jammed && getFirstEmptyLauncher() != null && !hasBall) {
+            // Optimization: Only read I2C sensor every 50ms
+            if (sensorTimer.getElapsedTime() > SENSOR_READ_DELAY_MS) {
                 rightDistance = (DistanceSensors.Right().getDistance(DistanceUnit.INCH));
                 distance = rightDistance;
+                sensorTimer.resetTimer();
 
                 if (distance < BALL_DETECT_DISTANCE) {
                     hasBall = true;
@@ -215,16 +205,5 @@ public class IntakeHelper {
         spinIntake = value;
     }
 
-    public boolean isIntakeSpinning() {
-        return spinIntake;
-    }
-
-    public void showTelemetry() {
-        Debug.INSTANCE.addData("Current Step", currentStep);
-        Debug.INSTANCE.addData("Current Launcher", activeLauncher == null ? "NULL" : activeLauncher);
-        Debug.INSTANCE.addData("Has Ball", hasBall);
-        Debug.INSTANCE.addData("Intake Spinning", spinIntake);
-        Debug.INSTANCE.addData("Distance Sensor Right", distance);
-        Debug.INSTANCE.addData("Jammed", jammed);
-    }
+    // Telemetry removed for speed, add back if debugging needed
 }
