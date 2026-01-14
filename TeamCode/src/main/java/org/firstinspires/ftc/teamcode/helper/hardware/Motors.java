@@ -25,6 +25,7 @@ public class Motors
     private static final Map<DcMotorEx, Double> powerCache = new HashMap<>();
 
     public static void init() {
+        resetCache();
         powerCache.clear(); // Reset cache on init
         try {
             getHardware(ActiveOpMode.hardwareMap());
@@ -34,6 +35,16 @@ public class Motors
         } catch (Exception ex) {
             // Log error if needed
         }
+    }
+
+    private static void resetCache() {
+        leftFront = null;
+        leftRear = null;
+        rightFront = null;
+        rightRear = null;
+        launcher1 = null;
+        launcher2 = null;
+        intake = null;
     }
 
     private static void getHardware(HardwareMap hardwareMap) {

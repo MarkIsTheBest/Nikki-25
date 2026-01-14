@@ -29,14 +29,23 @@ public class Servos
     private static final Map<Servo, Double> lastSentPositions = new HashMap<>();
 
     public static void init() {
-        if(door1 == null) {
-            try {
-                getHardware(ActiveOpMode.hardwareMap());
-                setAllServos();
-                setDirection();
-                setScaleRange();
-            } catch (Exception ex) { }
-        }
+        resetCache();
+        try {
+            getHardware(ActiveOpMode.hardwareMap());
+            setAllServos();
+            setDirection();
+            setScaleRange();
+        } catch (Exception ex) { }
+    }
+
+    private static void resetCache() {
+        door1 = null;
+        door2 = null;
+        door1Pos = null;
+        door2Pos = null;
+        holder1 = null;
+        holder2 = null;
+        holder3 = null;
     }
 
     private static void getHardware(HardwareMap hardwareMap) {

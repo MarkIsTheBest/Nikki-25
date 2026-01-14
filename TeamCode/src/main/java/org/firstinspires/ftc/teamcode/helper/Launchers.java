@@ -9,7 +9,11 @@ import java.util.Arrays;
 
 public class Launchers {
 
-    public static Launchers INSTANCE;
+    private Debug debug;
+
+    public Launchers(Debug debug) {
+        this.debug = debug;
+    }
 
     private boolean[] filledLaunchers = {false,false,false};
     private ArtifactColor[] launcherColor = {ArtifactColor.EMPTY, ArtifactColor.EMPTY, ArtifactColor.EMPTY};
@@ -60,6 +64,6 @@ public class Launchers {
     }
 
     public void showTelemetry() {
-        Debug.INSTANCE.addData("Filled", Arrays.toString(filledLaunchers));
+        debug.addData("Filled", Arrays.toString(filledLaunchers));
     }
 }

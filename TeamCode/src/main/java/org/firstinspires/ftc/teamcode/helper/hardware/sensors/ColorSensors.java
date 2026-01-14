@@ -20,6 +20,12 @@ public class ColorSensors {
     private static ColorSensor[] allColorSensors; public static ColorSensor[] AllColorSensors() { return allColorSensors; }
 
     public static void init() {
+
+        launcher1 = null;
+        launcher2 = null;
+        launcher3 = null;
+        allColorSensors = null;
+
         try {
             getHardware(ActiveOpMode.hardwareMap());
             setAllColorSensors();

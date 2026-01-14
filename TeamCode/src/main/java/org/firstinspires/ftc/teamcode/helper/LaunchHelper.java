@@ -18,9 +18,15 @@ import java.util.LinkedList;
 import java.util.Queue;
 
 public class LaunchHelper {
-    public static LaunchHelper INSTANCE;
 
-    private Launchers launcherHelper;
+    private final Debug debug;
+    private final Launchers launchers;
+
+    public LaunchHelper(Debug debug, Launchers launchers) {
+        this.debug = debug;
+        this.launchers = launchers;
+    }
+
     private LaunchStep currentStep = LaunchStep.SPIN_UP;
     private Timer launchTimer = new Timer();
 
@@ -31,10 +37,6 @@ public class LaunchHelper {
     private Motif currentMotif = Motif.GPP;
 
     private Queue<Launcher> executionQueue = new LinkedList<>();
-
-    public LaunchHelper() {
-        launcherHelper = Launchers.INSTANCE;
-    }
 
     public void update() {
         if (isLaunching) {
@@ -68,8 +70,8 @@ public class LaunchHelper {
         }
 
         for (int i = 0; i < 3; i++) {
-            if (launcherHelper.getFilledLaunchers()[i]) {
-                ArtifactColor color = launcherHelper.getLauncherColorArray()[i];
+            if (launchers.getFilledLaunchers()[i]) {
+                ArtifactColor color = launchers.getLauncherColorArray()[i];
                 Launcher l = Launcher.values()[i];
 
                 if (color == ArtifactColor.GREEN && i == greenIndex) {
@@ -96,7 +98,7 @@ public class LaunchHelper {
             case LAUNCH:
                 // Optimization: getRPM is reading encoder.
                 // Because of Bulk Reads in TeleOpPedro, this is now instant.
-                double currentRPM = MotorHelper.getCurrentRPM(Motors.Launchers()[0]);
+                double currentRPM = MotorHelper.getCurrentRPM(Motors.Launchers()[1]);
                 boolean isSpeedCorrect = MathHelper.inInterval(currentRPM, targetRPM - RPM_TOLERANCE, targetRPM + RPM_TOLERANCE);
                 boolean isDelayFinished = launchTimer.getElapsedTimeSeconds() > LAUNCH_DELAY;
 
@@ -112,7 +114,7 @@ public class LaunchHelper {
 
             case RESET:
                 MotorHelper.setRPM(Motors.Launchers(), 0);
-                launcherHelper.clearAllLaunchers();
+                launchers.clearAllLaunchers();
 
                 Servos.setPosition(Servos.Holder1(), H_PREPARE);
                 Servos.setPosition(Servos.Holder2(), H_PREPARE);
@@ -131,5 +133,7 @@ public class LaunchHelper {
         }
     }
 
-    // Setters/Getters...
+    public boolean IsLaunching() {
+        return isLaunching;
+    }
 }

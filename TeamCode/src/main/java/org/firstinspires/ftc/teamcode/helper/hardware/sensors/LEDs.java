@@ -19,6 +19,11 @@ public class LEDs {
     static Timer flashTimer = new Timer();
 
     public static void init() {
+        launcher1 = null;
+        launcher2 = null;
+        launcher3 = null;
+        allLEDs = null;
+
         try {
             getHardware(ActiveOpMode.hardwareMap());
             setAllLEDs();

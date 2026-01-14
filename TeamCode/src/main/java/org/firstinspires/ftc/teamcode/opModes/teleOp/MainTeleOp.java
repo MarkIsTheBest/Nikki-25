@@ -12,9 +12,12 @@ import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.Servo;
 
 import org.firstinspires.ftc.teamcode.constants.Positions;
+import org.firstinspires.ftc.teamcode.constants.Timers;
+import org.firstinspires.ftc.teamcode.constants.enums.AllianceColor;
 import org.firstinspires.ftc.teamcode.helper.IntakeHelper;
 import org.firstinspires.ftc.teamcode.helper.LaunchHelper;
 import org.firstinspires.ftc.teamcode.helper.Launchers;
+import org.firstinspires.ftc.teamcode.helper.general.Debug;
 import org.firstinspires.ftc.teamcode.helper.general.FpsCounter;
 import org.firstinspires.ftc.teamcode.helper.hardware.Hardware;
 import org.firstinspires.ftc.teamcode.helper.hardware.sensors.LEDs;
@@ -23,21 +26,23 @@ import org.firstinspires.ftc.teamcode.pedroPathing.Constants;
 
 import java.util.List;
 
-@Configurable
-@TeleOp
-public class TeleOpPedro extends LinearOpMode {
+public class MainTeleOp {
+
+    LinearOpMode opMode;
 
     FpsCounter fps = new FpsCounter();
     HeadingPID headingPID = new HeadingPID();
+    Debug debug;
+
     IntakeHelper intakeHelper;
     LaunchHelper launchHelper;
-    Launchers launcherHelper;
+    Launchers launchers;
 
     private Follower follower;
     public static Pose startingPose = Positions.Auto.START_POSE;
 
-    private Pose currentGoalPosition = Positions.Field.RED_GOAL;
-    private Pose currentBasePosition = Positions.Field.RED_BASE;
+    private Pose currentGoalPosition;
+    private Pose currentBasePosition;
 
     private boolean intaking = false;
     private boolean lockMode = false;
@@ -47,17 +52,25 @@ public class TeleOpPedro extends LinearOpMode {
     // Optimization: List for Bulk Reads
     private List<LynxModule> allHubs;
 
-    public void runOpMode() throws InterruptedException {
-        initialize();
-        waitForStart();
-        play();
-        if (isStopRequested()) return;
-        while (opModeIsActive()) update();
+    public MainTeleOp(AllianceColor allianceColor, LinearOpMode opMode) {
+        switch (allianceColor) {
+            case RED:
+                currentGoalPosition = Positions.Field.RED_GOAL;
+                currentBasePosition = Positions.Field.RED_BASE;
+                break;
+            case BLUE:
+                currentGoalPosition = Positions.Field.BLUE_GOAL;
+                currentBasePosition = Positions.Field.BLUE_BASE;
+                break;
+        }
+
+        this.opMode = opMode;
+        debug = new Debug(opMode.telemetry);
     }
 
     public void initialize() {
         // Optimization: Initialize Bulk Reads
-        allHubs = hardwareMap.getAll(LynxModule.class);
+        allHubs = opMode.hardwareMap.getAll(LynxModule.class);
         for (LynxModule hub : allHubs) {
             hub.setBulkCachingMode(LynxModule.BulkCachingMode.MANUAL);
         }
@@ -71,18 +84,13 @@ public class TeleOpPedro extends LinearOpMode {
     }
 
     private void initHelpers() {
-        Launchers.INSTANCE = new Launchers();
-        launcherHelper = Launchers.INSTANCE;
-
-        IntakeHelper.INSTANCE = new IntakeHelper();
-        intakeHelper = IntakeHelper.INSTANCE;
-
-        LaunchHelper.INSTANCE = new LaunchHelper();
-        launchHelper = LaunchHelper.INSTANCE;
+        launchers = new Launchers(debug);
+        launchHelper = new LaunchHelper(debug, launchers);
+        intakeHelper = new IntakeHelper(debug, launchers);
     }
 
     private void initPedro() {
-        follower = Constants.createFollower(hardwareMap);
+        follower = Constants.createFollower(opMode.hardwareMap);
         follower.setStartingPose(startingPose == null ? new Pose() : startingPose);
         follower.update();
     }
@@ -99,7 +107,7 @@ public class TeleOpPedro extends LinearOpMode {
             hub.clearBulkCache();
         }
 
-        if(opModeTimer.getElapsedTimeSeconds() > 120) return;
+        if(opModeTimer.getElapsedTimeSeconds() > Timers.OpMode.OP_MODE_TIMER) return;
 
         launchHelper.update();
         fps.update();
@@ -123,38 +131,37 @@ public class TeleOpPedro extends LinearOpMode {
 
     private void movement(double turnInput) {
         follower.setTeleOpDrive(
-                -gamepad1.left_stick_y,
-                -gamepad1.left_stick_x,
+                -opMode.gamepad1.left_stick_y,
+                -opMode.gamepad1.left_stick_x,
                 turnInput,
                 true
         );
     }
 
     private void handleModeSwitch() {
-        if (gamepad1.rightBumperWasPressed()) {
+        if (opMode.gamepad1.rightBumperWasPressed()) {
             lockMode = !lockMode;
             headingPID.reset();
         }
     }
 
     private void manipulation() {
-        // Optimization: Direct boolean assignment is faster than method calls
-        if(gamepad1.aWasPressed()) {
+        if(opMode.gamepad1.aWasPressed()) {
             intaking = true;
             intakeHelper.spinIntake(true);
         }
-        if(gamepad1.bWasPressed()) {
+        if(opMode.gamepad1.bWasPressed()) {
             intaking = false;
             intakeHelper.spinIntake(false);
         }
 
-        if(gamepad1.xWasPressed()) {
+        if(opMode.gamepad1.xWasPressed()) {
             launchHelper.startLaunchSequence();
         }
     }
 
     private void handleAutoPark() {
-        if (gamepad1.leftBumperWasPressed()) {
+        if (opMode.gamepad1.leftBumperWasPressed()) {
             goToBase();
         }
     }
@@ -166,7 +173,7 @@ public class TeleOpPedro extends LinearOpMode {
                     follower.getPose().getHeading()
             );
         }
-        return -gamepad1.right_stick_x * 1.1f;
+        return -opMode.gamepad1.right_stick_x * 1.1f;
     }
 
     private double getAngleToGoal() {
@@ -185,7 +192,5 @@ public class TeleOpPedro extends LinearOpMode {
     }
 
     private void showTelemetry() {
-        // Keep telemetry minimal or use a timer to update it only every 200ms
-        // if fps is still an issue.
     }
 }

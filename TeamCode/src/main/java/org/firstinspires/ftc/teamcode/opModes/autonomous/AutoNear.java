@@ -9,10 +9,32 @@ import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 
 import org.firstinspires.ftc.teamcode.constants.enums.Motif;
+import org.firstinspires.ftc.teamcode.helper.IntakeHelper;
+import org.firstinspires.ftc.teamcode.helper.LaunchHelper;
+import org.firstinspires.ftc.teamcode.helper.Launchers;
+import org.firstinspires.ftc.teamcode.helper.general.Debug;
 import org.firstinspires.ftc.teamcode.pedroPathing.Constants;
 
 @Autonomous
 public class AutoNear extends LinearOpMode {
+
+    Debug debug;
+    LaunchHelper launchHelper;
+    IntakeHelper intakeHelper;
+    Launchers launchers;
+
+    private void initialize() {
+        debug = new Debug(telemetry);
+        launchers = new Launchers(debug);
+        launchHelper = new LaunchHelper(debug, launchers);
+        intakeHelper = new IntakeHelper(debug, launchers);
+
+        pathTimer = new Timer();
+        follower = Constants.createFollower(hardwareMap);
+        buildPaths();
+        follower.setStartingPose(startPose);
+    }
+
     @Override
     public void runOpMode() throws InterruptedException {
         initialize();
@@ -149,11 +171,19 @@ public class AutoNear extends LinearOpMode {
         switch (pathState) {
             case 0:
                 follower.followPath(launch0Path,true);
-                setPathState(1);
+                setPathState(100);
+                break;
+
+            case 100:
+                if(!follower.isBusy()) {
+                    launchHelper.startLaunchSequence();
+                    follower.followPath(prepArtifacts1Path,true);
+                    setPathState(1);
+                }
                 break;
 
             case 1:
-                if(!follower.isBusy()) {
+                if(!launchHelper.IsLaunching()) {
                     follower.followPath(prepArtifacts1Path,true);
                     setPathState(2);
                 }
@@ -161,6 +191,7 @@ public class AutoNear extends LinearOpMode {
 
             case 2:
                 if(!follower.isBusy()) {
+                    intakeHelper.spinIntake(true);
                     follower.followPath(intakeArtifacts1Path,0.1,true);
                     setPathState(3);
                 }
@@ -168,14 +199,22 @@ public class AutoNear extends LinearOpMode {
 
             case 3:
                 if(!follower.isBusy()) {
+                    intakeHelper.spinIntake(false);
                     follower.followPath(launch1Path,true);
+                    setPathState(200);
+                }
+                break;
+
+            case 200:
+                if(!follower.isBusy()) {
+                    launchHelper.startLaunchSequence();
                     if (nrOfRows > 1) setPathState(4);
                     else setPathState(10);
                 }
                 break;
 
             case 4:
-                if(!follower.isBusy()) {
+                if(!launchHelper.IsLaunching()) {
                     follower.followPath(prepArtifacts2Path,true);
                     setPathState(5);
                 }
@@ -183,6 +222,7 @@ public class AutoNear extends LinearOpMode {
 
             case 5:
                 if(!follower.isBusy()) {
+                    intakeHelper.spinIntake(true);
                     follower.followPath(intakeArtifacts2Path,0.1,true);
                     setPathState(6);
                 }
@@ -190,14 +230,22 @@ public class AutoNear extends LinearOpMode {
 
             case 6:
                 if(!follower.isBusy()) {
+                    intakeHelper.spinIntake(false);
                     follower.followPath(launch2Path,true);
+                    setPathState(300);
+                }
+                break;
+
+            case 300:
+                if(!follower.isBusy()) {
+                    launchHelper.startLaunchSequence();
                     if (nrOfRows > 2) setPathState(7);
                     else setPathState(10);
                 }
                 break;
 
             case 7:
-                if(!follower.isBusy()) {
+                if(!launchHelper.IsLaunching()) {
                     follower.followPath(prepArtifacts3Path,true);
                     setPathState(8);
                 }
@@ -205,6 +253,7 @@ public class AutoNear extends LinearOpMode {
 
             case 8:
                 if(!follower.isBusy()) {
+                    intakeHelper.spinIntake(true);
                     follower.followPath(intakeArtifacts3Path,0.1,true);
                     setPathState(9);
                 }
@@ -212,13 +261,21 @@ public class AutoNear extends LinearOpMode {
 
             case 9:
                 if(!follower.isBusy()) {
+                    intakeHelper.spinIntake(false);
                     follower.followPath(launch3Path,true);
+                    setPathState(400);
+                }
+                break;
+
+            case 400:
+                if(!follower.isBusy()) {
+                    launchHelper.startLaunchSequence();
                     if (nrOfRows > 3) setPathState(10);
                 }
                 break;
 
             case 10:
-                if(!follower.isBusy()) {
+                if(!launchHelper.IsLaunching()) {
                     follower.followPath(prepArtifactsHpPath,true);
                     setPathState(11);
                 }
@@ -226,6 +283,7 @@ public class AutoNear extends LinearOpMode {
 
             case 11:
                 if(!follower.isBusy()) {
+                    intakeHelper.spinIntake(true);
                     follower.followPath(intakeArtifactsHpPath,0.1,true);
                     setPathState(12);
                 }
@@ -233,18 +291,26 @@ public class AutoNear extends LinearOpMode {
 
             case 12:
                 if(!follower.isBusy()) {
+                    intakeHelper.spinIntake(false);
                     follower.followPath(launchHpPath,true);
-                    setPathState(11);
+                    setPathState(500);
                 }
                 break;
-        }
-    }
 
-    private void initialize() {
-        pathTimer = new Timer();
-        follower = Constants.createFollower(hardwareMap);
-        buildPaths();
-        follower.setStartingPose(startPose);
+            case 500:
+                if(!follower.isBusy()) {
+                    launchHelper.startLaunchSequence();
+                    setPathState(999);
+                }
+                break;
+
+            case 999:
+                if(!follower.isBusy() && !launchHelper.IsLaunching()) {
+                    PathChain parkPath = null;
+                    follower.followPath(parkPath, true);
+                    setPathState(-1);
+                }
+        }
     }
 
     private void play() {
@@ -252,14 +318,16 @@ public class AutoNear extends LinearOpMode {
     }
 
     private void update() {
+        intakeHelper.update();
+        launchHelper.update();
         follower.update();
         autonomousPathUpdate();
 
-        telemetry.addData("path state", pathState);
-        telemetry.addData("x", follower.getPose().getX());
-        telemetry.addData("y", follower.getPose().getY());
-        telemetry.addData("heading", follower.getPose().getHeading());
-        telemetry.update();
+        debug.addData("path state", pathState);
+        debug.addData("x", follower.getPose().getX());
+        debug.addData("y", follower.getPose().getY());
+        debug.addData("heading", follower.getPose().getHeading());
+        debug.update();
     }
 }
 

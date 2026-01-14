@@ -9,4 +9,7 @@ public class Timers {
     public static class Launch {
         public static final double LAUNCH_DELAY = 0.25;
     }
+    public static class OpMode {
+        public static final double OP_MODE_TIMER = 120.0;
+    }
 }

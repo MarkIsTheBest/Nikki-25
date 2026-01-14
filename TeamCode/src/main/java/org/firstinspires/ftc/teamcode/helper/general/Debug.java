@@ -3,23 +3,29 @@ package org.firstinspires.ftc.teamcode.helper.general;
 import com.bylazar.telemetry.PanelsTelemetry;
 import com.bylazar.telemetry.TelemetryManager;
 
+import org.firstinspires.ftc.robotcore.external.Telemetry;
+
 import dev.nextftc.ftc.ActiveOpMode;
 
 public class Debug {
-    public static final Debug INSTANCE = new Debug();
-    public Debug() {}
 
-    private final TelemetryManager telemetry = PanelsTelemetry.INSTANCE.getTelemetry();
+    private final Telemetry telemetry;
 
-    public void addData(String key, Object value) {
-        telemetry.addData(key,value);
+    public Debug(Telemetry telemetry) {
+        this.telemetry = telemetry;
     }
 
-    public void addLine(String line) {telemetry.addLine(line);}
+    private final TelemetryManager telemetryDash = PanelsTelemetry.INSTANCE.getTelemetry();
 
-    public void addBreak() {telemetry.addLine("");}
+    public void addData(String key, Object value) {
+        telemetryDash.addData(key,value);
+    }
+
+    public void addLine(String line) {telemetryDash.addLine(line);}
+
+    public void addBreak() {telemetryDash.addLine("");}
 
     public void update() {
-        telemetry.update(ActiveOpMode.telemetry());
+        telemetryDash.update(telemetry);
     }
 }

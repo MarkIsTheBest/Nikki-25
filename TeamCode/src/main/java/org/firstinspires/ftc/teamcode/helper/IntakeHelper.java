@@ -20,7 +20,14 @@ import org.firstinspires.ftc.teamcode.helper.hardware.sensors.LEDs;
 
 public class IntakeHelper {
 
-    public static IntakeHelper INSTANCE;
+    private final Debug debug;
+    private final Launchers launchers;
+
+    public IntakeHelper(Debug debug, Launchers launchers) {
+        this.launchers = launchers;
+        this.debug = debug;
+        initPositions();
+    }
 
     private double rightDistance;
     private double distance;
@@ -29,13 +36,6 @@ public class IntakeHelper {
 
     // Optimization: Cache last set power to prevent duplicate hardware writes
     private double lastIntakePower = 0.0;
-
-    private Launchers launcherHelper;
-
-    public IntakeHelper() {
-        launcherHelper = Launchers.INSTANCE;
-        initPositions();
-    }
 
     private final Timer intakeTimer = new Timer();
     private final Timer jamTimer = new Timer();
@@ -64,7 +64,7 @@ public class IntakeHelper {
     }
 
     private Launcher getFirstEmptyLauncher() {
-        boolean[] filled = launcherHelper.getFilledLaunchers();
+        boolean[] filled = launchers.getFilledLaunchers();
         if (!filled[0]) return Launcher.LEFT;
         if (!filled[1]) return Launcher.CENTER;
         if (!filled[2]) return Launcher.RIGHT;
@@ -86,9 +86,9 @@ public class IntakeHelper {
         ArtifactColor color = ColorSensors.getColor(ColorSensors.AllColorSensors()[launcher.index]);
 
         if (color != ArtifactColor.EMPTY) {
-            launcherHelper.setFilledLaunchers(launcher.index, true);
-            launcherHelper.setLauncherColor(launcher.index, color);
-            launcherHelper.HandleLEDS();
+            launchers.setFilledLaunchers(launcher.index, true);
+            launchers.setLauncherColor(launcher.index, color);
+            launchers.HandleLEDS();
         }
         activeLauncher = null;
         hasBall = false;
@@ -150,7 +150,7 @@ public class IntakeHelper {
         if (jammed) {
             if (jamTimer.getElapsedTimeSeconds() > Timers.Intake.UNJAM_TIME) {
                 jammed = false;
-                launcherHelper.HandleLEDS();
+                launchers.HandleLEDS();
                 jamTimer.resetTimer();
             }
             LEDs.playRedFlashAnimation();

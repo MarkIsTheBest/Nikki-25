@@ -15,6 +15,9 @@ public class DistanceSensors {
     private static Rev2mDistanceSensor[] allDistanceSensors; public static Rev2mDistanceSensor[] AllDistanceSensors() { return allDistanceSensors; }
 
     public static void init() {
+        left = null;
+        right = null;
+
         try {
             getHardware(ActiveOpMode.hardwareMap());
             setAllDistanceSensors();
