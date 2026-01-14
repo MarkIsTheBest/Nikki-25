@@ -15,19 +15,21 @@ import org.firstinspires.ftc.teamcode.helper.hardware.Motors;
 public class LaunchTest extends OpMode {
 
     FpsCounter fps = new FpsCounter();
-    LaunchHelper launchHelper = LaunchHelper.INSTANCE;
+    LaunchHelper launchHelper;
     int RPMIncrease = 100;
 
     @Override
     public void init() {
-        Hardware.init();
+
+        LaunchHelper.INSTANCE =  new LaunchHelper();
+        launchHelper = LaunchHelper.INSTANCE;
     }
 
     @Override
     public void loop() {
 
         if(gamepad1.aWasPressed()) {
-            launchHelper.launch();
+            launchHelper.startLaunchSequence();
         }
         if(gamepad1.dpadUpWasPressed()) {
             launchHelper.SetTargetRPM(launchHelper.GetTargetRPM() + RPMIncrease);
@@ -52,17 +54,17 @@ public class LaunchTest extends OpMode {
     }
 
     private void telemetry() {
-        Debug.INSTANCE.addData("GENERAL", "");
-        Debug.INSTANCE.addBreak();
-        Debug.INSTANCE.addData("FPS", fps.getFps());
-        Debug.INSTANCE.addData("Launcher1 RPM", MotorHelper.getCurrentRPM(Motors.Launcher1()));
-        Debug.INSTANCE.addData("Launcher2 RPM", MotorHelper.getCurrentRPM(Motors.Launcher2()));
+        try {
+            Debug.INSTANCE.addData("GENERAL", "");
+            Debug.INSTANCE.addBreak();
+            Debug.INSTANCE.addData("FPS", fps.getFps());
 
-        Debug.INSTANCE.addBreak();
-        Debug.INSTANCE.addData("LAUNCHER", "");
-        Debug.INSTANCE.addBreak();
-        launchHelper.showTelemetry();
+            Debug.INSTANCE.addBreak();
+            Debug.INSTANCE.addData("LAUNCHER", "");
+            Debug.INSTANCE.addBreak();
+            launchHelper.showTelemetry();
 
-        Debug.INSTANCE.update();
+            Debug.INSTANCE.update();
+        } catch (Exception ex) {}
     }
 }

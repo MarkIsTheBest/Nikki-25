@@ -18,8 +18,6 @@ public class Pinpoint {
         try {
             getHardware(ActiveOpMode.hardwareMap());
         } catch (Exception ex) {
-            Debug.INSTANCE.addData("ERROR", ex.getMessage());
-            Debug.INSTANCE.update();
         }
     }
 

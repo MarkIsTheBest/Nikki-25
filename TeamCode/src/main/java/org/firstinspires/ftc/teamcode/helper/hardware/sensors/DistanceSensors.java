@@ -19,8 +19,6 @@ public class DistanceSensors {
             getHardware(ActiveOpMode.hardwareMap());
             setAllDistanceSensors();
         } catch (Exception ex) {
-            Debug.INSTANCE.addData("ERROR", ex.getMessage());
-            Debug.INSTANCE.update();
         }
     }
 

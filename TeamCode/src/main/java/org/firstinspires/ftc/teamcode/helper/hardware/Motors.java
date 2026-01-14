@@ -1,70 +1,40 @@
 package org.firstinspires.ftc.teamcode.helper.hardware;
 
+import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.HardwareMap;
+import java.util.Arrays;
+import java.util.List;
 
-import org.firstinspires.ftc.teamcode.helper.general.Debug;
-import dev.nextftc.ftc.ActiveOpMode;
+public class Motors {
+    public static DcMotorEx leftFront, leftRear, rightFront, rightRear, launcher1, launcher2, intake;
+    public static List<DcMotorEx> allDriveMotors;
+    public static List<DcMotorEx> launchers;
 
-public class Motors
-{
-    private static DcMotorEx leftFront; public static DcMotorEx LeftFront() { return leftFront; }
-    private static DcMotorEx leftRear; public static DcMotorEx LeftRear() { return leftRear; }
-    private static DcMotorEx rightFront; public static DcMotorEx RightFront() { return rightFront; }
-    private static DcMotorEx rightRear; public static DcMotorEx RightRear() { return rightRear; }
-    private static DcMotorEx launcher1; public static DcMotorEx Launcher1() { return launcher1; }
-    private static DcMotorEx launcher2; public static DcMotorEx Launcher2() { return launcher2; }
-    private static DcMotorEx intake; public static DcMotorEx Intake() { return intake; }
+    public static void init(HardwareMap hwMap) {
+        // Use tryGet to prevent crashing if one motor is missing
+        leftFront = hwMap.tryGet(DcMotorEx.class, "leftFront");
+        leftRear = hwMap.tryGet(DcMotorEx.class, "leftRear");
+        rightFront = hwMap.tryGet(DcMotorEx.class, "rightFront");
+        rightRear = hwMap.tryGet(DcMotorEx.class, "rightRear");
+        launcher1 = hwMap.tryGet(DcMotorEx.class, "launcher1");
+        launcher2 = hwMap.tryGet(DcMotorEx.class, "launcher2");
+        intake = hwMap.tryGet(DcMotorEx.class, "intake");
 
-    private static DcMotorEx[] allMotors; public static DcMotorEx[] AllMotors() { return allMotors; }
-    private static DcMotorEx[] launchers; public static DcMotorEx[] Launchers() { return launchers; }
+        allDriveMotors = Arrays.asList(leftFront, leftRear, rightFront, rightRear);
+        launchers = Arrays.asList(launcher1, launcher2);
 
-    public static void init() {
-        try {
-            getHardware(ActiveOpMode.hardwareMap());
-            setAllMotors();
-            setDirection();
-            setZeroPowerBehaviour();
-        } catch (Exception ex) {
-            Debug.INSTANCE.addData("ERROR", ex.getMessage());
-            Debug.INSTANCE.update();
+        // Batch configuration
+        for (DcMotorEx motor : allDriveMotors) {
+            if (motor == null) continue;
+            motor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+            motor.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
         }
-    }
 
-    private static void getHardware(HardwareMap hardwareMap) {
-        leftFront = hardwareMap.tryGet(DcMotorEx.class, "leftFront");
-        leftRear = hardwareMap.tryGet(DcMotorEx.class, "leftRear");
-        rightFront = hardwareMap.tryGet(DcMotorEx.class, "rightFront");
-        rightRear = hardwareMap.tryGet(DcMotorEx.class, "rightRear");
-        launcher1 = hardwareMap.tryGet(DcMotorEx.class, "launcher1");
-        launcher2 = hardwareMap.tryGet(DcMotorEx.class, "launcher2");
-        intake = hardwareMap.tryGet(DcMotorEx.class, "intake");
-    }
-
-    private static void setZeroPowerBehaviour() {
-        leftFront.setZeroPowerBehavior(DcMotorEx.ZeroPowerBehavior.BRAKE);
-        leftRear.setZeroPowerBehavior(DcMotorEx.ZeroPowerBehavior.BRAKE);
-        rightFront.setZeroPowerBehavior(DcMotorEx.ZeroPowerBehavior.BRAKE);
-        rightRear.setZeroPowerBehavior(DcMotorEx.ZeroPowerBehavior.BRAKE);
-        launcher1.setZeroPowerBehavior(DcMotorEx.ZeroPowerBehavior.BRAKE);
-        launcher2.setZeroPowerBehavior(DcMotorEx.ZeroPowerBehavior.BRAKE);
-        intake.setZeroPowerBehavior(DcMotorEx.ZeroPowerBehavior.BRAKE);
-    }
-
-    private static void setDirection() {
-        leftFront.setDirection(DcMotorSimple.Direction.REVERSE);
-        leftRear.setDirection(DcMotorSimple.Direction.REVERSE);
-        rightFront.setDirection(DcMotorSimple.Direction.FORWARD);
-        rightRear.setDirection(DcMotorSimple.Direction.FORWARD);
-
-        launcher1.setDirection(DcMotorSimple.Direction.REVERSE);
-        launcher2.setDirection(DcMotorSimple.Direction.FORWARD);
-
-        intake.setDirection(DcMotorSimple.Direction.REVERSE);
-    }
-
-    private static void setAllMotors() {
-        allMotors = new DcMotorEx[]{leftFront, rightFront, leftRear, rightRear, launcher1, launcher2, intake};
+        if (leftFront != null) leftFront.setDirection(DcMotorSimple.Direction.REVERSE);
+        if (leftRear != null) leftRear.setDirection(DcMotorSimple.Direction.REVERSE);
+        if (launcher1 != null) launcher1.setDirection(DcMotorSimple.Direction.REVERSE);
+        if (intake != null) intake.setDirection(DcMotorSimple.Direction.REVERSE);
     }
 }

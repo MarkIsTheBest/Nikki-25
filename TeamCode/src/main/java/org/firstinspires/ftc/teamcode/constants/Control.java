@@ -18,9 +18,9 @@ public class Control {
 
     @Configurable
     public static class FlywheelPID {
-        public static double p;
-        public static double i;
-        public static double d;
+        public static double p = 150;
+        public static double i = 0;
+        public static double d = 0.15;
 
         public static PIDCoefficients pid = new PIDCoefficients(p,i,d);
     }

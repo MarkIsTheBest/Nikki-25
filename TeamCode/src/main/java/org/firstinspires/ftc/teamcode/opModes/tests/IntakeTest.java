@@ -4,12 +4,15 @@ import com.pedropathing.util.Timer;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
+import org.firstinspires.ftc.teamcode.helper.Launchers;
 import org.firstinspires.ftc.teamcode.helper.general.Debug;
 import org.firstinspires.ftc.teamcode.helper.general.FpsCounter;
 import org.firstinspires.ftc.teamcode.helper.IntakeHelper;
 import org.firstinspires.ftc.teamcode.helper.hardware.Hardware;
 import org.firstinspires.ftc.teamcode.helper.hardware.Motors;
 import org.firstinspires.ftc.teamcode.helper.hardware.sensors.LEDs;
+
+import java.util.Arrays;
 
 @TeleOp
 public class IntakeTest extends LinearOpMode {
@@ -22,14 +25,18 @@ public class IntakeTest extends LinearOpMode {
         initialize();
         while(!isStarted()) {
             LEDs.playRedFlashAnimation();
-            //LEDs.playGradientAnimation(5);
             telemetry.addData("animTimer sec", animTimer.getElapsedTimeSeconds());
             telemetry.addData("Current Pos", LEDs.AllLEDs()[0].getPosition());
+            telemetry.addData("Launchers INFO", Arrays.toString(Launchers.INSTANCE.getFilledLaunchers()));
+            telemetry.addData("Launchers Color", Arrays.toString(Launchers.INSTANCE.getLauncherColorArray()));
             telemetry.update();
         }
         waitForStart();
         play();
-        if (isStopRequested()) return;
+        if (isStopRequested()){
+
+            return;
+        }
         while (opModeIsActive()) update();
     }
 
@@ -37,6 +44,9 @@ public class IntakeTest extends LinearOpMode {
 
     private void initialize() {
         Hardware.init();
+
+        Launchers.INSTANCE = new Launchers();
+        IntakeHelper.INSTANCE = new IntakeHelper();
         intake = IntakeHelper.INSTANCE;
     }
 
@@ -62,6 +72,5 @@ public class IntakeTest extends LinearOpMode {
 
         Debug.INSTANCE.update();
         intake.update();
-
     }
 }

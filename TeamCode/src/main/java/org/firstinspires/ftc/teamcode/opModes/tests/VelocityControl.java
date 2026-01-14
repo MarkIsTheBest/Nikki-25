@@ -7,6 +7,7 @@ import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 
 import org.firstinspires.ftc.teamcode.helper.general.Debug;
+import org.firstinspires.ftc.teamcode.helper.hardware.Motors;
 
 @Configurable
 @TeleOp(name = "VelocityControl", group = "TestsPID")
@@ -17,7 +18,7 @@ public class VelocityControl extends LinearOpMode {
     private final double MAX_TICKS_PER_SECOND = MOTOR_RPM * TICKS_PER_REV / 60.0;
     public final double f = 12 / MAX_TICKS_PER_SECOND;
 
-    private DcMotorEx flywheelMotor;
+    private DcMotorEx[] flywheelMotor;
 
     public static double p = 0.00;
     public static double i = 0.00;
@@ -34,9 +35,12 @@ public class VelocityControl extends LinearOpMode {
     }
 
     private void initialize() {
-        flywheelMotor = hardwareMap.get(DcMotorEx.class, "motor");
-        flywheelMotor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-        flywheelMotor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        Motors.init();
+        flywheelMotor = Motors.Launchers();
+        for (DcMotorEx motor : flywheelMotor) {
+            motor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+            motor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        }
     }
 
     private void play() {
@@ -44,19 +48,22 @@ public class VelocityControl extends LinearOpMode {
     }
 
     private void update() {
-        flywheelMotor.setVelocityPIDFCoefficients(p,i,d,f);
         double targetTicksPerSec = targetRPM * TICKS_PER_REV / 60.0;
-        flywheelMotor.setVelocity(targetTicksPerSec);
+        for (DcMotorEx motor : flywheelMotor) {
+
+            motor.setVelocityPIDFCoefficients(p,i,d,f);
+            motor.setVelocity(targetTicksPerSec);
+        }
         debug();
     }
     
     private void debug()
     {
-        double currentRPM = flywheelMotor.getVelocity() * 60.0 / TICKS_PER_REV;
+        double currentRPM = flywheelMotor[1].getVelocity() * 60.0 / TICKS_PER_REV;
         Debug.INSTANCE.addData("Target RPM", targetRPM);
         Debug.INSTANCE.addData("Current RPM", currentRPM);
         Debug.INSTANCE.addData("Error", targetRPM - currentRPM);
-        Debug.INSTANCE.addData("Power", flywheelMotor.getPower());
+        Debug.INSTANCE.addData("Power", flywheelMotor[1].getPower());
         Debug.INSTANCE.update();
 
     }

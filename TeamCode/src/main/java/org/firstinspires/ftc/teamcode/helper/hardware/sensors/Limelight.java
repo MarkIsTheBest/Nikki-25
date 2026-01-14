@@ -25,8 +25,6 @@ public class Limelight {
             getHardware(ActiveOpMode.hardwareMap());
             setPipeline(0);
         } catch (Exception ex) {
-            Debug.INSTANCE.addData("ERROR", ex.getMessage());
-            Debug.INSTANCE.update();
         }
     }
 

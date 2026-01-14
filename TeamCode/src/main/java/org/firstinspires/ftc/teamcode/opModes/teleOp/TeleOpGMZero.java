@@ -5,7 +5,11 @@ import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
 
+import org.firstinspires.ftc.teamcode.helper.IntakeHelper;
+import org.firstinspires.ftc.teamcode.helper.LaunchHelper;
+import org.firstinspires.ftc.teamcode.helper.Launchers;
 import org.firstinspires.ftc.teamcode.helper.general.FpsCounter;
+import org.firstinspires.ftc.teamcode.helper.hardware.Hardware;
 
 @TeleOp(name = "TeleOp GM Zero (Improved)")
 public class TeleOpGMZero extends LinearOpMode {
@@ -15,8 +19,19 @@ public class TeleOpGMZero extends LinearOpMode {
     // Deadzone for joysticks
     private static final double DEADZONE = 0.05;
 
+    IntakeHelper intakeHelper;
+    Launchers launcherHelper;
+
+
     @Override
     public void runOpMode() {
+
+        Hardware.init();
+        Launchers.INSTANCE = new Launchers();
+        launcherHelper = Launchers.INSTANCE;
+
+        IntakeHelper.INSTANCE = new IntakeHelper();
+        intakeHelper = IntakeHelper.INSTANCE;
 
         // Motors
         DcMotor frontLeft  = hardwareMap.dcMotor.get("leftFront");
@@ -82,6 +97,15 @@ public class TeleOpGMZero extends LinearOpMode {
             backRight.setPower(backRightPower * speedMultiplier);
 
             fps.update();
+            intakeHelper.update();
+            intakeHelper.HandleIntakeSpin();
+
+            if(gamepad1.aWasPressed()) {
+                intakeHelper.spinIntake(true);
+            }
+            if(gamepad1.bWasPressed()) {
+                intakeHelper.spinIntake(false);
+            }
 
             telemetry.addData("Fps", fps.getFps());
             telemetry.addData("Speed Mode", gamepad1.left_bumper ? "SLOW" : "NORMAL");
