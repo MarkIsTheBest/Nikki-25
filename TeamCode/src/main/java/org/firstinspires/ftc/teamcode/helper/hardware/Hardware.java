@@ -1,8 +1,6 @@
 package org.firstinspires.ftc.teamcode.helper.hardware;
 
 //import org.firstinspires.ftc.teamcode.helper.hardware.sensors.ColorSensors;
-import com.qualcomm.robotcore.hardware.HardwareMap;
-
 import org.firstinspires.ftc.teamcode.helper.hardware.sensors.ColorSensors;
 import org.firstinspires.ftc.teamcode.helper.hardware.sensors.DistanceSensors;
 import org.firstinspires.ftc.teamcode.helper.hardware.sensors.LEDs;
@@ -10,24 +8,22 @@ import org.firstinspires.ftc.teamcode.helper.hardware.sensors.Limelight;
 import org.firstinspires.ftc.teamcode.helper.hardware.sensors.Pinpoint;
 
 public class Hardware {
-    public static void init(HardwareMap hwMap)
+    public static void init()
     {
-        {
-            initMotors(hwMap);
-            initSensors(hwMap);
-        }
+        initMotors();
+        initSensors();
     }
 
-    public static void initMotors(HardwareMap hwMap)
+    public static void initMotors()
     {
-        Motors.init(hwMap);
-        Servos.init(hwMap);
+        Motors.init();
+        Servos.init();
     }
 
-    public static void initSensors(HardwareMap hwMap)
+    public static void initSensors()
     {
-        ColorSensors.init(hwMap);
-        LEDs.init(hwMap);
+        ColorSensors.init();
+        LEDs.init();
         Limelight.init();
         DistanceSensors.init();
     }

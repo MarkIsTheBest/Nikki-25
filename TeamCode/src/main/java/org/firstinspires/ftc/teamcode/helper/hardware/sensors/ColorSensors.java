@@ -1,39 +1,71 @@
 package org.firstinspires.ftc.teamcode.helper.hardware.sensors;
 
-import android.graphics.Color;
 import com.qualcomm.robotcore.hardware.ColorSensor;
 import com.qualcomm.robotcore.hardware.HardwareMap;
+
 import org.firstinspires.ftc.teamcode.constants.Colors;
 import org.firstinspires.ftc.teamcode.constants.enums.ArtifactColor;
+import org.firstinspires.ftc.teamcode.helper.color.ColorHSV;
+import org.firstinspires.ftc.teamcode.helper.color.ColorHelper;
+import org.firstinspires.ftc.teamcode.helper.color.ColorRGB;
+import org.firstinspires.ftc.teamcode.helper.general.Debug;
+
+import dev.nextftc.ftc.ActiveOpMode;
 
 public class ColorSensors {
-    public static ColorSensor[] launchers = new ColorSensor[3];
-    private static final float[] hsvValues = new float[3]; // Reusable array to prevent GC spikes
+    private static ColorSensor launcher1; public static ColorSensor Launcher1() { return launcher1; }
+    private static ColorSensor launcher2; public static ColorSensor Launcher2() { return launcher2; }
+    private static ColorSensor launcher3; public static ColorSensor Launcher3() { return launcher3; }
 
-    public static void init(HardwareMap hwMap) {
-        launchers[0] = hwMap.tryGet(ColorSensor.class, "launcher1Color");
-        launchers[1] = hwMap.tryGet(ColorSensor.class, "launcher2Color");
-        launchers[2] = hwMap.tryGet(ColorSensor.class, "launcher3Color");
+    private static ColorSensor[] allColorSensors; public static ColorSensor[] AllColorSensors() { return allColorSensors; }
 
-        for (ColorSensor s : launchers) {
-            if (s != null) s.enableLed(true);
+    public static void init() {
+        try {
+            getHardware(ActiveOpMode.hardwareMap());
+            setAllColorSensors();
+            activateLED();
+        } catch (Exception ex) {
         }
     }
 
-    public static ArtifactColor getColor(int index) {
-        ColorSensor sensor = launchers[index];
-        if (sensor == null) return ArtifactColor.EMPTY;
+    private static void getHardware(HardwareMap hardwareMap) {
+        launcher1 = hardwareMap.tryGet(ColorSensor.class, "launcher1Color");
+        launcher2 = hardwareMap.tryGet(ColorSensor.class, "launcher2Color");
+        launcher3 = hardwareMap.tryGet(ColorSensor.class, "launcher3Color");
+    }
 
-        // Optimized conversion without creating new objects
-        Color.RGBToHSV(sensor.red() * 8, sensor.green() * 8, sensor.blue() * 8, hsvValues);
-        float hue = hsvValues[0];
-        float sat = hsvValues[1] * 100;
+    private static void setAllColorSensors()
+    {
+        allColorSensors = new ColorSensor[]{launcher3, launcher2, launcher1};
+    }
 
-        if (hue > Colors.GREEN_MIN.hue && hue < Colors.GREEN_MAX.hue && sat > 45)
-            return ArtifactColor.GREEN;
-        if (hue > Colors.PURPLE_MIN.hue && hue < Colors.PURPLE_MAX.hue)
-            return ArtifactColor.PURPLE;
+    private static void activateLED() {
+        launcher1.enableLed(true);
+        launcher2.enableLed(true);
+        launcher3.enableLed(true);
+    }
 
-        return ArtifactColor.EMPTY;
+    private static boolean isGreen(ColorSensor colorSensor) {
+        ColorRGB color = new ColorRGB(colorSensor.red(), colorSensor.green(), colorSensor.blue());
+        ColorHSV hsvColor = ColorHelper.fromRGB(color);
+        return ColorHelper.inHue(hsvColor.hue,
+                Colors.GREEN_MIN,
+                Colors.GREEN_MAX
+        ) && hsvColor.saturation > 45;
+    }
+
+    private static boolean isPurple(ColorSensor colorSensor) {
+        ColorRGB color = new ColorRGB(colorSensor.red(), colorSensor.green(), colorSensor.blue());
+        ColorHSV hsvColor = ColorHelper.fromRGB(color);
+        return ColorHelper.inHue(hsvColor.hue,
+                Colors.PURPLE_MIN,
+                Colors.PURPLE_MAX
+        );
+    }
+
+    public static ArtifactColor getColor(ColorSensor colorSensor) {
+        if(isGreen(colorSensor)) return ArtifactColor.GREEN;
+        else if(isPurple(colorSensor)) return ArtifactColor.PURPLE;
+        else return ArtifactColor.EMPTY;
     }
 }
