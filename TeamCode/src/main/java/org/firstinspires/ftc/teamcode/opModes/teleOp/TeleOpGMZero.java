@@ -4,34 +4,29 @@ import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
+import com.qualcomm.robotcore.hardware.Servo;
 
-import org.firstinspires.ftc.teamcode.helper.IntakeHelper;
-import org.firstinspires.ftc.teamcode.helper.LaunchHelper;
-import org.firstinspires.ftc.teamcode.helper.Launchers;
-import org.firstinspires.ftc.teamcode.helper.general.FpsCounter;
-import org.firstinspires.ftc.teamcode.helper.hardware.Hardware;
+import org.firstinspires.ftc.teamcode.constants.Positions;
 
 @TeleOp(name = "TeleOp GM Zero (Improved)")
 public class TeleOpGMZero extends LinearOpMode {
-
-    FpsCounter fps = new FpsCounter();
-
     // Deadzone for joysticks
     private static final double DEADZONE = 0.05;
-
-    IntakeHelper intakeHelper;
-    Launchers launcherHelper;
-
-
     @Override
     public void runOpMode() {
 
-        Hardware.init();
-        Launchers.INSTANCE = new Launchers();
-        launcherHelper = Launchers.INSTANCE;
+        Servo holder1 = hardwareMap.servo.get("holder1");
+        Servo holder2 = hardwareMap.servo.get("holder2");
+        Servo holder3 = hardwareMap.servo.get("holder3");
+        Servo door1   = hardwareMap.servo.get("door1");
+        Servo door2   = hardwareMap.servo.get("door2");
 
-        IntakeHelper.INSTANCE = new IntakeHelper();
-        intakeHelper = IntakeHelper.INSTANCE;
+        /*holder1.setPosition(Positions.Servo.H_PREPARE);
+        holder2.setPosition(Positions.Servo.H_PREPARE);
+        holder3.setPosition(Positions.Servo.H_PREPARE);
+
+        door1.setPosition(Positions.Servo.C_D1_PREPARE);
+        door2.setPosition(Positions.Servo.C_D2_PREPARE);*/
 
         // Motors
         DcMotor frontLeft  = hardwareMap.dcMotor.get("leftFront");
@@ -46,10 +41,10 @@ public class TeleOpGMZero extends LinearOpMode {
         backLeft.setDirection(DcMotorSimple.Direction.REVERSE);
 
         // Brake for better control
-        frontLeft.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
-        backLeft.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
-        frontRight.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
-        backRight.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+        frontLeft.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
+        backLeft.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
+        frontRight.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
+        backRight.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
 
         // No motor PID – smoother mecanum control
         frontLeft.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
@@ -96,18 +91,6 @@ public class TeleOpGMZero extends LinearOpMode {
             frontRight.setPower(frontRightPower * speedMultiplier);
             backRight.setPower(backRightPower * speedMultiplier);
 
-            fps.update();
-            intakeHelper.update();
-            intakeHelper.HandleIntakeSpin();
-
-            if(gamepad1.aWasPressed()) {
-                intakeHelper.spinIntake(true);
-            }
-            if(gamepad1.bWasPressed()) {
-                intakeHelper.spinIntake(false);
-            }
-
-            telemetry.addData("Fps", fps.getFps());
             telemetry.addData("Speed Mode", gamepad1.left_bumper ? "SLOW" : "NORMAL");
             telemetry.update();
         }

@@ -4,6 +4,7 @@ import static org.firstinspires.ftc.teamcode.constants.Distances.Intake.BALL_DET
 import static org.firstinspires.ftc.teamcode.constants.Positions.Servo.*;
 
 import com.pedropathing.util.Timer;
+import com.qualcomm.robotcore.hardware.ColorSensor;
 import com.qualcomm.robotcore.hardware.Servo;
 
 import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
@@ -20,16 +21,19 @@ import org.firstinspires.ftc.teamcode.helper.hardware.sensors.LEDs;
 
 public class IntakeHelper {
 
+    private final Servos servos;
     private final Debug debug;
     private final Launchers launchers;
 
-    public IntakeHelper(Debug debug, Launchers launchers) {
+    public IntakeHelper(Debug debug, Launchers launchers, Servos Servos) {
         this.launchers = launchers;
         this.debug = debug;
+        this.servos = Servos;
         initPositions();
     }
 
     private double rightDistance;
+    private double leftDistance;
     private double distance;
     private boolean jammed = false;
     private boolean spinIntake = false;
@@ -42,7 +46,7 @@ public class IntakeHelper {
 
     // Optimization: Rate limit I2C distance reads
     private final Timer sensorTimer = new Timer();
-    private static final double SENSOR_READ_DELAY_MS = 50; // Read at 20Hz
+    private static final double SENSOR_READ_DELAY_MS = 25; // Read at 20Hz
 
     private IntakeStep currentStep = IntakeStep.PREPARE_DOORS;
     private Launcher activeLauncher = null;
@@ -56,11 +60,35 @@ public class IntakeHelper {
     }
 
     private void initPositions() {
-        Servos.setPosition(Servos.Holder1(), H_PREPARE);
-        Servos.setPosition(Servos.Holder2(), H_PREPARE);
-        Servos.setPosition(Servos.Holder3(), H_PREPARE);
-        Servos.setPosition(Servos.Door1(), L_D1_PREPARE);
-        Servos.setPosition(Servos.Door2(), L_D2_PREPARE);
+        checkColors();
+        servos.setPosition(servos.Holder1(), H_PREPARE);
+        servos.setPosition(servos.Holder2(), H_PREPARE);
+        servos.setPosition(servos.Holder3(), H_PREPARE);
+
+        if(launchers.getFilledLaunchers()[0]) {
+            servos.setPosition(servos.Holder1(), H_CLOSE);
+        }
+        if(launchers.getFilledLaunchers()[1]) {
+            servos.setPosition(servos.Holder2(), H_CLOSE);
+        }
+        if(launchers.getFilledLaunchers()[2]) {
+            servos.setPosition(servos.Holder3(), H_CLOSE);
+        }
+
+        if(getFirstEmptyLauncher() == Launcher.LEFT) {
+            servos.setPosition(servos.Door1(), L_D1_PREPARE);
+            servos.setPosition(servos.Door2(), L_D2_PREPARE);
+        }
+
+        if(getFirstEmptyLauncher() == Launcher.CENTER) {
+            servos.setPosition(servos.Door1(), C_D1_PREPARE);
+            servos.setPosition(servos.Door2(), C_D2_PREPARE);
+        }
+
+        if(getFirstEmptyLauncher() == Launcher.RIGHT) {
+            servos.setPosition(servos.Door1(), R_D1_PREPARE);
+            servos.setPosition(servos.Door2(), R_D2_PREPARE);
+        }
     }
 
     private Launcher getFirstEmptyLauncher() {
@@ -81,6 +109,19 @@ public class IntakeHelper {
         intakeTimer.resetTimer();
     }
 
+    private void checkColors() {
+        for (int i = 0; i < 3; i++)
+        {
+            ArtifactColor color = ColorSensors.getColor(ColorSensors.AllColorSensors()[i]);
+
+            if (color != ArtifactColor.EMPTY) {
+                launchers.setFilledLaunchers(i, true);
+                launchers.setLauncherColor(i, color);
+                launchers.HandleLEDS();
+            }
+        }
+    }
+
     private void endIntake(Launcher launcher) {
         // This color sensor read is unavoidable, but happens rarely (once per ball)
         ArtifactColor color = ColorSensors.getColor(ColorSensors.AllColorSensors()[launcher.index]);
@@ -98,24 +139,24 @@ public class IntakeHelper {
     private void intake() {
         if (activeLauncher == null) return;
 
-        Servo holder = (activeLauncher == Launcher.LEFT) ? Servos.Holder1() :
-                (activeLauncher == Launcher.CENTER) ? Servos.Holder2() : Servos.Holder3();
+        Servo holder = (activeLauncher == Launcher.LEFT) ? servos.Holder1() :
+                (activeLauncher == Launcher.CENTER) ? servos.Holder2() : servos.Holder3();
 
         switch (currentStep) {
             case PREPARE_DOORS:
                 applyDoorPositions(activeLauncher);
-                Servos.setPosition(holder, H_PREPARE);
+                servos.setPosition(holder, H_PREPARE);
                 if (hasBall) changeStep(IntakeStep.PARTIAL);
                 break;
 
             case PARTIAL:
                 if (intakeTime > Timers.Intake.PARTIAL_DELAY && !jammed) {
-                    if (activeLauncher == Launcher.LEFT) Servos.setPosition(Servos.Door1(), L_D1_PARTIAL);
-                    if (activeLauncher == Launcher.RIGHT) Servos.setPosition(Servos.Door2(), R_D2_PARTIAL);
+                    if (activeLauncher == Launcher.LEFT) servos.setPosition(servos.Door1(), L_D1_PARTIAL);
+                    if (activeLauncher == Launcher.RIGHT) servos.setPosition(servos.Door2(), R_D2_PARTIAL);
 
-                    // Servos.isBusy is now fast due to Bulk Reads
-                    if (!Servos.isBusy(Servos.Door1()) && !Servos.isBusy(Servos.Door2())) {
-                        Servos.setPosition(holder, H_CLOSE);
+                    // servos.isBusy is now fast due to Bulk Reads
+                    if (!servos.isBusy(servos.Door1()) && !servos.isBusy(servos.Door2())) {
+                        servos.setPosition(holder, H_CLOSE);
                         changeStep(IntakeStep.CLOSE);
                     }
                 }
@@ -132,32 +173,32 @@ public class IntakeHelper {
     private void applyDoorPositions(Launcher launcher) {
         switch (launcher) {
             case LEFT:
-                Servos.setPosition(Servos.Door1(), L_D1_PREPARE);
-                Servos.setPosition(Servos.Door2(), L_D2_PREPARE);
+                servos.setPosition(servos.Door1(), L_D1_PREPARE);
+                servos.setPosition(servos.Door2(), L_D2_PREPARE);
                 break;
             case CENTER:
-                Servos.setPosition(Servos.Door1(), C_D1_PREPARE);
-                Servos.setPosition(Servos.Door2(), C_D2_PREPARE);
+                servos.setPosition(servos.Door1(), C_D1_PREPARE);
+                servos.setPosition(servos.Door2(), C_D2_PREPARE);
                 break;
             case RIGHT:
-                Servos.setPosition(Servos.Door1(), R_D1_PREPARE);
-                Servos.setPosition(Servos.Door2(), R_D2_PREPARE);
+                servos.setPosition(servos.Door1(), R_D1_PREPARE);
+                servos.setPosition(servos.Door2(), R_D2_PREPARE);
                 break;
         }
     }
 
     private void checkJammed() {
         if (jammed) {
+            LEDs.playRedFlashAnimation();
             if (jamTimer.getElapsedTimeSeconds() > Timers.Intake.UNJAM_TIME) {
                 jammed = false;
                 launchers.HandleLEDS();
                 jamTimer.resetTimer();
             }
-            LEDs.playRedFlashAnimation();
             return;
         }
 
-        if (!Servos.isBusy(Servos.Door1()) && !Servos.isBusy(Servos.Door2())) {
+        if (!servos.isBusy(servos.Door1()) && !servos.isBusy(servos.Door2())) {
             jamTimer.resetTimer();
         } else if (jamTimer.getElapsedTimeSeconds() > Timers.Intake.JAMMED_TIME) {
             jammed = true;
@@ -179,6 +220,12 @@ public class IntakeHelper {
         }
     }
 
+    private double computeMinDistance(double left, double right) {
+        double avg = (left + right) / 2.0;
+        if (avg <= BALL_DETECT_DISTANCE * 2) return Math.min(left, right);
+        return 999;
+    }
+
     public void update() {
         checkJammed();
         selectLauncherIfNeeded();
@@ -187,7 +234,8 @@ public class IntakeHelper {
             // Optimization: Only read I2C sensor every 50ms
             if (sensorTimer.getElapsedTime() > SENSOR_READ_DELAY_MS) {
                 rightDistance = (DistanceSensors.Right().getDistance(DistanceUnit.INCH));
-                distance = rightDistance;
+                leftDistance = (DistanceSensors.Left().getDistance(DistanceUnit.INCH));
+                distance = computeMinDistance(leftDistance, rightDistance);
                 sensorTimer.resetTimer();
 
                 if (distance < BALL_DETECT_DISTANCE) {
@@ -205,5 +253,7 @@ public class IntakeHelper {
         spinIntake = value;
     }
 
-    // Telemetry removed for speed, add back if debugging needed
+    public void showTelemetry() {
+        debug.addData("Distance Detected", distance);
+    }
 }

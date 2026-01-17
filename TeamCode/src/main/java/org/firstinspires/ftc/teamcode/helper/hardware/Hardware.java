@@ -5,7 +5,6 @@ import org.firstinspires.ftc.teamcode.helper.hardware.sensors.ColorSensors;
 import org.firstinspires.ftc.teamcode.helper.hardware.sensors.DistanceSensors;
 import org.firstinspires.ftc.teamcode.helper.hardware.sensors.LEDs;
 import org.firstinspires.ftc.teamcode.helper.hardware.sensors.Limelight;
-import org.firstinspires.ftc.teamcode.helper.hardware.sensors.Pinpoint;
 
 public class Hardware {
     public static void init()
@@ -17,7 +16,6 @@ public class Hardware {
     public static void initMotors()
     {
         Motors.init();
-        Servos.init();
     }
 
     public static void initSensors()

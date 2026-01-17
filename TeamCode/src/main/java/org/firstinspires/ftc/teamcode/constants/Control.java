@@ -18,11 +18,12 @@ public class Control {
 
     @Configurable
     public static class FlywheelPID {
-        public static double p = 150;
-        public static double i = 0;
-        public static double d = 0.15;
+        public static double p = 1.4;
+        public static double i = 0.0015;
+        public static double d = 15;
+        public static double f = 15;
 
-        public static PIDCoefficients pid = new PIDCoefficients(p,i,d);
+        public static PIDFCoefficients pidf = new PIDFCoefficients(p,i,d,f);
     }
 
     @Configurable

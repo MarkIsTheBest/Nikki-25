@@ -12,6 +12,7 @@ import org.firstinspires.ftc.teamcode.helper.hardware.Servos;
 public class DoorTester extends LinearOpMode {
 
     double position = Positions.Servo.R_D2_PARTIAL;
+    Servos Servos = new Servos();
 
     @Override
     public void runOpMode() throws InterruptedException {

@@ -44,11 +44,11 @@ public class ColorIntervalTuner extends LinearOpMode {
                 colorSensor.green(),
                 colorSensor.blue()
         );
-
-        Debug.INSTANCE.addData("Red", currentColor.red);
-        Debug.INSTANCE.addData("Green", currentColor.green);
-        Debug.INSTANCE.addData("Blue", currentColor.blue);
-
-        Debug.INSTANCE.addData("Is in Interval?", ColorHelper.inInterval(currentColor, min, max));
+//
+//        Debug.INSTANCE.addData("Red", currentColor.red);
+//        Debug.INSTANCE.addData("Green", currentColor.green);
+//        Debug.INSTANCE.addData("Blue", currentColor.blue);
+//
+//        Debug.INSTANCE.addData("Is in Interval?", ColorHelper.inInterval(currentColor, min, max));
     }
 }

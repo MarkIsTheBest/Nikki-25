@@ -12,22 +12,28 @@ import org.firstinspires.ftc.teamcode.constants.enums.Motif;
 import org.firstinspires.ftc.teamcode.helper.IntakeHelper;
 import org.firstinspires.ftc.teamcode.helper.LaunchHelper;
 import org.firstinspires.ftc.teamcode.helper.Launchers;
+import org.firstinspires.ftc.teamcode.helper.MotorHelper;
 import org.firstinspires.ftc.teamcode.helper.general.Debug;
+import org.firstinspires.ftc.teamcode.helper.hardware.Hardware;
+import org.firstinspires.ftc.teamcode.helper.hardware.Motors;
+import org.firstinspires.ftc.teamcode.helper.hardware.Servos;
 import org.firstinspires.ftc.teamcode.pedroPathing.Constants;
 
 @Autonomous
 public class AutoNear extends LinearOpMode {
 
+    Servos servos = new Servos();
     Debug debug;
     LaunchHelper launchHelper;
     IntakeHelper intakeHelper;
     Launchers launchers;
 
     private void initialize() {
+        Hardware.init();
         debug = new Debug(telemetry);
         launchers = new Launchers(debug);
-        launchHelper = new LaunchHelper(debug, launchers);
-        intakeHelper = new IntakeHelper(debug, launchers);
+        launchHelper = new LaunchHelper(debug, launchers, servos);
+        intakeHelper = new IntakeHelper(debug, launchers, servos);
 
         pathTimer = new Timer();
         follower = Constants.createFollower(hardwareMap);
@@ -49,22 +55,22 @@ public class AutoNear extends LinearOpMode {
     }
 
     // Start Pose
-    private final Pose startPose = new Pose(85, 9, Math.toRadians(90)); // Start position
+    private final Pose startPose = new Pose(85, 9, Math.toRadians(90)).mirror(); // Start position
 
     // Trajectory Poses
-    private final Pose launch0Pose = new Pose(85, 20, Math.toRadians(90)); // Launch_0
-    private final Pose prepArtifacts1Pose = new Pose(103, 35, Math.toRadians(0)); // Prep_Artifacts_1
-    private final Pose intakeArtifacts1Pose = new Pose(118, 35, Math.toRadians(0)); // Intake_Artifacts_1
-    private final Pose launch1Pose = new Pose(85, 20, Math.toRadians(67)); // Launch_1
-    private final Pose prepArtifacts2Pose = new Pose(103, 59.5, Math.toRadians(0)); // Prep_Artifacts_2
-    private final Pose intakeArtifacts2Pose = new Pose(118, 59.5, Math.toRadians(0)); // Intake_Artifacts_2
-    private final Pose launch2Pose = new Pose(85, 20, Math.toRadians(67)); // Launch_2
-    private final Pose prepArtifacts3Pose = new Pose(103, 83.5, Math.toRadians(0)); // Prep_Artifacts_3
-    private final Pose intakeArtifacts3Pose = new Pose(118, 83.5, Math.toRadians(0)); // Intake_Artifacts_3
-    private final Pose launch3Pose = new Pose(85, 20, Math.toRadians(67)); // Launch_3
-    private final Pose prepArtifactsHpPose = new Pose(113, 20, Math.toRadians(0)); // Prep_Artifacts_HP
-    private final Pose intakeArtifactsHpPose = new Pose(130, 20, Math.toRadians(0)); // Intake_Artifacts_HP
-    private final Pose launchHpPose = new Pose(85, 20, Math.toRadians(67)); // Launch_HP
+    private final Pose launch0Pose = new Pose(85, 20, Math.toRadians(67)).mirror(); // Launch_0
+    private final Pose prepArtifacts1Pose = new Pose(103, 35, Math.toRadians(0)).mirror(); // Prep_Artifacts_1
+    private final Pose intakeArtifacts1Pose = new Pose(118, 35, Math.toRadians(0)).mirror(); // Intake_Artifacts_1
+    private final Pose launch1Pose = new Pose(85, 20, Math.toRadians(67)).mirror(); // Launch_1
+    private final Pose prepArtifacts2Pose = new Pose(103, 59.5, Math.toRadians(0)).mirror(); // Prep_Artifacts_2
+    private final Pose intakeArtifacts2Pose = new Pose(118, 59.5, Math.toRadians(0)).mirror(); // Intake_Artifacts_2
+    private final Pose launch2Pose = new Pose(85, 20, Math.toRadians(67)).mirror(); // Launch_2
+    private final Pose prepArtifacts3Pose = new Pose(103, 83.5, Math.toRadians(0)).mirror(); // Prep_Artifacts_3
+    private final Pose intakeArtifacts3Pose = new Pose(118, 83.5, Math.toRadians(0)).mirror(); // Intake_Artifacts_3
+    private final Pose launch3Pose = new Pose(85, 20, Math.toRadians(67)).mirror(); // Launch_3
+    private final Pose prepArtifactsHpPose = new Pose(113, 20, Math.toRadians(0)).mirror(); // Prep_Artifacts_HP
+    private final Pose intakeArtifactsHpPose = new Pose(130, 20, Math.toRadians(0)).mirror(); // Intake_Artifacts_HP
+    private final Pose launchHpPose = new Pose(85, 20, Math.toRadians(67)).mirror(); // Launch_HP
 
     private PathChain launch0Path, prepArtifacts1Path, intakeArtifacts1Path, launch1Path, prepArtifacts2Path,
             intakeArtifacts2Path, launch2Path, prepArtifacts3Path, intakeArtifacts3Path, launch3Path,
@@ -177,7 +183,6 @@ public class AutoNear extends LinearOpMode {
             case 100:
                 if(!follower.isBusy()) {
                     launchHelper.startLaunchSequence();
-                    follower.followPath(prepArtifacts1Path,true);
                     setPathState(1);
                 }
                 break;
@@ -223,7 +228,7 @@ public class AutoNear extends LinearOpMode {
             case 5:
                 if(!follower.isBusy()) {
                     intakeHelper.spinIntake(true);
-                    follower.followPath(intakeArtifacts2Path,0.1,true);
+                    follower.followPath(intakeArtifacts2Path,true);
                     setPathState(6);
                 }
                 break;
@@ -319,6 +324,7 @@ public class AutoNear extends LinearOpMode {
 
     private void update() {
         intakeHelper.update();
+        intakeHelper.HandleIntakeSpin();
         launchHelper.update();
         follower.update();
         autonomousPathUpdate();
@@ -327,6 +333,9 @@ public class AutoNear extends LinearOpMode {
         debug.addData("x", follower.getPose().getX());
         debug.addData("y", follower.getPose().getY());
         debug.addData("heading", follower.getPose().getHeading());
+        debug.addData("isLaunching", launchHelper.IsLaunching());
+        debug.addData("Current RPM", MotorHelper.getCurrentRPM(Motors.Launchers()[1]));
+        debug.addData("isBusy", follower.isBusy());
         debug.update();
     }
 }

@@ -46,10 +46,6 @@ public class CustomPID extends LinearOpMode {
         double state = motor.getVelocity();
         double power = PIDControl(Reference, state);
         motor.setPower(power);
-
-        Debug.INSTANCE.addData("Reference", Reference);
-        Debug.INSTANCE.addData("State", state);
-        Debug.INSTANCE.update();
     }
 
     public double PIDControl(double reference, double state) {
@@ -61,8 +57,6 @@ public class CustomPID extends LinearOpMode {
         timer.reset();
 
         double output = (error * p) + (derivative * d) + (integralSum * i) + (reference * f);
-        Debug.INSTANCE.addData("Output Power", output);
-
         return output;
     }
 }

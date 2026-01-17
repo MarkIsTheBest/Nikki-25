@@ -29,7 +29,7 @@ public class Limelight {
     }
 
     private static void getHardware(HardwareMap hardwareMap) {
-        limelight = hardwareMap.tryGet(Limelight3A.class, "limelight");
+        limelight = hardwareMap.tryGet(Limelight3A.class, "Limelight");
     }
 
     public static void setPipeline(int pipeline) {

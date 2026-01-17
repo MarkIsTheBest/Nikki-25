@@ -151,12 +151,12 @@ public class AutoFar extends LinearOpMode {
     private void update() {
         follower.update();
         autonomousPathUpdate();
-
-        Debug.INSTANCE.addData("path state", pathState);
-        Debug.INSTANCE.addData("x", follower.getPose().getX());
-        Debug.INSTANCE.addData("y", follower.getPose().getY());
-        Debug.INSTANCE.addData("heading", follower.getPose().getHeading());
-        Debug.INSTANCE.update();
+//
+//        Debug.INSTANCE.addData("path state", pathState);
+//        Debug.INSTANCE.addData("x", follower.getPose().getX());
+//        Debug.INSTANCE.addData("y", follower.getPose().getY());
+//        Debug.INSTANCE.addData("heading", follower.getPose().getHeading());
+//        Debug.INSTANCE.update();
     }
 }
 

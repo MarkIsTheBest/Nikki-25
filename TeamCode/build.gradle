@@ -51,5 +51,5 @@ dependencies {
     implementation project(':FtcRobotController')
     implementation 'dev.nextftc:ftc:1.0.1'
     implementation 'dev.nextftc:hardware:1.0.1' // If you would like to use the hardware module
-    implementation("dev.frozenmilk.sinister:Sloth:0.2.4")
+    implementation("com.bylazar.sloth:fullpanels:0.2.4+1.0.12")
 }

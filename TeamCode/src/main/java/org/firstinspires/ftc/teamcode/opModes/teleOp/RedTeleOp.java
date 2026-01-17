@@ -10,10 +10,10 @@ import org.firstinspires.ftc.teamcode.constants.enums.AllianceColor;
 @TeleOp(name="RedTeleOp", group="TeleOp")
 public class RedTeleOp extends LinearOpMode {
 
-    MainTeleOp teleOp = new MainTeleOp(AllianceColor.BLUE, this);
+    MainTeleOp teleOp = new MainTeleOp(AllianceColor.RED, this);
 
     public void runOpMode() throws InterruptedException {
-        initialize();
+        teleOp.initialize();
         waitForStart();
         teleOp.play();
         if (isStopRequested()) return;

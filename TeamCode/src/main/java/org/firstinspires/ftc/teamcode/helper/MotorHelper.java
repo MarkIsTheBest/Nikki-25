@@ -35,7 +35,7 @@ public class MotorHelper {
 
         double maxRPM = 6000.0;
         double ticksPerRev = 28.0;
-        PIDCoefficients pid = Control.FlywheelPID.pid;
+        PIDFCoefficients pid = Control.FlywheelPID.pidf;
         double f = 32767.0 / (maxRPM * ticksPerRev / 60.0);
 
         setRPM(motor, targetRPM, ticksPerRev, maxRPM, pid);
@@ -47,14 +47,11 @@ public class MotorHelper {
         }
     }
 
-    public static void setRPM(DcMotorEx motor, double targetRPM, double ticksPerRev, double maxRPM, PIDCoefficients pid) {
+    public static void setRPM(DcMotorEx motor, double targetRPM, double ticksPerRev, double maxRPM, PIDFCoefficients pid) {
         if (motor == null) return;
-
-        double f = 32767.0 / (maxRPM * ticksPerRev / 60.0);
-
         // 1. Optimize PIDF Writes (VERY SLOW OPERATION)
         // Only write coefficients if they have changed substantially
-        PIDFCoefficients newPIDF = new PIDFCoefficients(pid.p, pid.i, pid.d, f);
+        PIDFCoefficients newPIDF = new PIDFCoefficients(pid.p, pid.i, pid.d, pid.f);
         PIDFCoefficients cachedPIDF = pidfCache.get(motor);
 
         if (cachedPIDF == null ||
@@ -63,7 +60,7 @@ public class MotorHelper {
                 cachedPIDF.d != newPIDF.d ||
                 cachedPIDF.f != newPIDF.f) {
 
-            motor.setVelocityPIDFCoefficients(pid.p, pid.i, pid.d, f);
+            motor.setVelocityPIDFCoefficients(pid.p, pid.i, pid.d, pid.f);
             pidfCache.put(motor, newPIDF);
         }
 

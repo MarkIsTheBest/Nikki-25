@@ -5,14 +5,17 @@ import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.PIDCoefficients;
+import com.qualcomm.robotcore.hardware.PIDFCoefficients;
 
 import org.firstinspires.ftc.teamcode.helper.general.Debug;
 import org.firstinspires.ftc.teamcode.helper.MotorHelper;
+import org.firstinspires.ftc.teamcode.helper.hardware.Motors;
 
 @Configurable
 @TeleOp(name = "Velocity Control Tuner", group = "Tuners")
 public class VelocityControlTuner extends LinearOpMode {
 
+    Debug debug = new Debug(telemetry);
     private DcMotorEx[] motors;
 
     public static double motorMaxRPM;
@@ -21,8 +24,15 @@ public class VelocityControlTuner extends LinearOpMode {
     public static double p;
     public static double i;
     public static double d;
+    public static double f;
+
+    public  double lastp;
+    public  double lasti;
+    public  double lastd;
+    public  double lastf;
 
     public static double targetRPM;
+    private double lastTargetRPM;
 
     @Override
     public void runOpMode() throws InterruptedException {
@@ -34,9 +44,8 @@ public class VelocityControlTuner extends LinearOpMode {
     }
 
     private void initialize() {
-        motors = new DcMotorEx[] {
-                hardwareMap.get(DcMotorEx.class,"motor")
-        };
+        Motors.init();
+        motors = Motors.Launchers();
     }
 
     private void play() {
@@ -44,11 +53,19 @@ public class VelocityControlTuner extends LinearOpMode {
     }
 
     private void update() {
-        for (DcMotorEx motor : motors) {
-            MotorHelper.setRPM(motor, targetRPM, motorTicksPerRev, motorMaxRPM, new PIDCoefficients(p,i,d));
+        if(lastTargetRPM != targetRPM || lastp != p || lasti != i || lastd != d || lastf != f) {
+            for (DcMotorEx motor : motors) {
+                MotorHelper.setRPM(motor, targetRPM, motorTicksPerRev, motorMaxRPM, new PIDFCoefficients(p,i,d,f));
+            }
         }
-        Debug.INSTANCE.addData("RPM", MotorHelper.getCurrentRPM(motors[0],motorTicksPerRev));
-        Debug.INSTANCE.addData("Power", motors[0].getPower());
-        Debug.INSTANCE.update();
+        lastTargetRPM = targetRPM;
+        lastp = p;
+        lastd = d;
+        lasti = i;
+        lastf = f;
+
+        debug.addData("CurrentRPM", MotorHelper.getCurrentRPM(motors[1]));
+        debug.addData("TargetRPM", targetRPM);
+        debug.update();
     }
 }

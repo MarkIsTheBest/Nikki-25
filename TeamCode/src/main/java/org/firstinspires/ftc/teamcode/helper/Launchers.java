@@ -17,7 +17,6 @@ public class Launchers {
 
     private boolean[] filledLaunchers = {false,false,false};
     private ArtifactColor[] launcherColor = {ArtifactColor.EMPTY, ArtifactColor.EMPTY, ArtifactColor.EMPTY};
-    private ArtifactColor[] lastLedState = {null, null, null}; // Cache for LEDs
 
     public ArtifactColor[] getLauncherColorArray() {
         return launcherColor;
@@ -53,17 +52,14 @@ public class Launchers {
 
     private void updateLedForLauncher(int index, Servo ledServo) {
         ArtifactColor color = launcherColor[index];
-        // Optimization: Don't set servo position if color hasn't changed
-        if (color != lastLedState[index]) {
-            if (color == ArtifactColor.GREEN) LEDs.setGreen(ledServo);
-            else if (color == ArtifactColor.PURPLE) LEDs.setPurple(ledServo);
-            else LEDs.setEmpty(ledServo);
 
-            lastLedState[index] = color;
-        }
+        if (color == ArtifactColor.GREEN) LEDs.setGreen(ledServo);
+        else if (color == ArtifactColor.PURPLE) LEDs.setPurple(ledServo);
+        else LEDs.setEmpty(ledServo);
     }
 
     public void showTelemetry() {
         debug.addData("Filled", Arrays.toString(filledLaunchers));
+        debug.addData("Filled", Arrays.toString(launcherColor));
     }
 }

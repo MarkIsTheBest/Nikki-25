@@ -13,6 +13,8 @@ import org.firstinspires.ftc.teamcode.helper.hardware.Motors;
 @TeleOp(name = "VelocityControl", group = "TestsPID")
 public class VelocityControl extends LinearOpMode {
 
+    private final Debug debug = new Debug(telemetry);
+
     private final double MOTOR_RPM = 6000;
     private final double TICKS_PER_REV = 28;
     private final double MAX_TICKS_PER_SECOND = MOTOR_RPM * TICKS_PER_REV / 60.0;
@@ -56,15 +58,14 @@ public class VelocityControl extends LinearOpMode {
         }
         debug();
     }
-    
+
     private void debug()
     {
         double currentRPM = flywheelMotor[1].getVelocity() * 60.0 / TICKS_PER_REV;
-        Debug.INSTANCE.addData("Target RPM", targetRPM);
-        Debug.INSTANCE.addData("Current RPM", currentRPM);
-        Debug.INSTANCE.addData("Error", targetRPM - currentRPM);
-        Debug.INSTANCE.addData("Power", flywheelMotor[1].getPower());
-        Debug.INSTANCE.update();
-
+        debug.addData("Target RPM", targetRPM);
+        debug.addData("Current RPM", currentRPM);
+        debug.addData("Error", targetRPM - currentRPM);
+        debug.addData("Power", flywheelMotor[1].getPower());
+        debug.update();
     }
 }

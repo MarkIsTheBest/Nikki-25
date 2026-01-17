@@ -10,6 +10,7 @@ import org.firstinspires.ftc.teamcode.helper.hardware.Servos;
 public class AnalogServoTest extends LinearOpMode {
 
     int index = 0;
+    Servos Servos = new Servos();
 
     @Override
     public void runOpMode() throws InterruptedException {
@@ -36,7 +37,7 @@ public class AnalogServoTest extends LinearOpMode {
 
         switch (index) {
             case -1:
-                index = 3;
+                index = 4;
                 break;
             case 0:
                 Servos.setPosition(Servos.Door1(), Positions.Servo.L_D1_PREPARE);
@@ -55,6 +56,9 @@ public class AnalogServoTest extends LinearOpMode {
                 Servos.setPosition(Servos.Door2(), Positions.Servo.R_D2_PARTIAL);
                 break;
             case 4:
+                Servos.setPosition(Servos.Holder2(), Positions.Servo.H_LAUNCH);
+                break;
+            case 5:
                 index = 0;
                 break;
         }

@@ -20,6 +20,7 @@ import org.firstinspires.ftc.teamcode.helper.Launchers;
 import org.firstinspires.ftc.teamcode.helper.general.Debug;
 import org.firstinspires.ftc.teamcode.helper.general.FpsCounter;
 import org.firstinspires.ftc.teamcode.helper.hardware.Hardware;
+import org.firstinspires.ftc.teamcode.helper.hardware.Servos;
 import org.firstinspires.ftc.teamcode.helper.hardware.sensors.LEDs;
 import org.firstinspires.ftc.teamcode.helper.pid.HeadingPID;
 import org.firstinspires.ftc.teamcode.pedroPathing.Constants;
@@ -34,6 +35,7 @@ public class MainTeleOp {
     HeadingPID headingPID = new HeadingPID();
     Debug debug;
 
+    Servos servos = new Servos();
     IntakeHelper intakeHelper;
     LaunchHelper launchHelper;
     Launchers launchers;
@@ -69,12 +71,12 @@ public class MainTeleOp {
     }
 
     public void initialize() {
-        // Optimization: Initialize Bulk Reads
         allHubs = opMode.hardwareMap.getAll(LynxModule.class);
         for (LynxModule hub : allHubs) {
             hub.setBulkCachingMode(LynxModule.BulkCachingMode.MANUAL);
         }
 
+        servos.init();
         Hardware.init();
         for(Servo Led : LEDs.AllLEDs()) {
             LEDs.setEmpty(Led);
@@ -85,8 +87,8 @@ public class MainTeleOp {
 
     private void initHelpers() {
         launchers = new Launchers(debug);
-        launchHelper = new LaunchHelper(debug, launchers);
-        intakeHelper = new IntakeHelper(debug, launchers);
+        launchHelper = new LaunchHelper(debug, launchers, this.servos);
+        intakeHelper = new IntakeHelper(debug, launchers, this.servos);
     }
 
     private void initPedro() {
@@ -107,23 +109,16 @@ public class MainTeleOp {
             hub.clearBulkCache();
         }
 
-        if(opModeTimer.getElapsedTimeSeconds() > Timers.OpMode.OP_MODE_TIMER) return;
-
         launchHelper.update();
-        fps.update();
         follower.update();
 
         movement(turnInput());
         manipulation();
-
         handleModeSwitch();
-        handleAutoPark();
 
         showTelemetry(); // Ensure this is lightweight
-
-        if(intaking) {
-            intakeHelper.update();
-        }
+        if(launchHelper.IsLaunching()) return;
+        intakeHelper.update();
         // Moved HandleIntakeSpin into update() to reduce method call overhead
         // and it is now optimized internally in IntakeHelper
         intakeHelper.HandleIntakeSpin();
@@ -192,5 +187,10 @@ public class MainTeleOp {
     }
 
     private void showTelemetry() {
+        debug.addData("FPS", fps.getFps());
+        debug.addData("Position", follower.getPose());
+        intakeHelper.showTelemetry();
+        launchers.showTelemetry();
+        debug.update();
     }
 }
