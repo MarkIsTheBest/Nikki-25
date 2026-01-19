@@ -16,7 +16,7 @@ public class Positions {
 
     @Configurable
     public static class Auto {
-        public static final Pose START_POSE = new Pose(9,9, Math.toRadians(90));
+        public static final Pose START_POSE = new Pose(65,13, Math.toRadians(90));
     }
 
     @Configurable
@@ -27,7 +27,7 @@ public class Positions {
     @Configurable
     public static class Servo {
             public static double H_PREPARE = 0.5;
-            public static double H_CLOSE = 0.425;
+            public static double H_CLOSE = 0.44;
             public static double H_LAUNCH = 0.275;
 
             // -- LEFT INTAKE SERVO POSITIONS -- \\

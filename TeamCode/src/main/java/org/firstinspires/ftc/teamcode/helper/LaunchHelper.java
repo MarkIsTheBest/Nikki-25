@@ -28,7 +28,7 @@ public class LaunchHelper {
     private Timer launchTimer = new Timer();
     private boolean isLaunching = false;
 
-    private double targetRPM = 2000;
+    private double targetRPM = 4000;
     private final double RPM_TOLERANCE = 150; // Increased tolerance for reliability
     private Motif currentMotif = Motif.GPP;
     private Queue<Launcher> executionQueue = new LinkedList<>();
@@ -168,7 +168,7 @@ public class LaunchHelper {
         }
     }
 
-    private void fireLauncher(Launcher launcher) {
+    public void fireLauncher(Launcher launcher) {
         switch (launcher) {
             case LEFT:   servos.setPosition(servos.Holder1(), H_LAUNCH); break;
             case CENTER: servos.setPosition(servos.Holder2(), H_LAUNCH); break;
@@ -178,4 +178,12 @@ public class LaunchHelper {
 
     public void setMotif(Motif motif) { this.currentMotif = motif; }
     public boolean IsLaunching() { return isLaunching; }
+
+    public void showTelemetry() {
+        debug.addData("currentMotif", currentMotif);
+    }
+
+    public void setTargetRPM(double rpm) {
+        targetRPM = rpm;
+    }
 }

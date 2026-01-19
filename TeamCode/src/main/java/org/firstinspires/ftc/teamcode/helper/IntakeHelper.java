@@ -44,7 +44,7 @@ public class IntakeHelper {
     private final Timer intakeTimer = new Timer();
     private final Timer jamTimer = new Timer();
 
-    // Optimization: Rate limit I2C distance reads
+    // Optimization: Rate limit I2C distance read
     private final Timer sensorTimer = new Timer();
     private static final double SENSOR_READ_DELAY_MS = 25; // Read at 20Hz
 
@@ -153,6 +153,7 @@ public class IntakeHelper {
                 if (intakeTime > Timers.Intake.PARTIAL_DELAY && !jammed) {
                     if (activeLauncher == Launcher.LEFT) servos.setPosition(servos.Door1(), L_D1_PARTIAL);
                     if (activeLauncher == Launcher.RIGHT) servos.setPosition(servos.Door2(), R_D2_PARTIAL);
+                    if (activeLauncher == Launcher.CENTER) servos.setPosition(servos.Door2(), 0.4);
 
                     // servos.isBusy is now fast due to Bulk Reads
                     if (!servos.isBusy(servos.Door1()) && !servos.isBusy(servos.Door2())) {

@@ -1,15 +1,10 @@
 package org.firstinspires.ftc.teamcode.opModes.tests;
 
-import static org.firstinspires.ftc.teamcode.opModes.teleOp.MainTeleOp.startingPose;
-
 import com.bylazar.configurables.annotations.Configurable;
 import com.pedropathing.follower.Follower;
-import com.pedropathing.follower.FollowerConstants;
-import com.pedropathing.ftc.PoseConverter;
 import com.pedropathing.geometry.Pose;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
-import com.qualcomm.robotcore.hardware.DcMotorEx;
 
 import org.firstinspires.ftc.teamcode.constants.Positions;
 import org.firstinspires.ftc.teamcode.helper.MotorHelper;
@@ -17,7 +12,6 @@ import org.firstinspires.ftc.teamcode.helper.general.Debug;
 import org.firstinspires.ftc.teamcode.helper.hardware.Motors;
 import org.firstinspires.ftc.teamcode.helper.hardware.Servos;
 import org.firstinspires.ftc.teamcode.helper.hardware.sensors.Limelight;
-import org.firstinspires.ftc.teamcode.helper.hardware.sensors.Pinpoint;
 import org.firstinspires.ftc.teamcode.pedroPathing.Constants;
 
 @TeleOp
@@ -45,7 +39,7 @@ public class DistanceTest extends LinearOpMode {
         Limelight.init();
         Limelight.setPipeline(0);
         follower = Constants.createFollower(hardwareMap);
-        follower.setStartingPose(startingPose == null ? new Pose() : startingPose);
+        //follower.setStartingPose(startingPose == null ? new Pose() : startingPose);
         follower.update();
 
     }

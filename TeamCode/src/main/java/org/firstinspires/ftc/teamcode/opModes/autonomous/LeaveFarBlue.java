@@ -20,7 +20,7 @@ import org.firstinspires.ftc.teamcode.helper.hardware.Servos;
 import org.firstinspires.ftc.teamcode.pedroPathing.Constants;
 
 @Autonomous
-public class AutoNear extends LinearOpMode {
+public class LeaveFarBlue extends LinearOpMode {
 
     Servos servos = new Servos();
     Debug debug;
@@ -55,10 +55,10 @@ public class AutoNear extends LinearOpMode {
     }
 
     // Start Pose
-    private final Pose startPose = new Pose(80.98606271777003, 9.501742160278738, Math.toRadians(90)); // Start position
+    private final Pose startPose = new Pose(80.98606271777003, 9.501742160278738, Math.toRadians(90)).mirror(); // Start position
 
     // Trajectory Poses
-    private final Pose launch0Pose = new Pose(107.57839721254358, 9.630662020905914, Math.toRadians(90)); // Launch_0
+    private final Pose launch0Pose = new Pose(107.57839721254358, 13, Math.toRadians(90)).mirror(); // Launch_0
     private final Pose prepArtifacts1Pose = new Pose(36,33.1010452961706, Math.toRadians(0)).mirror(); // Prep_Artifacts_1
     private final Pose intakeArtifacts1Pose = new Pose(118, 35, Math.toRadians(0)).mirror(); // Intake_Artifacts_1
     private final Pose launch1Pose = new Pose(85, 20, Math.toRadians(67)).mirror(); // Launch_1

@@ -14,6 +14,7 @@ import com.qualcomm.robotcore.hardware.Servo;
 import org.firstinspires.ftc.teamcode.constants.Positions;
 import org.firstinspires.ftc.teamcode.constants.Timers;
 import org.firstinspires.ftc.teamcode.constants.enums.AllianceColor;
+import org.firstinspires.ftc.teamcode.constants.enums.Motif;
 import org.firstinspires.ftc.teamcode.helper.IntakeHelper;
 import org.firstinspires.ftc.teamcode.helper.LaunchHelper;
 import org.firstinspires.ftc.teamcode.helper.Launchers;
@@ -41,7 +42,7 @@ public class MainTeleOp {
     Launchers launchers;
 
     private Follower follower;
-    public static Pose startingPose = Positions.Auto.START_POSE;
+    public Pose startingPose;
 
     private Pose currentGoalPosition;
     private Pose currentBasePosition;
@@ -54,7 +55,7 @@ public class MainTeleOp {
     // Optimization: List for Bulk Reads
     private List<LynxModule> allHubs;
 
-    public MainTeleOp(AllianceColor allianceColor, LinearOpMode opMode) {
+    public MainTeleOp(AllianceColor allianceColor, LinearOpMode opMode, Pose startingPose) {
         switch (allianceColor) {
             case RED:
                 currentGoalPosition = Positions.Field.RED_GOAL;
@@ -67,6 +68,7 @@ public class MainTeleOp {
         }
 
         this.opMode = opMode;
+        this.startingPose = startingPose;
         debug = new Debug(opMode.telemetry);
     }
 
@@ -141,6 +143,7 @@ public class MainTeleOp {
     }
 
     private void manipulation() {
+
         if(opMode.gamepad1.aWasPressed()) {
             intaking = true;
             intakeHelper.spinIntake(true);
@@ -148,6 +151,24 @@ public class MainTeleOp {
         if(opMode.gamepad1.bWasPressed()) {
             intaking = false;
             intakeHelper.spinIntake(false);
+        }
+
+        if(opMode.gamepad1.dpadLeftWasPressed()) {
+            launchHelper.setMotif(Motif.GPP);
+        }
+        if(opMode.gamepad1.dpadUpWasPressed()) {
+            launchHelper.setMotif(Motif.PGP);
+        }
+        if(opMode.gamepad1.dpadRightWasPressed()) {
+            launchHelper.setMotif(Motif.PPG);
+        }
+
+        if(opMode.gamepad1.right_trigger > 0.1) {
+            launchHelper.setTargetRPM(4500);
+        }
+
+        if(opMode.gamepad1.left_trigger > 0.1) {
+            launchHelper.setTargetRPM(4000);
         }
 
         if(opMode.gamepad1.xWasPressed()) {
@@ -189,6 +210,7 @@ public class MainTeleOp {
     private void showTelemetry() {
         debug.addData("FPS", fps.getFps());
         debug.addData("Position", follower.getPose());
+        launchHelper.showTelemetry();
         intakeHelper.showTelemetry();
         launchers.showTelemetry();
         debug.update();
