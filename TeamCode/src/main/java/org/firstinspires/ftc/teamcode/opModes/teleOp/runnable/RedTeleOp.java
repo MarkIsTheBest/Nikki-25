@@ -13,7 +13,7 @@ public class RedTeleOp extends LinearOpMode {
     MainTeleOp teleOp = new MainTeleOp(
             AllianceColor.RED,
             this,
-            new Pose(0, 0, Math.toRadians(90))
+            new Pose(85, 9, Math.toRadians(90))
     );
 
     public void runOpMode() throws InterruptedException {

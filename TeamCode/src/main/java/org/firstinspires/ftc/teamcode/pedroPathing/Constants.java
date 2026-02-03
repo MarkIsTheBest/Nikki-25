@@ -16,24 +16,24 @@ import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 
 public class Constants {
     public static FollowerConstants followerConstants = new FollowerConstants()
-            .forwardZeroPowerAcceleration(-43.068134411475555)
-            .lateralZeroPowerAcceleration(-66.3940963654446)
+            .forwardZeroPowerAcceleration(-41.051820629688685)
+            .lateralZeroPowerAcceleration(-94.69785361917516)
             .translationalPIDFCoefficients(new PIDFCoefficients(0.1,0,0.02,0))
             .headingPIDFCoefficients(new PIDFCoefficients(1, 0, 0.05, 0.01))
-            .drivePIDFCoefficients(new FilteredPIDFCoefficients(0.01,0,0.0009,0.6,0.01))
+            .drivePIDFCoefficients(new FilteredPIDFCoefficients(0.02,0,0.002,0.6,0.01))
 
-            .mass(14);
+            .mass(11);
 
     public static PathConstraints pathConstraints = new PathConstraints(0.99, 100, 1, 1);
 
     public static PinpointConstants localizerConstants = new PinpointConstants()
-            .forwardPodY(-10.7) //-
-            .strafePodX(-16.675)
+            .forwardPodY(-4.95)
+            .strafePodX(-17.2)
             .distanceUnit(DistanceUnit.CM)
             .hardwareMapName("pinpoint")
             .encoderResolution(GoBildaPinpointDriver.GoBildaOdometryPods.goBILDA_4_BAR_POD)
             .forwardEncoderDirection(GoBildaPinpointDriver.EncoderDirection.FORWARD)
-            .strafeEncoderDirection(GoBildaPinpointDriver.EncoderDirection.REVERSED);
+            .strafeEncoderDirection(GoBildaPinpointDriver.EncoderDirection.FORWARD);
 
 
     public static MecanumConstants driveConstants = new MecanumConstants()
@@ -46,8 +46,8 @@ public class Constants {
             .leftRearMotorDirection(DcMotorSimple.Direction.REVERSE)
             .rightFrontMotorDirection(DcMotorSimple.Direction.FORWARD)
             .rightRearMotorDirection(DcMotorSimple.Direction.FORWARD)
-            .xVelocity(59.13993246724287)
-            .yVelocity(46.67078982375739)
+            .xVelocity(69.92421404020055)
+            .yVelocity(61.45753442959524)
 
             ;
 

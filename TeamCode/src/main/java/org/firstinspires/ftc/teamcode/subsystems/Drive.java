@@ -17,11 +17,11 @@ public class Drive {
         follower.startTeleOpDrive(true);
     }
 
-    public void update(double turnInput) {
+    public void update() {
         follower.setTeleOpDrive(
                 -opMode.gamepad1.left_stick_y,
                 -opMode.gamepad1.left_stick_x,
-                turnInput,
+                -opMode.gamepad1.right_stick_x * 1.1,
                 true
         );
     }

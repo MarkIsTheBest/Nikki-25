@@ -7,9 +7,8 @@ import com.qualcomm.robotcore.hardware.Servo;
 import dev.nextftc.ftc.ActiveOpMode;
 
 public class LEDHelper {
-    private Servo launcher1; public Servo LauncherRight() { return launcher1; }
-    private Servo launcher2; public Servo LauncherLeft() { return launcher2; }
-    private Servo launcher3; public Servo LauncherCenter() { return launcher3; }
+    private Servo leftLight; public Servo LeftLight() { return leftLight; }
+    private Servo rightLight; public Servo RightLight() { return rightLight; }
 
     private Servo[] allLEDs; public Servo[] AllLEDs() { return allLEDs; }
 
@@ -26,49 +25,15 @@ public class LEDHelper {
     }
 
     private void getHardware(HardwareMap hardwareMap) {
-        launcher1 = hardwareMap.tryGet(Servo.class, "launcherLight1");
-        launcher2 = hardwareMap.tryGet(Servo.class, "launcherLight2");
-        launcher3 = hardwareMap.tryGet(Servo.class, "launcherLight3");
+        leftLight = hardwareMap.tryGet(Servo.class, "leftLight");
+        rightLight = hardwareMap.tryGet(Servo.class, "rightLight");
     }
 
     private void setAllLEDs() {
-        allLEDs = new Servo[] {launcher2, launcher3, launcher1};
+        allLEDs = new Servo[] {rightLight, leftLight};
         for (Servo LED :
                 allLEDs) {
             LED.setPosition(0);
-        }
-    }
-
-    public void playGradientAnimation(double multiplier) {
-        for(int i = 0; i < 3; i++) {
-            Servo LED = allLEDs[i];
-            if(LED.getPosition() == 0) LED.setPosition(0.28);
-
-            if(LED.getPosition() >= 0.71 && firstScene) {
-                firstScene = false;
-            }
-            else if (LED.getPosition() <= 0.28 && !firstScene) {
-                firstScene = true;
-            }
-            if(firstScene) LED.setPosition(LED.getPosition() + 0.0001 * multiplier);
-            else LED.setPosition(LED.getPosition() - 0.0001 * multiplier);
-        }
-    }
-
-    public void playRedWhiteAnimation(Timer timer, double delay) {
-        if(firstScene && timer.getElapsedTimeSeconds() > delay) {
-            allLEDs[0].setPosition(1);
-            allLEDs[1].setPosition(0.28);
-            allLEDs[2].setPosition(1);
-            timer.resetTimer();
-            firstScene = false;
-        }
-        else if (!firstScene && timer.getElapsedTimeSeconds() > delay) {
-            allLEDs[0].setPosition(0.28);
-            allLEDs[1].setPosition(1);
-            allLEDs[2].setPosition(0.28);
-            timer.resetTimer();
-            firstScene = true;
         }
     }
 
@@ -76,14 +41,12 @@ public class LEDHelper {
         if(firstScene && flashTimer.getElapsedTimeSeconds() > 0.25) {
             allLEDs[0].setPosition(0);
             allLEDs[1].setPosition(0);
-            allLEDs[2].setPosition(0);
             flashTimer.resetTimer();
             firstScene = false;
         }
         else if (!firstScene && flashTimer.getElapsedTimeSeconds() > 0.1) {
             allLEDs[0].setPosition(0.28);
             allLEDs[1].setPosition(0.28);
-            allLEDs[2].setPosition(0.28);
             flashTimer.resetTimer();
             firstScene = true;
         }
@@ -93,8 +56,8 @@ public class LEDHelper {
         led.setPosition(1);
     }
 
-    public void setPurple(Servo led) {
-        led.setPosition(0.72);
+    public void setRed(Servo led) {
+        led.setPosition(0.28);
     }
 
     public void setGreen(Servo led) {

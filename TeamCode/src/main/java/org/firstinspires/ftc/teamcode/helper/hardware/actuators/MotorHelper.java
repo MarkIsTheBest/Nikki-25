@@ -1,10 +1,10 @@
 package org.firstinspires.ftc.teamcode.helper.hardware.actuators;
 
+import com.pedropathing.control.PIDFCoefficients;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.HardwareMap;
-import com.qualcomm.robotcore.hardware.PIDFCoefficients;
 
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 import org.firstinspires.ftc.teamcode.constants.Control;
@@ -40,9 +40,9 @@ public class MotorHelper {
     }
 
     private void setPIDF() {
-        PIDFCoefficients vel = Control.FlywheelPIDF.pidf;
-        leftLauncher.setVelocityPIDFCoefficients(vel.p, vel.i, vel.d, vel.f);
-        rightLauncher.setVelocityPIDFCoefficients(vel.p, vel.i, vel.d, vel.f);
+        PIDFCoefficients vel = Control.Flywheel.pidf;
+        leftLauncher.setVelocityPIDFCoefficients(vel.P, vel.I, vel.D, vel.F);
+        rightLauncher.setVelocityPIDFCoefficients(vel.P, vel.I, vel.D, vel.F);
     }
 
     private void setMode() {
@@ -51,8 +51,10 @@ public class MotorHelper {
         rightFront.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
         rightRear.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
 
-        leftLauncher.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-        rightLauncher.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        leftLauncher.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+        rightLauncher.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+
+        turret.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
     }
 
     private void getHardware(HardwareMap hardwareMap) {
@@ -61,8 +63,11 @@ public class MotorHelper {
         rightFront = hardwareMap.get(DcMotorEx.class, "rightFront");
         rightRear = hardwareMap.get(DcMotorEx.class, "rightRear");
 
-        leftLauncher = hardwareMap.get(DcMotorEx.class, "leftLauncher");
-        rightLauncher = hardwareMap.get(DcMotorEx.class, "rightLauncher");
+        intake = hardwareMap.get(DcMotorEx.class, "intake");
+        turret = hardwareMap.get(DcMotorEx.class, "turret");
+
+        leftLauncher = hardwareMap.get(DcMotorEx.class, "launcherLeft");
+        rightLauncher = hardwareMap.get(DcMotorEx.class, "launcherRight");
     }
 
     private void setZeroPowerBehaviour() {
@@ -71,8 +76,8 @@ public class MotorHelper {
         rightFront.setZeroPowerBehavior(DcMotorEx.ZeroPowerBehavior.BRAKE);
         rightRear.setZeroPowerBehavior(DcMotorEx.ZeroPowerBehavior.BRAKE);
 
-        leftLauncher.setZeroPowerBehavior(DcMotorEx.ZeroPowerBehavior.BRAKE);
-        rightLauncher.setZeroPowerBehavior(DcMotorEx.ZeroPowerBehavior.BRAKE);
+        leftLauncher.setZeroPowerBehavior(DcMotorEx.ZeroPowerBehavior.FLOAT);
+        rightLauncher.setZeroPowerBehavior(DcMotorEx.ZeroPowerBehavior.FLOAT);
     }
 
     private void setDirection() {
@@ -81,8 +86,10 @@ public class MotorHelper {
         rightFront.setDirection(DcMotorSimple.Direction.FORWARD);
         rightRear.setDirection(DcMotorSimple.Direction.FORWARD);
 
-        leftLauncher.setDirection(DcMotorSimple.Direction.REVERSE);
-        rightLauncher.setDirection(DcMotorSimple.Direction.FORWARD);
+        leftLauncher.setDirection(DcMotorSimple.Direction.FORWARD);
+        rightLauncher.setDirection(DcMotorSimple.Direction.REVERSE);
+
+        intake.setDirection(DcMotorSimple.Direction.REVERSE);
     }
 
     private void setAllMotors() {
