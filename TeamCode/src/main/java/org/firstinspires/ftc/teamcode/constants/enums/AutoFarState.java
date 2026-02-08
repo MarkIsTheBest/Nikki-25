@@ -7,5 +7,5 @@ public enum AutoFarState {
     SHOOT,
     INTAKE,
     LEAVE,
-    DONE
+    HUMAN_PLAYER_DELAY, DONE
 }

@@ -4,15 +4,16 @@ import com.bylazar.configurables.annotations.Configurable;
 import com.pedropathing.follower.Follower;
 import com.pedropathing.geometry.Pose;
 import com.pedropathing.util.Timer;
+import com.qualcomm.hardware.lynx.LynxModule;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 
-import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 import org.firstinspires.ftc.teamcode.constants.Positions;
 import org.firstinspires.ftc.teamcode.constants.enums.AllianceColor;
 import org.firstinspires.ftc.teamcode.helper.Drawing;
 import org.firstinspires.ftc.teamcode.helper.control.CustomFlywheelPID;
 import org.firstinspires.ftc.teamcode.helper.control.ShooterLookupTable;
 import org.firstinspires.ftc.teamcode.helper.general.Debug;
+import org.firstinspires.ftc.teamcode.helper.general.FpsCounter;
 import org.firstinspires.ftc.teamcode.helper.general.MathHelper;
 import org.firstinspires.ftc.teamcode.helper.hardware.Hardware;
 import org.firstinspires.ftc.teamcode.pedroPathing.Constants;
@@ -22,21 +23,15 @@ import org.firstinspires.ftc.teamcode.subsystems.Launcher;
 import org.firstinspires.ftc.teamcode.subsystems.Locator;
 import org.firstinspires.ftc.teamcode.subsystems.Turret;
 
+import java.util.List;
+
 @Configurable
 public class MainTeleOp {
-
-    /* ===================== CONFIG ===================== */
-
-    public static double LL_FINE_GAIN = 0.05;        // Limelight trim strength
-    public static double LL_MAX_CORRECTION = 3.0;    // Max degrees LL can offset
-    public static double LL_DEADBAND = 0.5;          // Ignore jitter near 0
-    public static double LL_DECAY = 0.90;             // Correction decay when tag lost
 
     public static double shooterAngle = 45;
     public static double shooterRpm = 3900;
 
-    /* ===================== STATE ===================== */
-
+    private FpsCounter fps = new FpsCounter();
     private Pose goalPosition;
     private final Pose startingPosition;
     private final LinearOpMode opMode;
@@ -49,22 +44,33 @@ public class MainTeleOp {
     private Intake intake;
     private Turret turret;
     private Launcher launcher;
-    private Locator locator;
 
     private CustomFlywheelPID flywheelPID;
     private ShooterLookupTable shooterTable;
 
-    private double limelightCorrection = 0.0;
-    private double trackedTurretHeading = 0.0;
-
     private double distanceAprilTag = 0;
     private double realDistance = 0;
+    private int limelightPipeline = 0;
+
+    private boolean slowMode = false;
+
+    private List<LynxModule> allHubs;
 
     private ShooterLookupTable.ShooterState targetState;
 
-    private final Timer timeSinceSeenAprilTag = new Timer();
+    private final Timer telemetryTimer = new Timer();
+    private final Timer drawingTimer = new Timer();
+    private final Timer shooterUpdateTimer = new Timer();
 
-    /* ===================== CONSTRUCTOR ===================== */
+    private boolean cachedHasTag = false;
+    private double cachedDist = 0;
+    private double cachedTx = 0;
+
+    private boolean manualOverride = false;
+
+    private Pose lastShooterPose = new Pose(0,0,0);
+
+    private double offset = 0;
 
     public MainTeleOp(AllianceColor alliance, LinearOpMode opMode, Pose startPose) {
         this.opMode = opMode;
@@ -73,20 +79,21 @@ public class MainTeleOp {
         switch (alliance) {
             case RED:
                 goalPosition = Positions.Field.RED_GOAL;
+                limelightPipeline = 0;
                 break;
             case BLUE:
                 goalPosition = Positions.Field.BLUE_GOAL;
+                limelightPipeline = 3;
                 break;
         }
     }
-
-    /* ===================== INIT ===================== */
 
     public void initialize() {
         initPedro();
         initHelpers();
         Drawing.init();
         turret.closeBarrier();
+        telemetryTimer.resetTimer();
     }
 
     private void initPedro() {
@@ -96,6 +103,11 @@ public class MainTeleOp {
     }
 
     private void initHelpers() {
+        allHubs = opMode.hardwareMap.getAll(LynxModule.class);
+        for (LynxModule hub : allHubs) {
+            hub.setBulkCachingMode(LynxModule.BulkCachingMode.MANUAL);
+        }
+
         hardware = new Hardware();
         debug = new Debug(opMode.telemetry);
 
@@ -106,37 +118,59 @@ public class MainTeleOp {
         intake = new Intake(opMode, hardware);
         turret = new Turret(hardware, debug, opMode);
         launcher = new Launcher(opMode, hardware, flywheelPID, turret, debug);
-        locator = new Locator(follower);
+
+        hardware.Limelight().setPipeline(limelightPipeline);
 
         launcher.setTargetRPM(3800);
         launcher.setTargetAngle(45);
 
-        shooterTable.add(123.75, 4375, 42.5);
-        shooterTable.add(105.75, 4000, 42.5);
-        shooterTable.add(100.0, 3950, 45);
+        shooterTable.add(123.75, 4300, 44);
+        shooterTable.add(105.75, 3900, 44);
+        shooterTable.add(100.0, 3750, 45);
         shooterTable.add(68.5, 3500, 42.5);
-        shooterTable.add(25.0, 2750, 40);
+        shooterTable.add(25.0, 2950, 35);
     }
-
-    /* ===================== START ===================== */
 
     public void play() {
         hardware.Limelight().start();
         drive.start();
+        telemetryTimer.resetTimer();
+        drawingTimer.resetTimer();
     }
 
-    /* ===================== LOOP ===================== */
-
     public void update() {
-        follower.update();
-        Drawing.drawDebug(follower);
-        drive.update();
-        turret.update();
+        for (LynxModule hub : allHubs) {
+            hub.clearBulkCache();
+        }
 
+        follower.update();
+        hardware.Limelight().update();
+
+        cachedHasTag = hardware.Limelight().HasAprilTag();
+        cachedDist = hardware.Limelight().Distance();
+        cachedTx = hardware.Limelight().Tx();
+
+        // Inputs
+        if(opMode.gamepad1.leftBumperWasPressed()) {
+            slowMode = !slowMode;
+        }
+
+        if(opMode.gamepad1.optionsWasPressed()) {
+            manualOverride = !manualOverride;
+            if(manualOverride)
+                turret.setAngle(0);
+        }
+
+        // Subsystem Updates
+        drive.update(slowMode);
+        turret.update(false);
         launcher.input();
         launcher.update();
 
-        hardware.Limelight().update();
+        if (drawingTimer.getElapsedTime() > 50) {
+            Drawing.drawDebug(follower);
+            drawingTimer.resetTimer();
+        }
 
         if (!launcher.isShooting()) {
             intake.input();
@@ -144,20 +178,44 @@ public class MainTeleOp {
         }
 
         updateShooter();
-        updateTurretLocking();
+
+        if(!manualOverride) {
+            turret.updateTurretLocking(follower, goalPosition, cachedHasTag, cachedTx);
+        } else if (cachedHasTag) {
+            turret.updateVisionOnly(cachedHasTag, cachedTx);
+        } else if(!cachedHasTag && manualOverride) {
+            turret.setAngle(offset, true);
+        }
+
+        if(manualOverride) {
+            if(opMode.gamepad1.dpadRightWasPressed()) offset-=5;
+            if(opMode.gamepad1.dpadLeftWasPressed()) offset+=5;
+        }
     }
 
     /* ===================== SHOOTER ===================== */
 
     private void updateShooter() {
+        double distMoved = MathHelper.dist(follower.getPose(), lastShooterPose);
+
+        if (distMoved < 1.0 && shooterUpdateTimer.getElapsedTime() < 100 && !cachedHasTag) {
+            return;
+        }
+
+        shooterUpdateTimer.resetTimer();
+        lastShooterPose = follower.getPose();
+
         distanceAprilTag = Math.sqrt(
-                Math.pow(hardware.Limelight().Distance() * 39.37, 2)
-                        - Math.pow(22.801, 2)
+                Math.pow(cachedDist * 39.37, 2) - Math.pow(22.801, 2)
         );
 
-        realDistance = hardware.Limelight().HasAprilTag()
-                ? distanceAprilTag
-                : getDistanceToGoal();
+        if(!manualOverride) {
+            realDistance = cachedHasTag
+                    ? distanceAprilTag
+                    : getDistanceToGoal();
+        } else {
+            realDistance = cachedHasTag ? distanceAprilTag : 55;
+        }
 
         targetState = shooterTable.get(realDistance);
 
@@ -168,74 +226,15 @@ public class MainTeleOp {
         launcher.setTargetAngle(shooterAngle);
     }
 
-    /* ===================== TURRET ===================== */
-
-    private void updateTurretLocking() {
-
-        // Always compute base angle from pinpoint
-        double pinpointAngle = getTurretLockAngle(AngleUnit.DEGREES);
-
-        if (hardware.Limelight().HasAprilTag()) {
-            double tx = hardware.Limelight().Tx();
-
-            if (Math.abs(tx) > LL_DEADBAND) {
-                limelightCorrection -= tx * LL_FINE_GAIN;
-            }
-
-            limelightCorrection = MathHelper.clamp(
-                    limelightCorrection,
-                    -LL_MAX_CORRECTION,
-                    LL_MAX_CORRECTION
-            );
-
-            timeSinceSeenAprilTag.resetTimer();
-        }
-        else {
-            // Smoothly decay correction when tag disappears
-            limelightCorrection *= LL_DECAY;
-
-            if (Math.abs(limelightCorrection) < 0.05) {
-                limelightCorrection = 0;
-            }
-        }
-
-        trackedTurretHeading = pinpointAngle + limelightCorrection;
-        turret.setAngle(trackedTurretHeading);
-    }
-
-    private double getTurretLockAngle(AngleUnit unit) {
-        Pose robotPose = follower.getPose();
-
-        double dx = goalPosition.getX() - robotPose.getX();
-        double dy = goalPosition.getY() - robotPose.getY();
-
-        double fieldAngle = Math.atan2(dy, dx);
-        double robotHeading = robotPose.getHeading();
-
-        double turretAngle = fieldAngle - robotHeading;
-        turretAngle = Math.atan2(Math.sin(turretAngle), Math.cos(turretAngle));
-
-        return unit == AngleUnit.DEGREES
-                ? Math.toDegrees(turretAngle)
-                : turretAngle;
-    }
-
     private double getDistanceToGoal() {
         return MathHelper.dist(follower.getPose(), goalPosition) - 10;
     }
 
-    /* ===================== TELEMETRY ===================== */
-
     public void telemetry() {
-        debug.addData("Turret Angle", turret.getAngle());
-        debug.addData("LL Correction", limelightCorrection);
-        debug.addData("Distance (Pinpoint)", getDistanceToGoal());
-        debug.addData("Distance (AprilTag)", distanceAprilTag);
-        debug.addData("Real Distance", realDistance);
-        debug.addData("LL Tx", hardware.Limelight().Tx());
-        debug.addData("Has AprilTag", hardware.Limelight().HasAprilTag());
-        debug.addData("Current Location", locator.getLocation());
-        debug.addBreak();
+        if (telemetryTimer.getElapsedTime() < 250) {
+            return;
+        }
+        telemetryTimer.resetTimer();
 
         launcher.showTelemetry();
         debug.update();

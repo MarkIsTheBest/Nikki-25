@@ -6,17 +6,17 @@ import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import org.firstinspires.ftc.teamcode.constants.enums.AllianceColor;
 import org.firstinspires.ftc.teamcode.constants.enums.AutoOrderFar;
 
-@Autonomous
-public class BLUE_1_HP_HP_HP extends LinearOpMode {
+@Autonomous(group = "FAR")
+public class BLUE_FAR_1_HP extends LinearOpMode {
 
     AutoFar2 auto = new AutoFar2(this, AllianceColor.BLUE,
             new AutoOrderFar[]
                     {
                             AutoOrderFar.SPIKE_MARK_1,
-                            AutoOrderFar.SPIKE_MARK_HUMAN_PLAYER,
-                            AutoOrderFar.SPIKE_MARK_HUMAN_PLAYER,
-                            AutoOrderFar.SPIKE_MARK_HUMAN_PLAYER,
-                    }
+                            AutoOrderFar.SPIKE_MARK_HUMAN_PLAYER
+                    },
+            0,
+            false
     );
 
     @Override

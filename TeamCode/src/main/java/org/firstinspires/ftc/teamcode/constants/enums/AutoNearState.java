@@ -7,5 +7,5 @@ public enum AutoNearState {
     SHOOT,
     INTAKE,
     LEAVE,
-    DONE
+    INTAKE_GATE_DELAY, DONE
 }

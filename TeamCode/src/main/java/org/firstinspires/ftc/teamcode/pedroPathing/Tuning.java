@@ -1350,7 +1350,7 @@ class Drawing {
         drawPoseHistory(poseTracker, historyLook);
     }
 
-    /**
+    /**qaz
      * This tries to send the current packet to FTControl Panels.
      */
     public static void sendPacket() {

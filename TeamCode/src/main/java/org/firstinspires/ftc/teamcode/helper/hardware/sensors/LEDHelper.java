@@ -60,6 +60,10 @@ public class LEDHelper {
         led.setPosition(0.28);
     }
 
+    public void setPurple(Servo led) {
+        led.setPosition(0.7);
+    }
+
     public void setGreen(Servo led) {
         led.setPosition(0.47);
     }

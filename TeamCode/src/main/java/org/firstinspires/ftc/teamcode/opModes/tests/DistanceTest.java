@@ -13,6 +13,8 @@ import org.firstinspires.ftc.teamcode.helper.general.Debug;
 public class DistanceTest extends LinearOpMode {
 
     Rev2mDistanceSensor outtake;
+    Rev2mDistanceSensor outtake2;
+    Rev2mDistanceSensor outtake3;
 
     @Override
     public void runOpMode() throws InterruptedException {
@@ -28,6 +30,8 @@ public class DistanceTest extends LinearOpMode {
 
     private void initialize() {
         outtake = hardwareMap.get(Rev2mDistanceSensor.class, "outtake");
+        outtake2 = hardwareMap.get(Rev2mDistanceSensor.class, "outtake2");
+        outtake3 = hardwareMap.get(Rev2mDistanceSensor.class, "outtake3");
     }
 
     private void play() {
@@ -39,7 +43,9 @@ public class DistanceTest extends LinearOpMode {
     }
 
     private void telemetry() {
-        telemetry.addData("Distance", outtake.getDistance(DistanceUnit.INCH));
+        telemetry.addData("Distance", outtake.getDistance(DistanceUnit.CM));
+        telemetry.addData("Distance 2", outtake2.getDistance(DistanceUnit.CM));
+        telemetry.addData("Distance 3", outtake3.getDistance(DistanceUnit.CM));
         telemetry.update();
 
     }

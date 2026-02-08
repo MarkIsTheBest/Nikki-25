@@ -8,9 +8,13 @@ import com.pedropathing.paths.PathChain;
 import com.pedropathing.util.Timer;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 
+import org.firstinspires.ftc.teamcode.constants.Positions;
 import org.firstinspires.ftc.teamcode.constants.enums.AllianceColor;
 import org.firstinspires.ftc.teamcode.constants.enums.AutoFarState;
+import org.firstinspires.ftc.teamcode.constants.enums.AutoNearState;
 import org.firstinspires.ftc.teamcode.constants.enums.AutoOrderFar;
+import org.firstinspires.ftc.teamcode.constants.enums.AutoOrderNear;
+import org.firstinspires.ftc.teamcode.helper.Drawing;
 import org.firstinspires.ftc.teamcode.helper.control.CustomFlywheelPID;
 import org.firstinspires.ftc.teamcode.helper.control.FlywheelPID;
 import org.firstinspires.ftc.teamcode.helper.general.Debug;
@@ -25,22 +29,31 @@ public class AutoFar2 {
     private final LinearOpMode opMode;
     private final AutoOrderFar[] artifactOrder;
     private double turretAngle;
+    private int limelightPipeline;
+    private Pose goalPosition;
+    private AllianceColor currentAllianceColor;
+    private double delayStart;
+    private boolean onlyLeave;
 
-    public AutoFar2(LinearOpMode opMode, AllianceColor color, AutoOrderFar[] artifactOrder) {
+    public AutoFar2(LinearOpMode opMode, AllianceColor color, AutoOrderFar[] artifactOrder, double delayStart, boolean onlyLeave) {
         this.opMode = opMode;
         this.artifactOrder = artifactOrder;
+        currentAllianceColor = color;
+        this.delayStart = delayStart;
+        this.onlyLeave = onlyLeave;
 
         startPose = new Pose(87, 7.7, Math.toRadians(0)); // Start position
-        launchPose = new Pose(87, 21, Math.toRadians(0)); // Launch
+        launchPose = new Pose(87, 15, Math.toRadians(45)); // Launch
 
         prepIntake1Pose = new Pose(99, 35, Math.toRadians(0)); // Prep_Intake_1
-        intake1Pose = new Pose(132, 35, Math.toRadians(0)); // Intake_1
-        intakeHpPose = new Pose(132, 8, Math.toRadians(0)); // Intake_HP
-        prepIntake2Pose = new Pose(99, 59.5, Math.toRadians(0)); // Prep_Intake_2
-        intake2Pose = new Pose(132, 59.5, Math.toRadians(0)); // Intake_2
+        intake1Pose = new Pose(130, 35, Math.toRadians(0)); // Intake_1
+        prepIntakeHpPose = new Pose(16, 27, Math.toRadians(-122.8)).mirror(); // Intake_HP
+        intakeHpPose = new Pose(13, 12, Math.toRadians(-105)).mirror(); // Intake_HP
+        prepIntake2Pose = new Pose(99, 59.9, Math.toRadians(0)); // Prep_Intake_2
+        intake2Pose = new Pose(132, 59.9, Math.toRadians(0)); // Intake_2
         prepIntake3Pose = new Pose(99, 83.5, Math.toRadians(0)); // Prep_Intake_3
         intake3Pose = new Pose(126, 83.5, Math.toRadians(0)); // Intake_3
-        leavePose = new Pose(108, 10, Math.toRadians(90)); // Leave
+        leavePose = new Pose(108, 15, Math.toRadians(90)); // Leave
 
         prepIntake1Cp0 = new Pose(87.5, 35.75); // Control point 1 for Prep_Intake_1
         launch1Cp0 = new Pose(104.8, 33.5); // Control point 1 for Launch_1
@@ -52,19 +65,23 @@ public class AutoFar2 {
         launch3Cp0 = new Pose(90, 77); // Control point 1 for Launch_3
         leaveCp0 = new Pose(103, 21); // Control point 1 for Leave
 
-        Pose turretAnglePose = new Pose(0,0, Math.toRadians(68.79718135635073));
-
         switch (color) {
             case RED:
-                turretAngle = Math.toDegrees(turretAnglePose.getHeading());
+                turretAngle = 76 - 45;
+                limelightPipeline = 0;
+                goalPosition = Positions.Field.RED_GOAL;
                 break;
 
             case BLUE:
-                turretAngle = Math.toDegrees(turretAnglePose.mirror().getHeading());
+                turretAngle = -76 + 45;
+                limelightPipeline = 3;
+                goalPosition = Positions.Field.BLUE_GOAL;
+
                 startPose = startPose.mirror();
                 launchPose = launchPose.mirror();
                 prepIntake1Pose = prepIntake1Pose.mirror();
                 intake1Pose = intake1Pose.mirror();
+                prepIntakeHpPose = prepIntakeHpPose.mirror();
                 intakeHpPose = intakeHpPose.mirror();
                 prepIntake2Pose = prepIntake2Pose.mirror();
                 intake2Pose = intake2Pose.mirror();
@@ -89,14 +106,13 @@ public class AutoFar2 {
     private Timer pathTimer;
     private AutoFarState pathState;
 
-    // Start Pose
     private Pose startPose;
 
-    // Traj Poses
     private Pose launchPose;
 
     private Pose prepIntake1Pose;
     private Pose intake1Pose;
+    private Pose prepIntakeHpPose;
     private Pose intakeHpPose;
     private Pose prepIntake2Pose;
     private Pose intake2Pose;
@@ -124,6 +140,10 @@ public class AutoFar2 {
     private CustomFlywheelPID flywheelPID;
     private Hardware hardware;
     private Debug debug;
+
+    private boolean cachedHasTag = false;
+    private double cachedTx = 0;
+    private boolean hasFinished = false;
 
     private int artifactIndex = 0;
 
@@ -153,7 +173,8 @@ public class AutoFar2 {
     public void buildPaths() {
         launchPreloadPath = follower.pathBuilder()
                 .addPath(new BezierLine(startPose, launchPose))
-                .setConstantHeadingInterpolation(launchPose.getHeading())
+                .setLinearHeadingInterpolation(startPose.getHeading(), launchPose.getHeading())
+                .setHeadingConstraint(0.1)
                 .build();
 
         intake1Path = follower.pathBuilder()
@@ -162,7 +183,7 @@ public class AutoFar2 {
                         prepIntake1Cp0,
                         prepIntake1Pose
                 ))
-                .setConstantHeadingInterpolation(prepIntake1Pose.getHeading())
+                .setLinearHeadingInterpolation(launchPose.getHeading() ,prepIntake1Pose.getHeading())
                 .addPath(new BezierLine(prepIntake1Pose, intake1Pose))
                 .setConstantHeadingInterpolation(intake1Pose.getHeading())
                 .build();
@@ -173,16 +194,23 @@ public class AutoFar2 {
                         launch1Cp0,
                         launchPose
                 ))
-                .setConstantHeadingInterpolation(launchPose.getHeading())
+                .setLinearHeadingInterpolation(intake1Pose.getHeading(), launchPose.getHeading())
+                .setHeadingConstraint(0.1)
+                .setTranslationalConstraint(0.1)
                 .build();
 
         intakeHpPath = follower.pathBuilder()
                 .addPath(new BezierCurve(
                         launchPose,
                         intakeHpCp0,
+                        prepIntakeHpPose
+                ))
+                .setLinearHeadingInterpolation(launchPose.getHeading(), prepIntakeHpPose.getHeading())
+                .addPath(new BezierLine(
+                        prepIntakeHpPose,
                         intakeHpPose
                 ))
-                .setConstantHeadingInterpolation(intakeHpPose.getHeading())
+                .setLinearHeadingInterpolation(prepIntakeHpPose.getHeading(), intakeHpPose.getHeading())
                 .build();
 
         launchHpPath = follower.pathBuilder()
@@ -191,7 +219,9 @@ public class AutoFar2 {
                         launchHpCp0,
                         launchPose
                 ))
-                .setConstantHeadingInterpolation(launchPose.getHeading())
+                .setLinearHeadingInterpolation(intakeHpPose.getHeading(), launchPose.getHeading())
+                .setHeadingConstraint(0.1)
+                .setTranslationalConstraint(0.1)
                 .build();
 
         intake2Path = follower.pathBuilder()
@@ -200,7 +230,7 @@ public class AutoFar2 {
                         prepIntake2Cp0,
                         prepIntake2Pose
                 ))
-                .setConstantHeadingInterpolation(prepIntake2Pose.getHeading())
+                .setLinearHeadingInterpolation(launchPose.getHeading() ,prepIntake2Pose.getHeading())
                 .addPath(new BezierLine(prepIntake2Pose, intake2Pose))
                 .setConstantHeadingInterpolation(intake2Pose.getHeading())
                 .build();
@@ -211,7 +241,9 @@ public class AutoFar2 {
                         launch2Cp0,
                         launchPose
                 ))
-                .setConstantHeadingInterpolation(launchPose.getHeading())
+                .setLinearHeadingInterpolation(intake2Pose.getHeading() ,launchPose.getHeading())
+                .setHeadingConstraint(0.1)
+                .setTranslationalConstraint(0.1)
                 .build();
 
         intake3Path = follower.pathBuilder()
@@ -220,7 +252,7 @@ public class AutoFar2 {
                         prepIntake3Cp0,
                         prepIntake3Pose
                 ))
-                .setConstantHeadingInterpolation(prepIntake3Pose.getHeading())
+                .setLinearHeadingInterpolation(launchPose.getHeading() ,prepIntake3Pose.getHeading())
                 .addPath(new BezierLine(prepIntake3Pose, intake3Pose))
                 .setConstantHeadingInterpolation(intake3Pose.getHeading())
                 .build();
@@ -231,7 +263,9 @@ public class AutoFar2 {
                         launch3Cp0,
                         launchPose
                 ))
-                .setConstantHeadingInterpolation(launchPose.getHeading())
+                .setLinearHeadingInterpolation(intake3Pose.getHeading() ,launchPose.getHeading())
+                .setHeadingConstraint(0.1)
+                .setTranslationalConstraint(0.1)
                 .build();
 
         leavePath = follower.pathBuilder()
@@ -247,43 +281,88 @@ public class AutoFar2 {
     public void autonomousPathUpdate() {
         switch (pathState) {
             case INITIALIZE:
-                launcher.spinUp();
-                follower.followPath(launchPreloadPath);
-                setPathState(AutoFarState.LAUNCH_PRELOAD);
-                break;
-            case LAUNCH_PRELOAD:
-                if(!follower.isBusy()) {
-                    launcher.shoot();
-                    setPathState(AutoFarState.INTAKE);
-                }
-            case INTAKE:
-                if(!launcher.isShooting()) {
-                    if (artifactIndex >= artifactOrder.length) {
-                        setPathState(AutoFarState.LEAVE);
-                        return;
+                if( pathTimer.getElapsedTime() > delayStart) {
+
+                    if(!onlyLeave) {
+                        launcher.spinUp();
                     }
-                    intake.setIntake(true);
-                    follower.followPath(getIntakePath(artifactOrder[artifactIndex]));
-                    setPathState(AutoFarState.DRIVE_TO_LAUNCH);
+                    follower.followPath(launchPreloadPath, true);
+                    setPathState(AutoFarState.LAUNCH_PRELOAD);
+
                 }
 
+                break;
+
+            case LAUNCH_PRELOAD:
+                if(!onlyLeave) {
+                    if (!follower.isBusy()) {
+                        launcher.shoot();
+                        setPathState(AutoFarState.INTAKE);
+                    }
+                } else {
+                    if(!follower.isBusy()) {
+                        follower.followPath(leavePath, true);
+                        hasFinished = true;
+                        setPathState(AutoFarState.DONE);
+                    }
+                }
+                break;
+
+            case INTAKE:
+                if(!launcher.isShooting() && pathTimer.getElapsedTime() > 250) {
+                    intake.setIntake(true);
+                    follower.followPath(getIntakePath(artifactOrder[artifactIndex]),artifactOrder[artifactIndex] == AutoOrderFar.SPIKE_MARK_HUMAN_PLAYER ? 0.75 : 1, true);
+
+                    if(artifactOrder[artifactIndex] != AutoOrderFar.SPIKE_MARK_HUMAN_PLAYER) {
+                        setPathState(AutoFarState.DRIVE_TO_LAUNCH);
+                    }
+                    else if (artifactOrder[artifactIndex] == AutoOrderFar.SPIKE_MARK_HUMAN_PLAYER) {
+                        setPathState(AutoFarState.HUMAN_PLAYER_DELAY);
+                    }
+                }
+                break;
+
+            case HUMAN_PLAYER_DELAY:
+                if(follower.isBusy()) pathTimer.resetTimer();
+                if(pathTimer.getElapsedTime() > 750) {
+                    setPathState(AutoFarState.DRIVE_TO_LAUNCH);
+                }
+                break;
+
             case DRIVE_TO_LAUNCH:
-                if(!follower.isBusy()) {
+                if(!follower.isBusy() && pathTimer.getElapsedTime() > 350) {
                     intake.setIntake(false);
                     launcher.spinUp();
-                    follower.followPath(getLaunchPath(artifactOrder[artifactIndex]));
+                    follower.followPath(getLaunchPath(artifactOrder[artifactIndex]),true);
                     setPathState(AutoFarState.SHOOT);
                 }
+                break;
 
             case SHOOT:
                 if(!follower.isBusy()) {
                     launcher.shoot();
-                    setPathState(AutoFarState.LEAVE);
+                    artifactIndex++;
+
+                    if (artifactIndex >= artifactOrder.length) {
+                        setPathState(AutoFarState.LEAVE);
+                        return;
+                    }
+
+                    setPathState(AutoFarState.INTAKE);
                 }
+                break;
+
             case LEAVE:
-                if(!follower.isBusy()) {
-                    follower.followPath(leavePath);
+                if(!follower.isBusy() && !launcher.isShooting()) {
+                    follower.followPath(leavePath, true);
+                    setPathState(AutoFarState.DONE);
+                    hasFinished = true;
                 }
+                break;
+
+            case DONE:
+                break;
+                //DONE
         }
     }
 
@@ -301,24 +380,49 @@ public class AutoFar2 {
         intake = new Intake(opMode, hardware);
 
         turret.closeBarrier();
+        turret.setAngle(turretAngle);
 
-        launcher.setTargetAngle(45);
-        launcher.setTargetRPM(3800);
+        launcher.setTargetAngle(46);
+        launcher.setTargetRPM(4300);
+
+        hardware.Limelight().init();
+        hardware.Limelight().setPipeline(limelightPipeline);
+
+        //Drawing.init();
     }
 
     public void play() {
         setPathState(AutoFarState.INITIALIZE);
+        hardware.Limelight().start();
     }
 
     public void update() {
         follower.update();
-        turret.update();
+        if(!hasFinished) {
+            turret.updateVisionOnly(cachedHasTag, cachedTx + (currentAllianceColor == AllianceColor.BLUE ? -1 : 1));
+        } else {
+            turret.setAngle(0);
+        }
+        turret.update(true);
+        intake.update();
+        launcher.update();
         autonomousPathUpdate();
+
+        hardware.Limelight().update();
+        cachedHasTag = hardware.Limelight().HasAprilTag();
+        cachedTx = hardware.Limelight().Tx();
+
+        //Drawing.drawDebug(follower);
 
         debug.addData("path state", pathState);
         debug.addData("x", follower.getPose().getX());
         debug.addData("y", follower.getPose().getY());
         debug.addData("heading", follower.getPose().getHeading());
+        debug.addData("isShooting", launcher.isShooting());
+        debug.addData("artifact Index", artifactIndex);
+        debug.addData("artifact Order", artifactOrder.length);
+        debug.addData("Turret Angle", turret.getAngle());
+        launcher.update();
         debug.update();
     }
 }

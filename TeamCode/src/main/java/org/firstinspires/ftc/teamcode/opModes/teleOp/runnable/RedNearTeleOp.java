@@ -7,13 +7,13 @@ import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import org.firstinspires.ftc.teamcode.constants.enums.AllianceColor;
 import org.firstinspires.ftc.teamcode.opModes.teleOp.MainTeleOp;
 
-@TeleOp(name="RedNearTeleOp", group="TeleOp")
+@TeleOp(group="Teleop NEAR")
 public class RedNearTeleOp extends LinearOpMode {
 
     MainTeleOp teleOp = new MainTeleOp(
             AllianceColor.RED,
             this,
-            new Pose(122, 96, Math.toRadians(270))
+            new Pose(96.8, 78.5, Math.toRadians(0))
     );
 
     public void runOpMode() throws InterruptedException {

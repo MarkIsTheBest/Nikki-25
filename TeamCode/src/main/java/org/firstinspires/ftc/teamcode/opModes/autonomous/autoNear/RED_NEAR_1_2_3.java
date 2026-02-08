@@ -6,18 +6,16 @@ import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import org.firstinspires.ftc.teamcode.constants.enums.AllianceColor;
 import org.firstinspires.ftc.teamcode.constants.enums.AutoOrderNear;
 
-@Autonomous
-public class BLUE_2_IG_IG_IG_IG_1 extends LinearOpMode {
 
-    AutoNear2 auto = new AutoNear2(this, AllianceColor.BLUE,
+@Autonomous(group = "NEAR")
+public class RED_NEAR_1_2_3 extends LinearOpMode {
+
+    AutoNear2 auto = new AutoNear2(this, AllianceColor.RED,
             new AutoOrderNear[]
                     {
+                            AutoOrderNear.SPIKE_MARK_1,
                             AutoOrderNear.SPIKE_MARK_2,
-                            AutoOrderNear.INTAKE_GATE,
-                            AutoOrderNear.INTAKE_GATE,
-                            AutoOrderNear.INTAKE_GATE,
-                            AutoOrderNear.INTAKE_GATE,
-                            AutoOrderNear.SPIKE_MARK_1
+                            AutoOrderNear.SPIKE_MARK_3
                     }
     );
 
