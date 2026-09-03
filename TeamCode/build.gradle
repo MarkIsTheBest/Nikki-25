@@ -27,9 +27,13 @@ buildscript {
 apply from: '../build.common.gradle'
 apply from: '../build.dependencies.gradle'
 apply plugin: 'dev.frozenmilk.sinister.sloth.load'
+apply plugin: 'org.jetbrains.kotlin.android'
 
 android {
     namespace = 'org.firstinspires.ftc.teamcode'
+    kotlinOptions {
+        jvmTarget = '21'
+    }
 
     packagingOptions {
         jniLibs.useLegacyPackaging true
@@ -49,6 +53,7 @@ repositories {
 
 dependencies {
     implementation project(':FtcRobotController')
+    implementation 'androidx.core:core-ktx:1.19.0'
     implementation 'dev.nextftc:ftc:1.0.1'
     implementation 'dev.nextftc:hardware:1.0.1' // If you would like to use the hardware module
     implementation("com.bylazar.sloth:fullpanels:0.2.4+1.0.12")
