@@ -32,6 +32,7 @@ public class MainTeleOp2 {
 
     private List<LynxModule> allHubs;
     private boolean slowMode = false;
+    private boolean inverted = false;
 
     private boolean intakeOn = false;
     private boolean feederOn = false;
@@ -86,9 +87,14 @@ public class MainTeleOp2 {
         if (opMode.gamepad1.leftBumperWasPressed()) {
             slowMode = !slowMode;
         }
+        if (opMode.gamepad1.yWasPressed()) {
+            inverted = !inverted;
+        }
+
 
         if (opMode.gamepad1.rightBumperWasPressed()) {
             claw.toggle();
+            slider.setClaw(!claw.isOpen());
         }
 
         if (opMode.gamepad1.aWasPressed()) {
@@ -98,7 +104,7 @@ public class MainTeleOp2 {
 
         if (opMode.gamepad1.xWasPressed()) {
             feederOn = !feederOn;
-            hardware.Motors().Feeder().setPower(feederOn ? 1.0 : 0.0);
+            hardware.Motors().Feeder().setPower(feederOn ? 0.5 : 0.0);
         }
 
         if (opMode.gamepad1.dpadUpWasPressed()) {
@@ -109,14 +115,15 @@ public class MainTeleOp2 {
             slider.setPower(opMode.gamepad1.right_trigger);
         } else if (opMode.gamepad1.left_trigger > 0.05) {
             slider.setPower(-opMode.gamepad1.left_trigger);
+        } else if (opMode.gamepad1.bWasPressed()) {
+            slider.reset();
         } else {
             slider.idle();
         }
 
-        drive.update(slowMode);
+        drive.update(slowMode, inverted);
 
         claw.update();
-        slider.applyClawCompensation(claw.getSliderCompensationTicks());
 
         if (drawingTimer.getElapsedTime() > 50) {
             Drawing.drawDebug(follower);

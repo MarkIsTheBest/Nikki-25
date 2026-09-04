@@ -7,42 +7,76 @@ import org.firstinspires.ftc.teamcode.helper.hardware.Hardware2;
 
 public class Slider {
 
-    private static final int STEP_SIZE = 200;
-    private static final int STEP_OFFSET = 150;
+    // HARDCODED STEP POSITIONS
+// Index 0 = Home (0 ticks)
+// Index 1 = Step 1 (50 ticks)
+// Index 2 = Step 2 (350 ticks)
+// Index 3 = Step 3 (650 ticks)
+// ... up to max height
+    private static final int[] STEP_POSITIONS = {
+            0, // Step 1: FIRST STEP IS EXACTLY 50 TICKS
+            400-50, // Step 2
+            750-50, // Step 3
+            1100-50, // Step 4
+            1450-50, // Step 5
+            1800-50, // Step 6
+            2150-50, // Step 7
+            2450-50, // Step 8
+    };
+
     private static final int MIN_POSITION = 0;
     private static final int MAX_POSITION = 2450;
-    private static final double STEP_POWER = 1;
-
-    // Step indices are clamped separately from raw position, since MAX_POSITION
-    // doesn't sit exactly on the step grid (STEP_OFFSET + n*STEP_SIZE).
-    // This keeps stepUp()/stepDown() from overshooting and snapping back.
-    private static final int MIN_STEP_INDEX = (int) Math.ceil((MIN_POSITION - STEP_OFFSET) / (double) STEP_SIZE);
-    private static final int MAX_STEP_INDEX = (int) Math.floor((MAX_POSITION - STEP_OFFSET) / (double) STEP_SIZE);
+    private static final double STEP_POWER = 1.0;
 
     private final DcMotorEx left;
     private final DcMotorEx right;
 
-    private int baseTarget = 0;         // step target, no compensation
-    private int compensationTicks = 0;  // from Claw, layered on top
+    private int currentStepIndex = 0; // Starts at Step 0 (0 ticks)
+    private int compensationTicks = 100;
+    private int compoffset = 0;
     private boolean inPositionMode = false;
 
     public Slider(Hardware2 hardware) {
         left = hardware.Motors().SliderLeft();
         right = hardware.Motors().SliderRight();
+
+// HARD RESET ENCODERS TO ZERO ON INIT
+        left.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        right.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+
+        left.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+        right.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+    }
+
+    public void setClaw(boolean value) {
+        if (value) {
+            compoffset = compensationTicks;
+        } else {
+            compoffset = 0;
+        }
     }
 
     public void stepUp() {
-        int currentStep = nearestStepIndex();
-        int nextStep = Math.min(currentStep + 1, MAX_STEP_INDEX);
-        baseTarget = positionForStep(nextStep);
-        applyTarget();
+        inPositionMode = true;
+
+        if (currentStepIndex < STEP_POSITIONS.length - 1) {
+            currentStepIndex++;
+        }
     }
 
     public void stepDown() {
-        int currentStep = nearestStepIndex();
-        int nextStep = Math.max(currentStep - 1, MIN_STEP_INDEX);
-        baseTarget = positionForStep(nextStep);
-        applyTarget();
+        inPositionMode = true;
+
+        if (currentStepIndex > 0) {
+            currentStepIndex--;
+        }
+
+    }
+
+    public void reset() {
+        inPositionMode = true;
+
+        currentStepIndex = 0;
     }
 
     public void setPower(double power) {
@@ -50,9 +84,6 @@ public class Slider {
             exitPositionMode();
         }
 
-        // Stop driving further past the limits in manual power mode.
-        // Power in the "into the limit" direction is zeroed; power pulling
-        // back away from the limit is still allowed.
         int currentPosition = getCurrentPosition();
         if (power > 0 && currentPosition >= MAX_POSITION) {
             power = 0;
@@ -69,39 +100,31 @@ public class Slider {
             left.setPower(0.0);
             right.setPower(0.0);
         }
+        else {
+            applyTarget();
+        }
     }
 
-    // Called every loop with Claw.getSliderCompensationTicks()
     public void applyClawCompensation(int ticks) {
-        if (compensationTicks == ticks) return; // no change, skip re-sending target
+        if (compensationTicks == ticks) return;
         compensationTicks = ticks;
         if (inPositionMode) {
             applyTarget();
         }
-        // if not in position mode (free power control), compensation is
-        // remembered but only takes effect once a step is issued
-    }
-
-    private int nearestStepIndex() {
-        return Math.round((getCurrentPosition() - STEP_OFFSET) / (float) STEP_SIZE);
-    }
-
-    private int positionForStep(int stepIndex) {
-        return STEP_OFFSET + stepIndex * STEP_SIZE;
     }
 
     private void applyTarget() {
-        if (!inPositionMode) {
-            left.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-            right.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-            inPositionMode = true;
-        }
-        // clamp stays here as a safety net: claw compensation can still push
-        // the applied target past MAX_POSITION even though baseTarget itself
-        // is now always a valid, in-range step.
-        int appliedTarget = clamp(baseTarget + compensationTicks);
+        int baseTarget = STEP_POSITIONS[currentStepIndex];
+        int applyComp = currentStepIndex == 0 ? 0 : 1;
+
+        int appliedTarget = baseTarget + compoffset * applyComp;
+
         left.setTargetPosition(appliedTarget);
         right.setTargetPosition(appliedTarget);
+
+        left.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+        right.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+
         left.setPower(STEP_POWER);
         right.setPower(STEP_POWER);
     }
@@ -110,6 +133,23 @@ public class Slider {
         left.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
         right.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
         inPositionMode = false;
+
+        syncStepIndexToPosition();
+    }
+
+    private void syncStepIndexToPosition() {
+        int pos = getCurrentPosition();
+        int closestIndex = 0;
+        int minDistance = Integer.MAX_VALUE;
+
+        for (int i = 0; i < STEP_POSITIONS.length; i++) {
+            int dist = Math.abs(pos - STEP_POSITIONS[i]);
+            if (dist < minDistance) {
+                minDistance = dist;
+                closestIndex = i;
+            }
+        }
+        currentStepIndex = closestIndex;
     }
 
     private int getCurrentPosition() {
@@ -118,5 +158,14 @@ public class Slider {
 
     private int clamp(int position) {
         return Math.max(MIN_POSITION, Math.min(MAX_POSITION, position));
+    }
+
+    // Telemetry helper method for debugging
+    public int getCurrentStepIndex() {
+        return currentStepIndex;
+    }
+
+    public int getBaseTarget() {
+        return STEP_POSITIONS[currentStepIndex];
     }
 }

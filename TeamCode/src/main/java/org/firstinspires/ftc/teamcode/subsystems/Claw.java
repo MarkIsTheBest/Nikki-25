@@ -10,14 +10,14 @@ public class Claw {
 
     //0.35 open
     //0.8 close
-    private static final double OPEN_POSITION = 0.8;
+    private static final double OPEN_POSITION = 0.6;
     private static final double CLOSE_POSITION = 0.35;
     private static final double MOVEMENT_THRESHOLD = 0.01;
     private static final long STALL_TIME_MS = 500;
     private static final double FEEDBACK_MAX_VOLTAGE = 3.3;
 
     // Slider compensation for the arc the jaw traces while closing
-    private static final int MAX_COMPENSATION_TICKS = 150; // tune against real robot
+    private static final int MAX_COMPENSATION_TICKS = 400; // tune against real robot
 
     private final Hardware2 hardware;
 

@@ -21,8 +21,8 @@ public class Drive {
         follower.startTeleOpDrive(true);
     }
 
-    public void update(boolean slowMode) {
-        speedMultiplier = slowMode ? 0.33 : 1;
+    public void update(boolean slowMode, boolean inverted) {
+        speedMultiplier = slowMode ? (inverted ? -0.33 : 0.33) : (inverted ? -1 : 1);
         follower.setTeleOpDrive(
                 -opMode.gamepad1.left_stick_y * speedMultiplier,
                 -opMode.gamepad1.left_stick_x * speedMultiplier,

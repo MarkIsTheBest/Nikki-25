@@ -53,6 +53,7 @@ public class MainTeleOp {
     private int limelightPipeline = 0;
 
     private boolean slowMode = false;
+    private boolean inverted = false;
 
     private List<LynxModule> allHubs;
 
@@ -162,7 +163,7 @@ public class MainTeleOp {
         }
 
         // Subsystem Updates
-        drive.update(slowMode);
+        drive.update(slowMode, inverted);
         turret.update(false);
         launcher.input();
         launcher.update();
