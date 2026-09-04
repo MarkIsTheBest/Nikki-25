@@ -7,32 +7,24 @@ import com.pedropathing.paths.PathChain;
 import com.pedropathing.util.Timer;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
-import com.qualcomm.robotcore.hardware.DcMotorEx;
 
 import org.firstinspires.ftc.teamcode.helper.general.Debug;
 import org.firstinspires.ftc.teamcode.helper.hardware.Hardware2;
 import org.firstinspires.ftc.teamcode.helper.hardware.actuators.MotorHelper2;
-import org.firstinspires.ftc.teamcode.helper.hardware.sensors.LimelightHelper;
 import org.firstinspires.ftc.teamcode.pedroPathing.Constants;
 import org.firstinspires.ftc.teamcode.subsystems.Claw;
 import org.firstinspires.ftc.teamcode.subsystems.Drive;
-import org.firstinspires.ftc.teamcode.subsystems.Intake;
 import org.firstinspires.ftc.teamcode.subsystems.Slider;
 
 @Autonomous
-public class autoFast extends LinearOpMode {
-    public int aprilId = -1;
+public class autotest extends LinearOpMode {
     @Override
     public void runOpMode() throws InterruptedException {
         initialize();
-        LimelightHelper limelight = new LimelightHelper();
         waitForStart();
         play();
         if (isStopRequested()) return;
-        while (opModeIsActive()) {
-            update();
-            limelight.update();
-        }
+        while (opModeIsActive()) update();
     }
     private void setPathState(int pState) {
         pathState = pState;
@@ -43,57 +35,55 @@ public class autoFast extends LinearOpMode {
     private Timer pathTimer;
     private int pathState;
 
-    private MotorHelper2 motors = new MotorHelper2();
-
-
     // Start Pose
-    private final Pose startPose = new Pose(8.425, 170.215, Math.toRadians(90)); // Start position
+    private final Pose startPose = new Pose(9.651, 164.969, Math.toRadians(90)); // Start position
 
     // Trajectory Poses
-    private final Pose path1Pose = new Pose(23.629, 218.497, Math.toRadians(0)); // Path 1
-    private final Pose path2Pose = new Pose(63.419, 218.716, Math.toRadians(0)); // Path 2
-    private final Pose path3Pose = new Pose(13.141, 149.14, Math.toRadians(0)); // Path 3
-    private final Pose path4Pose = new Pose(13.141, 149.14, Math.toRadians(290)); // Path 3
-    //private final Pose path4Pose = new Pose(13.141, 149.14, Math.toRadians(290)); // Path 3
-    private final boolean Back = false;
-    private final Pose park1Pose = Back? new Pose(56.801, 57.599, Math.toRadians(90)):new Pose(56.801, 47.32*1.666, Math.toRadians(90)); // Path 4
-    private final Pose park2Pose = Back? new Pose(56.801, 64.24*1.6666, Math.toRadians(90)):new Pose(56.801, 77.97*1.666, Math.toRadians(90)); // Path 4
-    private final Pose park3Pose = Back? new Pose(56.801, 91.95*1.6666, Math.toRadians(90)):new Pose(56.801, 106.91*1.666, Math.toRadians(90)); // Path 4
+    private final Pose path1Pose = new Pose(12.103, 214.905, Math.toRadians(0)); // Path 1
+    private final Pose path2Pose = new Pose(37.163, 214.149, Math.toRadians(0)); // Path 2
+    private final Pose path3Pose = new Pose(59.101, 12.67, Math.toRadians(270)); // Path 3
+    private final Pose path4Pose = new Pose(10.921, 142.566, Math.toRadians(90)); // Path 4
+    private final Pose path5Pose = new Pose(10.921, 142.566, Math.toRadians(280)); // Path 4
 
-    private Hardware2 hardware;
+    private PathChain path1Path, path2Path, path3Path, path4Path, path5Path, park1Path,park2Path,park3Path;
 
-    private double timeForParking=10;
-    private double timePassed =0;
-    private Debug debug;
-    private Drive drive;
-    private Claw claw;
-    private Slider slider;
-
-    private Intake intake;
-    private PathChain path1Path, path2Path, path3Path, path4Path, park1Path, park2Path, park3Path;
+    public int april=-1;
 
     public void buildPaths() {
         path1Path = follower.pathBuilder()
                 .addPath(new BezierCurve(
                         startPose,
-                        new Pose(6.283, 206.345), // Control point
+                        new Pose(8.114, 191.808), // Control point
                         path1Pose
                 ))
                 .setLinearHeadingInterpolation(startPose.getHeading(), path1Pose.getHeading())
                 .build();
 
         path2Path = follower.pathBuilder()
-                .addPath(new BezierLine(path1Pose, path2Pose))
+                .addPath(new BezierCurve(
+                        path1Pose,
+                        new Pose(24.312, 219.95), // Control point
+                        path2Pose
+                ))
                 .setLinearHeadingInterpolation(path1Pose.getHeading(), path2Pose.getHeading())
                 .build();
 
         path3Path = follower.pathBuilder()
                 .addPath(new BezierCurve(
                         path2Pose,
-                        new Pose(44.147, 150.961), // Control point
+                        new Pose(55.16, 128.219), // Control point
                         path3Pose
                 ))
                 .setLinearHeadingInterpolation(path2Pose.getHeading(), path3Pose.getHeading())
+                .build();
+
+        path4Path = follower.pathBuilder()
+                .addPath(new BezierCurve(
+                        path3Pose,
+                        new Pose(11.346, 75.888), // Control point
+                        path4Pose
+                ))
+                .setLinearHeadingInterpolation(path3Pose.getHeading(), path4Pose.getHeading())
                 .build();
         park1Path = follower.pathBuilder()
                 .addPath(new BezierCurve(
@@ -120,11 +110,23 @@ public class autoFast extends LinearOpMode {
                 .setLinearHeadingInterpolation(path4Pose.getHeading(), park3Pose.getHeading())
                 .build();
 
-        path4Path = follower.pathBuilder()
-                .addPath(new BezierLine(path3Pose, path4Pose))
-                .setLinearHeadingInterpolation(path3Pose.getHeading(), path4Pose.getHeading())
+        path5Path = follower.pathBuilder()
+                .addPath(new BezierLine(path4Pose, path5Pose))
+                .setLinearHeadingInterpolation(path4Pose.getHeading(), path5Pose.getHeading())
                 .build();
+
     }
+    private final boolean Back = false;
+    private final Pose park1Pose = Back? new Pose(56.801, 57.599, Math.toRadians(90)):new Pose(56.801, 47.32*1.666, Math.toRadians(90)); // Path 4
+    private final Pose park2Pose = Back? new Pose(56.801, 64.24*1.6666, Math.toRadians(90)):new Pose(56.801, 77.97*1.666, Math.toRadians(90)); // Path 4
+    private final Pose park3Pose = Back? new Pose(56.801, 91.95*1.6666, Math.toRadians(90)):new Pose(56.801, 106.91*1.666, Math.toRadians(90)); // Path 4
+
+    private Hardware2 hardware;
+    private Debug debug;
+    private Drive drive;
+    private Claw claw;
+    private Slider slider;
+    private MotorHelper2 motors = new MotorHelper2();
 
     public void autonomousPathUpdate() {
         switch (pathState) {
@@ -145,55 +147,27 @@ public class autoFast extends LinearOpMode {
                 if (!follower.isBusy()) {
                     follower.followPath(path3Path);
                     motors.Intake().setPower(0);
-                    slider.stepUp();
                     setPathState(3);
                 }
                 break;
 
             case 3:
                 if (!follower.isBusy()) {
-                    motors.Feeder().setPower(1);
-                    sleep(4000);
-                    motors.Feeder().setPower(0);
-                    claw.open();
-                    sleep(10);
-                    slider.stepDown();
-                    sleep(100);
-                    claw.close();
-                    sleep(20);
                     follower.followPath(path4Path);
-                    setPathState(7);
+                    setPathState(4);
                 }
                 break;
 
             case 4:
+                if (!follower.isBusy()) {
+                    follower.followPath(path5Path);
+                    setPathState(5);
+                }
                 break;
             case 5:
-
-                if (!follower.isBusy()) {
-
-                    Pose turnedPose = new Pose(follower.getPose().getX(),follower.getPose().getY(),90);
-                    PathChain turnPath = follower.pathBuilder()
-                            .addPath(new BezierLine(follower.getPose(), turnedPose))
-                            .setLinearHeadingInterpolation(follower.getPose().getHeading(), turnedPose.getHeading())
-                            .build();
-                    PathChain parkPath = aprilId==21?park1Path:(aprilId==22?park2Path:park3Path);
-                    follower.followPath(parkPath);
-                    if (aprilId!=-1){
-                        setPathState(6);
-                    }
-                }
-            case 6:
-
-                break;
-            case 7:
-                if (!follower.isBusy()&&aprilId!=-1) {
-                    Pose parkPose = aprilId == 21 ? park1Pose : (aprilId == 22 ? park2Pose : park3Pose);
-                    PathChain parkPath = follower.pathBuilder()
-                            .addPath(new BezierLine(follower.getPose(), parkPose))
-                            .setLinearHeadingInterpolation(follower.getPose().getHeading(), parkPose.getHeading())
-                            .build();
-                    follower.followPath(parkPath);
+                if (!follower.isBusy()&&april!=-1) {
+                    follower.followPath(path5Path);
+                    setPathState(5);
                 }
                 break;
         }
@@ -204,17 +178,11 @@ public class autoFast extends LinearOpMode {
         follower = Constants.createFollower(hardwareMap);
         buildPaths();
         follower.setStartingPose(startPose);
-
-        hardware = new Hardware2();
-        debug = new Debug(telemetry);
-        claw = new Claw(hardware);
-        slider = new Slider(hardware);
     }
 
     private void play() {
         setPathState(0);
     }
-
 
     private void update() {
         follower.update();
