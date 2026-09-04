@@ -17,7 +17,7 @@ import org.firstinspires.ftc.teamcode.subsystems.Drive;
 import org.firstinspires.ftc.teamcode.subsystems.Slider;
 
 @Autonomous
-public class autoFast extends LinearOpMode {
+public class autoFastold extends LinearOpMode {
     public int aprilId = -1;
     @Override
     public void runOpMode() throws InterruptedException {

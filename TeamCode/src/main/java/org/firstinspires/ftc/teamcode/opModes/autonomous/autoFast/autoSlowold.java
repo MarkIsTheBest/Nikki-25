@@ -12,7 +12,7 @@ import org.firstinspires.ftc.teamcode.helper.hardware.sensors.LimelightHelper;
 import org.firstinspires.ftc.teamcode.pedroPathing.Constants;
 
 @Autonomous
-public class autoSlow extends LinearOpMode {
+public class autoSlowold extends LinearOpMode {
     public int aprilId = -1;
     @Override
     public void runOpMode() throws InterruptedException {

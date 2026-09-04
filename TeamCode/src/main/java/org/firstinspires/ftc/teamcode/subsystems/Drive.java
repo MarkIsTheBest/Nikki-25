@@ -26,7 +26,7 @@ public class Drive {
         follower.setTeleOpDrive(
                 -opMode.gamepad1.left_stick_y * speedMultiplier,
                 -opMode.gamepad1.left_stick_x * speedMultiplier,
-                -opMode.gamepad1.right_stick_x * 1.1 * speedMultiplier,
+                -opMode.gamepad1.right_stick_x * 1.1 * speedMultiplier * (inverted?-1:1),
                 true
         );
     }

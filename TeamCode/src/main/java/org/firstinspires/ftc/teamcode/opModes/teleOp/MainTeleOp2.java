@@ -5,6 +5,7 @@ import com.pedropathing.geometry.Pose;
 import com.pedropathing.util.Timer;
 import com.qualcomm.hardware.lynx.LynxModule;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
+import com.qualcomm.robotcore.hardware.Gamepad;
 
 import org.firstinspires.ftc.teamcode.helper.Drawing;
 import org.firstinspires.ftc.teamcode.helper.general.Debug;
@@ -35,7 +36,9 @@ public class MainTeleOp2 {
     private boolean inverted = false;
 
     private boolean intakeOn = false;
+    private boolean lastIntakeOn = false;
     private boolean feederOn = false;
+    private boolean manualOverride = false;
 
     private final Timer telemetryTimer = new Timer();
     private final Timer drawingTimer = new Timer();
@@ -76,7 +79,6 @@ public class MainTeleOp2 {
         telemetryTimer.resetTimer();
         drawingTimer.resetTimer();
     }
-
     public void update() {
         for (LynxModule hub : allHubs) {
             hub.clearBulkCache();
@@ -91,6 +93,11 @@ public class MainTeleOp2 {
             inverted = !inverted;
         }
 
+        if(manualOverride) {
+            opMode.gamepad1.rumble(100);
+            opMode.gamepad1.rumble(100);
+            opMode.gamepad1.rumble(100);
+        }
 
         if (opMode.gamepad1.rightBumperWasPressed()) {
             claw.toggle();
@@ -99,23 +106,36 @@ public class MainTeleOp2 {
 
         if (opMode.gamepad1.aWasPressed()) {
             intakeOn = !intakeOn;
-            hardware.Motors().Intake().setPower(intakeOn ? 1.0 : 0.0);
+            lastIntakeOn = intakeOn;
         }
 
-        if (opMode.gamepad1.xWasPressed()) {
-            feederOn = !feederOn;
-            hardware.Motors().Feeder().setPower(feederOn ? 0.5 : 0.0);
+        if (opMode.gamepad1.optionsWasPressed()) {
+            manualOverride = !manualOverride;
+            if(!manualOverride) {
+                slider.resetEncoder();
+            }
         }
 
-        if (opMode.gamepad1.dpadUpWasPressed()) {
+        feederOn = opMode.gamepad2.x || opMode.gamepad1.x;
+
+        if(feederOn) {
+            intakeOn = true;
+        } else if (!feederOn && !lastIntakeOn) {
+            intakeOn = false;
+        }
+
+        hardware.Motors().Intake().setPower(intakeOn ? 1.0 : 0.0);
+        hardware.Motors().Feeder().setPower(feederOn ? 0.75 : 0.0);
+
+        if (opMode.gamepad2.dpadUpWasPressed() || opMode.gamepad1.dpadUpWasPressed()) {
             slider.stepUp();
-        } else if (opMode.gamepad1.dpadDownWasPressed()) {
+        } else if (opMode.gamepad2.dpadDownWasPressed() || opMode.gamepad1.dpadDownWasPressed()) {
             slider.stepDown();
-        } else if (opMode.gamepad1.right_trigger > 0.05) {
-            slider.setPower(opMode.gamepad1.right_trigger);
-        } else if (opMode.gamepad1.left_trigger > 0.05) {
-            slider.setPower(-opMode.gamepad1.left_trigger);
-        } else if (opMode.gamepad1.bWasPressed()) {
+        } else if (opMode.gamepad2.right_trigger > 0.05 || opMode.gamepad1.right_trigger > 0.05) {
+            slider.setPower(opMode.gamepad2.right_trigger + opMode.gamepad1.right_trigger, manualOverride);
+        } else if (opMode.gamepad2.left_trigger > 0.05 || opMode.gamepad1.left_trigger > 0.05) {
+            slider.setPower(-opMode.gamepad2.left_trigger + -opMode.gamepad1.left_trigger, manualOverride);
+        } else if (opMode.gamepad2.bWasPressed() || opMode.gamepad1.bWasPressed()) {
             slider.reset();
         } else {
             slider.idle();

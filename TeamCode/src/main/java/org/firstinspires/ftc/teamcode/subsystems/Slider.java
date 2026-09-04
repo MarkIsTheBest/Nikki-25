@@ -14,14 +14,14 @@ public class Slider {
 // Index 3 = Step 3 (650 ticks)
 // ... up to max height
     private static final int[] STEP_POSITIONS = {
-            0, // Step 1: FIRST STEP IS EXACTLY 50 TICKS
-            400-50, // Step 2
-            750-50, // Step 3
-            1100-50, // Step 4
-            1450-50, // Step 5
-            1800-50, // Step 6
-            2150-50, // Step 7
-            2450-50, // Step 8
+            50, // Step 1: FIRST STEP IS EXACTLY 50 TICKS
+            400, // Step 2
+            750, // Step 3
+            1100, // Step 4
+            1450, // Step 5
+            1800, // Step 6
+            2150, // Step 7
+            2450, // Step 8
     };
 
     private static final int MIN_POSITION = 0;
@@ -46,6 +46,17 @@ public class Slider {
 
         left.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
         right.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+    }
+
+    public void setPosition(int ticks) {
+        left.setTargetPosition(ticks);
+        right.setTargetPosition(ticks);
+
+        left.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+        right.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+
+        left.setPower(STEP_POWER);
+        right.setPower(STEP_POWER);
     }
 
     public void setClaw(boolean value) {
@@ -79,20 +90,26 @@ public class Slider {
         currentStepIndex = 0;
     }
 
-    public void setPower(double power) {
+    public void setPower(double power, boolean manual) {
         if (inPositionMode) {
             exitPositionMode();
         }
+        double newPower = power;
 
         int currentPosition = getCurrentPosition();
-        if (power > 0 && currentPosition >= MAX_POSITION) {
-            power = 0;
-        } else if (power < 0 && currentPosition <= MIN_POSITION) {
-            power = 0;
+        if (newPower > 0 && currentPosition >= MAX_POSITION) {
+            newPower = 0;
+        } else if (newPower < 0 && currentPosition <= MIN_POSITION) {
+            newPower = 0;
         }
 
-        left.setPower(power);
-        right.setPower(power);
+        left.setPower(manual ? power : newPower);
+        right.setPower(manual ? power : newPower);
+    }
+
+    public void resetEncoder() {
+        left.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        right.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
     }
 
     public void idle() {
@@ -113,6 +130,10 @@ public class Slider {
         }
     }
 
+    public boolean isBusy() {
+        return right.isBusy() || left.isBusy();
+    }
+
     private void applyTarget() {
         int baseTarget = STEP_POSITIONS[currentStepIndex];
         int applyComp = currentStepIndex == 0 ? 0 : 1;
@@ -127,6 +148,11 @@ public class Slider {
 
         left.setPower(STEP_POWER);
         right.setPower(STEP_POWER);
+    }
+
+    public void goToStep(int stepIndex) {
+        currentStepIndex = stepIndex;
+        applyTarget();
     }
 
     private void exitPositionMode() {

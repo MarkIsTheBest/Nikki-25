@@ -11,7 +11,7 @@ import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import org.firstinspires.ftc.teamcode.pedroPathing.Constants;
 
 @Autonomous
-public class AutoTest extends LinearOpMode {
+public class AutoRandom extends LinearOpMode {
     @Override
     public void runOpMode() throws InterruptedException {
         initialize();

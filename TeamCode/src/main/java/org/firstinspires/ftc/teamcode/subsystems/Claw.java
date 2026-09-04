@@ -32,6 +32,10 @@ public class Claw {
         stallTimer.resetTimer();
     }
 
+    public boolean isBusy() {
+        return state == State.CLOSING;
+    }
+
     public void open() {
         state = State.OPEN;
         hardware.Servos().Claw().setPosition(OPEN_POSITION);
@@ -64,7 +68,7 @@ public class Claw {
             return;
         }
 
-        if (stallTimer.getElapsedTimeSeconds() * 1000 >= STALL_TIME_MS) {
+        if (stallTimer.getElapsedTimeSeconds() * 1500 >= STALL_TIME_MS) {
             state = State.CAUGHT;
             hardware.Servos().Claw().setPosition(currentPosition);
         }
