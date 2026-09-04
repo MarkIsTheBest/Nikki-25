@@ -97,4 +97,8 @@ public class Slider {
     private int clamp(int position) {
         return Math.max(MIN_POSITION, Math.min(MAX_POSITION, position));
     }
+
+    public boolean isBusy() {
+        return left.isBusy() || right.isBusy();
+    }
 }

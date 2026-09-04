@@ -119,6 +119,7 @@ public class autoFast extends LinearOpMode {
             case 0:
                 follower.followPath(path1Path);
                 setPathState(1);
+
                 break;
 
             case 1:
@@ -137,7 +138,6 @@ public class autoFast extends LinearOpMode {
 
             case 3:
                 if (!follower.isBusy()) {
-
                     follower.followPath(path4Path);
                     setPathState(4);
                 }
