@@ -22,13 +22,13 @@ public class Constants {
             .headingPIDFCoefficients(new PIDFCoefficients(1.1, 0, 0.05, 0.01))
             .drivePIDFCoefficients(new FilteredPIDFCoefficients(0.05,0,0.001,0.6,0.01))
 
-            .mass(11);
+            .mass(12);
 
     public static PathConstraints pathConstraints = new PathConstraints(0.99, 100, 1, 1);
 
     public static PinpointConstants localizerConstants = new PinpointConstants()
-            .forwardPodY(-4.95)
-            .strafePodX(-17.2)
+            .forwardPodY(0.25)
+            .strafePodX(2.25)
             .distanceUnit(DistanceUnit.CM)
             .hardwareMapName("pinpoint")
             .encoderResolution(GoBildaPinpointDriver.GoBildaOdometryPods.goBILDA_4_BAR_POD)

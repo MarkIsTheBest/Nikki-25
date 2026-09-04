@@ -6,12 +6,12 @@ import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
 import org.firstinspires.ftc.teamcode.constants.enums.AllianceColor;
 import org.firstinspires.ftc.teamcode.opModes.teleOp.MainTeleOp;
+import org.firstinspires.ftc.teamcode.opModes.teleOp.MainTeleOp2;
 
-@TeleOp(group="Teleop NEAR")
+@TeleOp(group="Teleop2")
 public class RedNearTeleOp extends LinearOpMode {
 
-    MainTeleOp teleOp = new MainTeleOp(
-            AllianceColor.RED,
+    MainTeleOp2 teleOp = new MainTeleOp2(
             this,
             new Pose(96.8, 78.5, Math.toRadians(0))
     );
