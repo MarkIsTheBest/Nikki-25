@@ -1,6 +1,7 @@
 package org.firstinspires.ftc.teamcode.helper.hardware.sensors;
 
 import com.qualcomm.hardware.limelightvision.LLResult;
+import com.qualcomm.hardware.limelightvision.LLResultTypes;
 import com.qualcomm.hardware.limelightvision.Limelight3A;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 
@@ -17,6 +18,7 @@ public class LimelightHelper {
     private double ty = -999; public double Ty() { return ty; }
     private double ta = -999; public double Ta() { return ta; }
     private double distance = -999; public double Distance() { return distance; }
+    private int aprilID = -9; public int AprilID() {return aprilID;}
 
     private boolean hasAprilTag = false;
     public boolean HasAprilTag() { return hasAprilTag; }
@@ -59,6 +61,15 @@ public class LimelightHelper {
             ty = result.getTy();
             ta = result.getTa();
             distance = result.getBotposeAvgDist();
+            if (!result.getFiducialResults().isEmpty()) {
+                hasAprilTag = true;
+
+                LLResultTypes.FiducialResult fiducial = result.getFiducialResults().get(0);
+                aprilID = fiducial.getFiducialId();
+            } else {
+                hasAprilTag = false;
+                aprilID = -1;
+            }
         }
     }
 }
