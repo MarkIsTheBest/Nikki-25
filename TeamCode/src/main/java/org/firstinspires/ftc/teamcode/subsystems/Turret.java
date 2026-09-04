@@ -29,10 +29,11 @@ public class Turret {
     private final Debug debug;
     private final LinearOpMode opMode;
 
-    private static final double MIN_ANGLE_DEG = -80;
-    private static final double MAX_ANGLE_DEG = 65;
+    private static final double MIN_ANGLE_DEG = -65;
+    private static final double MAX_ANGLE_DEG = 56.5;
 
     private PIDFCoefficients pidf = Control.Turret.pidf;
+    private PIDFCoefficients pidfNear = Control.Turret.pidfNear;
 
     private static final double DEADBAND_DEG = 0.25;
     private static final double I_ZONE_DEG = 6.0;
@@ -125,9 +126,20 @@ public class Turret {
         lastError = error;
 
         double ffWeight = Math.min(1.0, (Math.abs(error) - DEADBAND_DEG) / 3.0);
-        double ff = Math.signum(error) * pidf.F * ffWeight;
 
-        double rawPower = (pidf.P * error) + (pidf.I * integral) + (pidf.D * derivative) + ff;
+        double ff;
+        double rawPower;
+
+        if (Math.abs(error) <= 45) {
+            ff = Math.signum(error) * pidfNear.F * ffWeight;
+
+            rawPower = (pidfNear.P * error) + (pidfNear.I * integral) + (pidfNear.D * derivative) + ff;
+        }
+        else {
+            ff = Math.signum(error) * pidf.F * ffWeight;
+
+            rawPower = (pidf.P * error) + (pidf.I * integral) + (pidf.D * derivative) + ff;
+        }
 
         double maxChange = MAX_POWER_CHANGE_PER_SEC * dt;
         double clampedPower = MathHelper.clamp(rawPower, lastPower - maxChange, lastPower + maxChange);

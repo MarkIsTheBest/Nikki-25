@@ -25,6 +25,7 @@ public class Launcher {
     public static double REVERSE_POWER = -0.5;
     public static int MAX_THROWS = 3;
     public static double EMPTY_TIMEOUT = 300;
+    public static double IDLE_POWER = 0.5;
 
     // OPTIMIZATION: Hardware polling rate increased to reduce I2C blocking
     // I2C calls are blocking and take ~10-20ms per sensor.
@@ -160,12 +161,18 @@ public class Launcher {
             }
             sensorPollTimer.resetTimer();
 
-    }
+        }
 
         turret.setHoodAngle(hoodAngle);
 
         if (shooting || spinningUp) {
             shootingUpdate(atSpeed);
+        }
+
+        if (shooting || spinningUp) {
+            currentSetRPM = targetRPM;
+        } else {
+            currentSetRPM = targetRPM * 0.8;
         }
 
         updateLEDs();
@@ -196,13 +203,19 @@ public class Launcher {
                     turret.openBarrier();
                 }
 
-                currentSetRPM = targetRPM;
                 intake.setPower(0);
 
                 if(stateTimer.getElapsedTime() < 175) {
                     feedBall(-1);
                 } else {
                     feedBall(0);
+                }
+
+                if (stateTimer.getElapsedTime() < 100) {
+                    intake.setPower(-1);
+                }
+                else {
+                    intake.setPower(0);
                 }
 
                 if (atSpeed && shooting && (turret.hasReachedPosition || turret.hasReachedLimit)) {
@@ -276,7 +289,6 @@ public class Launcher {
         spinningUp = false;
         setIntakePower(0);
         feedBall(0);
-        currentSetRPM = 0;
         turret.closeBarrier();
         reset();
     }

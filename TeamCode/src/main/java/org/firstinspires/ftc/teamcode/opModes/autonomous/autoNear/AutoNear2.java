@@ -366,8 +366,8 @@ public class AutoNear2 extends LinearOpMode {
 
         turret.closeBarrier();
         turret.setAngle(turretAngle);
-        launcher.setTargetAngle(43);
-        launcher.setTargetRPM(3300);
+        launcher.setTargetAngle(37.5);
+        launcher.setTargetRPM(3100);
     }
 
     public void play() {

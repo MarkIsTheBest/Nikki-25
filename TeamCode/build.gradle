@@ -54,7 +54,8 @@ repositories {
 dependencies {
     implementation project(':FtcRobotController')
     implementation 'androidx.core:core-ktx:1.19.0'
-    implementation 'dev.nextftc:ftc:1.0.1'
-    implementation 'dev.nextftc:hardware:1.0.1' // If you would like to use the hardware module
+    implementation 'com.google.firebase:firebase-crashlytics-buildtools:3.0.7'
+    implementation 'dev.nextftc:ftc:1.1.0'
+    implementation 'dev.nextftc:hardware:1.1.0'
     implementation("com.bylazar.sloth:fullpanels:0.2.4+1.0.12")
 }

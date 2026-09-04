@@ -96,8 +96,8 @@ public class ShooterTest extends LinearOpMode {
             hardware.Motors().LeftLauncher().setPower(0);
         }
 
-        //if(gamepad1.rightBumperWasPressed()) openBarrier();
-        //if(gamepad1.leftBumperWasPressed()) closeBarrier();
+        if(gamepad1.rightBumperWasPressed()) openBarrier();
+        if(gamepad1.leftBumperWasPressed()) closeBarrier();
 
         if(gamepad1.dpadUpWasPressed()) angle += 2.5;
         if(gamepad1.dpadDownWasPressed()) angle -= 2.5;
@@ -114,11 +114,16 @@ public class ShooterTest extends LinearOpMode {
             flywheelRight.setPower(1);
         }
 
+        if(gamepad2.rightBumperWasPressed()) {
+            hardware.Servos().FeedLeft().setPower(1);
+            hardware.Servos().FeedRight().setPower(1);
+        }
+
         if(gamepad2.yWasPressed()) {
             flywheelRight.setPower(0);
         }
 
-        //setHoodAngle(angle);
+        setHoodAngle(angle);
 
 //        if(testTimer.getElapsedTime() <= 100) return;
 //

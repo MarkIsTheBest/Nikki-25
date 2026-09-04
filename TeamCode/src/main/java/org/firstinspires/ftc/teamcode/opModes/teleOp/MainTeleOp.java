@@ -1,6 +1,5 @@
 package org.firstinspires.ftc.teamcode.opModes.teleOp;
 
-import com.bylazar.configurables.annotations.Configurable;
 import com.pedropathing.follower.Follower;
 import com.pedropathing.geometry.Pose;
 import com.pedropathing.util.Timer;
@@ -25,7 +24,6 @@ import org.firstinspires.ftc.teamcode.subsystems.Turret;
 
 import java.util.List;
 
-@Configurable
 public class MainTeleOp {
 
     public static double shooterAngle = 45;
@@ -53,6 +51,10 @@ public class MainTeleOp {
     private int limelightPipeline = 0;
 
     private boolean slowMode = false;
+
+    // Toggle between tracking the alliance goal and a fixed alternate goal position
+    private boolean trackingAltGoal = false;
+    private final Pose altGoalPosition = new Pose(72, -144, 0);
 
     private List<LynxModule> allHubs;
 
@@ -124,11 +126,13 @@ public class MainTeleOp {
         launcher.setTargetRPM(3800);
         launcher.setTargetAngle(45);
 
-        shooterTable.add(123.75, 4300, 44);
-        shooterTable.add(105.75, 3900, 44);
-        shooterTable.add(100.0, 3750, 45);
-        shooterTable.add(68.5, 3500, 42.5);
-        shooterTable.add(25.0, 2950, 35);
+        shooterTable.add(123.75, 4500, 42.5);
+        shooterTable.add(105.75, 4250, 42.5);
+        shooterTable.add(100.0, 4250, 42.5);
+        shooterTable.add(68.5, 3400, 40);
+        shooterTable.add(60, 3250, 38);
+        shooterTable.add(45, 3000, 35);
+        shooterTable.add(25.0, 2750, 32.5);
     }
 
     public void play() {
@@ -161,6 +165,13 @@ public class MainTeleOp {
                 turret.setAngle(0);
         }
 
+        if(opMode.gamepad1.triangleWasPressed()) {
+            trackingAltGoal = !trackingAltGoal;
+            // force an immediate shooter recalculation for the newly selected goal
+            shooterUpdateTimer.resetTimer();
+            lastShooterPose = new Pose(0, 0, 0);
+        }
+
         // Subsystem Updates
         drive.update(slowMode);
         turret.update(false);
@@ -180,7 +191,7 @@ public class MainTeleOp {
         updateShooter();
 
         if(!manualOverride) {
-            turret.updateTurretLocking(follower, goalPosition, cachedHasTag, cachedTx);
+            turret.updateTurretLocking(follower, getActiveGoal(), cachedHasTag, cachedTx);
         } else if (cachedHasTag) {
             turret.updateVisionOnly(cachedHasTag, cachedTx);
         } else if(!cachedHasTag && manualOverride) {
@@ -191,6 +202,12 @@ public class MainTeleOp {
             if(opMode.gamepad1.dpadRightWasPressed()) offset-=5;
             if(opMode.gamepad1.dpadLeftWasPressed()) offset+=5;
         }
+    }
+
+    /* ===================== GOAL SELECTION ===================== */
+
+    private Pose getActiveGoal() {
+        return trackingAltGoal ? altGoalPosition : goalPosition;
     }
 
     /* ===================== SHOOTER ===================== */
@@ -227,13 +244,19 @@ public class MainTeleOp {
     }
 
     private double getDistanceToGoal() {
-        return MathHelper.dist(follower.getPose(), goalPosition) - 10;
+        return MathHelper.dist(follower.getPose(), getActiveGoal()) - 10;
     }
 
     public void telemetry() {
         if (telemetryTimer.getElapsedTime() < 250) {
             return;
         }
+
+        debug.addData("Limelight Distance", Math.sqrt(Math.pow(hardware.Limelight().Distance() * 39.37, 2) - Math.pow(22.801, 2)));
+        debug.addData("Pinpoint Distance", getDistanceToGoal());
+        debug.addData("Hood Angle", shooterAngle);
+        debug.addData("Tracking Alt Goal", trackingAltGoal);
+
         telemetryTimer.resetTimer();
 
         launcher.showTelemetry();

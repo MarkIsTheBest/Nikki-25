@@ -11,7 +11,7 @@ import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import org.firstinspires.ftc.teamcode.pedroPathing.Constants;
 
 @Autonomous
-public class BLUE_FAR_LEAVE extends LinearOpMode {
+public class RED_FAR_LEAVE extends LinearOpMode {
     @Override
     public void runOpMode() throws InterruptedException {
         initialize();
@@ -30,10 +30,10 @@ public class BLUE_FAR_LEAVE extends LinearOpMode {
     private int pathState;
 
     // Start Pose
-    private final Pose startPose = new Pose(58.146, 8.495, Math.toRadians(90)); // Start position
+    private final Pose startPose = new Pose(-58.146, 8.495, Math.toRadians(90)); // Start position
 
     // Trajectory Poses
-    private final Pose path1Pose = new Pose(36.517, 22.296, Math.toRadians(90)); // Path 1
+    private final Pose path1Pose = new Pose(-36.517, 22.296, Math.toRadians(90)); // Path 1
 
     private PathChain path1Path;
 

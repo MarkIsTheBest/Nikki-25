@@ -7,7 +7,7 @@ public class Positions {
 
     @Configurable
     public static class Field {
-        public static final Pose RED_GOAL = new Pose(132,131);
+        public static final Pose RED_GOAL = new Pose(132,123);
         public static final Pose BLUE_GOAL = RED_GOAL.mirror();
 
         public static final Pose RED_BASE = new Pose(38.5, 33.5, Math.toRadians(90));
@@ -21,7 +21,7 @@ public class Positions {
 
     @Configurable
     public static class Servo {
-        public static final double BARRIER_CLOSED = 0.8;
-        public static final double BARRIER_OPENED = 0.25;
+        public static final double BARRIER_CLOSED = 0.67;
+        public static final double BARRIER_OPENED = 0.3;
     }
 }

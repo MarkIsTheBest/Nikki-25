@@ -14,6 +14,9 @@ public class Claw {
     private static final long STALL_TIME_MS = 500;
     private static final double FEEDBACK_MAX_VOLTAGE = 3.3;
 
+    // Slider compensation for the arc the jaw traces while closing
+    private static final int MAX_COMPENSATION_TICKS = 150; // tune against real robot
+
     private final Hardware2 hardware;
 
     private State state = State.OPEN;
@@ -63,6 +66,19 @@ public class Claw {
             state = State.CAUGHT;
             hardware.Servos().Claw().setPosition(currentPosition);
         }
+    }
+
+    // 0.0 = fully open, 1.0 = fully closed
+    private double closeFraction() {
+        double position = getCurrentPosition(); // OPEN_POSITION..CLOSE_POSITION
+        return 1.0 - ((position - CLOSE_POSITION) / (OPEN_POSITION - CLOSE_POSITION));
+    }
+
+    // Sinusoidal ramp: 0 ticks fully open, MAX_COMPENSATION_TICKS fully closed
+    public int getSliderCompensationTicks() {
+        double fraction = Math.max(0.0, Math.min(1.0, closeFraction()));
+        double sinCurve = Math.sin(fraction * (Math.PI / 2.0));
+        return (int) Math.round(sinCurve * MAX_COMPENSATION_TICKS);
     }
 
     private double getCurrentPosition() {

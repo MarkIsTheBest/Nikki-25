@@ -1,6 +1,7 @@
 package org.firstinspires.ftc.teamcode.opModes.tests;
 
 import com.bylazar.configurables.annotations.Configurable;
+//import com.google.firebase.crashlytics.buildtools.reloc.org.apache.http.client.methods.Configurable;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
@@ -50,7 +51,7 @@ public class SetServos extends LinearOpMode {
         }
         if(gamepad1.xWasPressed()) {
             servos.HoodLeft().setPosition(currentPosition);
-            servos.HoodRight().setPosition(currentPosition + 0.05);
+            servos.HoodRight().setPosition(currentPosition /*+ 0.05*/);
         }
 
         if(gamepad1.dpadUpWasPressed()) currentPosition += 0.025;
